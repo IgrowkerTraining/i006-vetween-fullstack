@@ -280,6 +280,7 @@ const Register: React.FC = () => {
                   ))}
                 </div>
               </div>
+              
               <div className="md:col-span-2 mt-4">
                 <button type="submit" className="w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-indigo-500/20 mb-5 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
                   Siguiente
