@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "../common/Input";
 import { Button } from "../common/Button";
 import { RadioGroup } from "../common/RadioGroup";
@@ -43,11 +43,17 @@ export interface PatientFormData {
   responsible: ResponsibleData;
 }
 
+export type PatientFormMode = "create" | "edit";
+
 interface PatientFormProps {
   onSubmit: (data: PatientFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
   onStepChange?: (step: number) => void;
+  /** Si se provee, el formulario entra en modo edición */
+  initialData?: PatientFormData;
+  /** Callback para notificar el modo actual (útil para el título del modal) */
+  onModeChange?: (mode: PatientFormMode) => void;
 }
 
 // Constants
@@ -124,12 +130,31 @@ export const PatientForm: React.FC<PatientFormProps> = ({
   onCancel,
   isLoading = false,
   onStepChange,
+  initialData,
+  onModeChange,
 }) => {
+  const mode: PatientFormMode = initialData ? "edit" : "create";
   const [currentStep, setCurrentStep] = useState(1);
-  const [patient, setPatient] = useState<PatientData>(initialPatientData);
-  const [responsible, setResponsible] = useState<ResponsibleData>(
-    initialResponsibleData,
+  const [patient, setPatient] = useState<PatientData>(
+    initialData?.patient ?? initialPatientData,
   );
+  const [responsible, setResponsible] = useState<ResponsibleData>(
+    initialData?.responsible ?? initialResponsibleData,
+  );
+
+  // Notificar modo al padre
+  useEffect(() => {
+    onModeChange?.(mode);
+  }, [mode, onModeChange]);
+
+  // Actualizar datos si cambia initialData (útil para edición)
+  useEffect(() => {
+    if (initialData) {
+      setPatient(initialData.patient);
+      setResponsible(initialData.responsible);
+    }
+  }, [initialData]);
+
   const [errors, setErrors] = useState<Partial<PatientData & ResponsibleData>>(
     {},
   );

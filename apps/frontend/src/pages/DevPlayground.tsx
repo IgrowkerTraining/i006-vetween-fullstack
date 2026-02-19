@@ -1,29 +1,87 @@
 import React, { useState } from "react";
 import { Modal } from "../components/common/Modal";
 import { Button } from "../components/common/Button";
-import { PatientForm, PatientFormData } from "../components/forms/PatientForm";
+import {
+  PatientForm,
+  PatientFormData,
+  PatientFormMode,
+} from "../components/forms/PatientForm";
+
+// Datos de ejemplo para modo edición
+const mockPatientData: PatientFormData = {
+  patient: {
+    name: "Firulais",
+    species: "dog",
+    breed: "Labrador",
+    age: "5 años",
+    sex: "male",
+    weight: "25 kg",
+    color: "Dorado",
+    characteristic: "Mancha blanca en el pecho",
+    sterilized: "yes",
+    microchip: "yes",
+    microchipNumber: "1234567890",
+  },
+  responsible: {
+    firstName: "Juan",
+    lastName: "Pérez",
+    email: "juan@email.com",
+    street: "Av. Corrientes",
+    number: "1234",
+    locality: "CABA",
+    province: "buenos_aires",
+    phone: "+54 11 1234 5678",
+    relationship: "owner",
+  },
+};
 
 const DevPlayground: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentFormStep, setCurrentFormStep] = useState(1);
+  const [formMode, setFormMode] = useState<PatientFormMode>("create");
+  const [editData, setEditData] = useState<PatientFormData | undefined>(
+    undefined,
+  );
 
-  const handleOpenModal = () => {
+  const handleOpenCreateModal = () => {
+    setEditData(undefined);
     setCurrentFormStep(1);
     setIsModalOpen(true);
   };
+
+  const handleOpenEditModal = () => {
+    setEditData(mockPatientData);
+    setCurrentFormStep(1);
+    setIsModalOpen(true);
+  };
+
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSubmitPatient = (data: PatientFormData) => {
     setIsLoading(true);
-    console.log("Patient data submitted:", data);
+    console.log(
+      `${formMode === "create" ? "POST" : "PUT"} - Patient data:`,
+      data,
+    );
 
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
       setIsModalOpen(false);
-      alert("Paciente y responsable guardados exitosamente!");
+      alert(
+        formMode === "create"
+          ? "Paciente creado exitosamente!"
+          : "Paciente actualizado exitosamente!",
+      );
     }, 1500);
+  };
+
+  // Generar título dinámico basado en modo y paso
+  const getModalTitle = () => {
+    const action = formMode === "create" ? "Registro" : "Editar";
+    const entity = currentFormStep === 1 ? "Paciente" : "Responsable";
+    return `${action} - ${entity}`;
   };
 
   return (
@@ -56,18 +114,19 @@ const DevPlayground: React.FC = () => {
               y datos del responsable.
             </p>
 
-            <Button onClick={handleOpenModal} variant="primary">
-              Registrar Paciente
-            </Button>
+            <div className="flex gap-3">
+              <Button onClick={handleOpenCreateModal} variant="primary">
+                Registrar Paciente (POST)
+              </Button>
+              <Button onClick={handleOpenEditModal} variant="outline">
+                Editar Paciente (PUT)
+              </Button>
+            </div>
 
             <Modal
               isOpen={isModalOpen}
               onClose={handleCloseModal}
-              title={
-                currentFormStep === 1
-                  ? "Registro - Paciente"
-                  : "Registro - Responsable"
-              }
+              title={getModalTitle()}
               size="lg"
             >
               <PatientForm
@@ -75,6 +134,8 @@ const DevPlayground: React.FC = () => {
                 onCancel={handleCloseModal}
                 isLoading={isLoading}
                 onStepChange={setCurrentFormStep}
+                initialData={editData}
+                onModeChange={setFormMode}
               />
             </Modal>
           </section>
