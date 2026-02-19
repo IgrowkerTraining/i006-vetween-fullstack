@@ -21,7 +21,9 @@ const registerUser = async (userData) => {
         // Crear la clínica primero para obtener su ID y vincularla al veterinario
         const nuevaClinica = {
             nombre: userData.nombre_consultorio,
-            num_habilitacion: userData.num_habilitacion
+            num_habilitacion: userData.num_habilitacion,
+            direccion: userData.direccion,
+            telefono: userData.telefono
         };
 
         const { data: clinicaCreada, error: errorClinica } = await supabase

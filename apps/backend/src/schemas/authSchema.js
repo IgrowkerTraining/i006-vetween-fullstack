@@ -46,6 +46,16 @@ const registerSchema = Joi.object({
         'any.only': 'Selecciona una especialidad válida'
     }),
     
+    tipos_animales: Joi.array().items(
+        Joi.string().valid(...tiposAnimalesValidos)).min(1).required().messages({
+        'array.min': 'Debes seleccionar al menos un tipo de animal'
+    }),
+
+    costo_consulta: Joi.number().precision(2).positive().required().messages({
+        'number.base': 'El costo de consulta debe ser un número',
+        'number.positive': 'El costo de consulta no puede ser negativo'
+    }),
+
     nombre_consultorio: Joi.string().trim().max(150).required().messages({
         'string.empty': 'El nombre del consultorio es obligatorio',
         'string.max': 'El nombre del consultorio no puede tener más de 150 caracteres'
@@ -57,14 +67,13 @@ const registerSchema = Joi.object({
         'any.required': 'El número de habilitación es requerido para registrar la clínica'
     }),
 
-    tipos_animales: Joi.array().items(
-        Joi.string().valid(...tiposAnimalesValidos)).min(1).required().messages({
-        'array.min': 'Debes seleccionar al menos un tipo de animal'
+    direccion: Joi.string().trim().max(150).allow('').required().messages({
+        'string.empty': 'La dirección no puede estar vacía',
+        'string.max': 'La dirección no puede tener más de 150 caracteres'
     }),
-
-    costo_consulta: Joi.number().precision(2).positive().required().messages({
-        'number.base': 'El costo de consulta debe ser un número',
-        'number.positive': 'El costo de consulta no puede ser negativo'
+    telefono: Joi.string().trim().max(20).allow('').required().messages({
+        'string.empty': 'El teléfono no puede estar vacío',
+        'string.max': 'El teléfono no puede tener más de 20 caracteres'
     })
 });
 
