@@ -8,7 +8,7 @@ let idCounter = 1;
 
 //GET todos los pacientes
 router.get("/", (req, res) => {
-    res.json(patients);
+    res.json({success: true, data: patients});
 });
 
 //POST crear paciente
@@ -17,7 +17,7 @@ router.post("/", (req, res) => {
 
     if(!name || !species || !age ){
         return res.status(400).json({
-            error: "Name, species and age are required"
+            message: "Faltan campos obligatorios"
         });
     }
 
@@ -31,58 +31,63 @@ router.post("/", (req, res) => {
 
     patients.push(newPatient);
 
-    res.status(201).json(newPatient);
+    res.status(201).json({success: true, data: newPatient});
 });
 
+//GET paciente por ID
 router.get("/:id", (req,res) => {
     const id = parseInt(req.params.id);
 
     const patient = patients.find(p => p.id === id);
 
     if(!patient){
-        return res.status(404).json({error: "Patient not found"})
+        return res.status(404).json({message: "Paciente no encontrado"})
     }
 
-    res.json(patient);
+    res.json({success: true, data: patient});
+});
 
-    router.put("/:id", (req, res) => {
-        const id = parseInt(req.params.id);
-        const {name, species, age, active} = req.body;
+//PUT actualizar paciente por ID
+router.put("/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const {name, species, age, active} = req.body;
 
-        const patientIndex = patients.findIndex(p => p.id === id);
+    const patientIndex = patients.findIndex(p => p.id === id);
 
-        if(patientIndex === -1){
-            return res.status(404).json({error: "Patient not found"});
-        }
+    if(patientIndex === -1){
+        return res.status(404).json({message: "Paciente no encontrado"});
+    }
 
-        const updatedPatient = {
-            ...patients[patientIndex],
-            name: name ?? patients[patientIndex].name,
-            species: species ?? patients[patientIndex].species,
-            age: age ?? patients[patientIndex].age,
-            active: active ?? patients[patientIndex].active
-        };
+    const updatedPatient = {
+        ...patients[patientIndex],
+        name: name ?? patients[patientIndex].name,
+        species: species ?? patients[patientIndex].species,
+        age: age ?? patients[patientIndex].age,
+        active: active ?? patients[patientIndex].active
+    };
 
-        patients[patientIndex] = updatedPatient;
+    patients[patientIndex] = updatedPatient;
 
-        res.json(updatedPatient);
+    res.json({success: true, data: updatedPatient});
+});
+
+//DELETE un paciente por ID
+router.delete("/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    
+    const patientIndex = patients.findIndex(p => p.id === id);
+
+    if(patientIndex === -1){
+        return res.status(404).json({message: "Paciente no encontrado"})
+    }
+
+    const deletedPatient = patients.splice(patientIndex, 1);
+
+    res.json({
+        success: true,
+        message: "Paciente eliminado correctamente",
+        patient: deletedPatient[0]
     });
-
-    router.delete("/:id", (req, res) => {
-        const patientIndex = patients.findIndex(p => p.id === id);
-
-        if(patientIndex === -1){
-            return res.status(404).json({error: "Patient not found"})
-        }
-
-        const deletedPatient = patients.splice(patientIndex, 1);
-
-        res.json({
-            message: "Patient deleted successfully",
-            patient: deletedPatient[0]
-        });
-    });
-
 });
 
 module.exports = router;

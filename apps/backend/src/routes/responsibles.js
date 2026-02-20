@@ -7,7 +7,7 @@ let idCounter = 1;
 
 //GET todos los responsables
 router.get("/", (req, res) => {
-    res.json(responsibles);
+    res.json({success: true, data: responsibles});
 });
 
 //POST crear responsable
@@ -16,7 +16,7 @@ router.post("/", (req, res) => {
 
     if(!name || !email || !phone){
         return res.status(400).json({
-            error: "Name, email and phone are required"
+            message: "Faltan campos requeridos"
         });
     }
 
@@ -30,7 +30,7 @@ router.post("/", (req, res) => {
 
     responsibles.push(newResponsible);
 
-    res.status(201).json(newResponsible);
+    res.status(201).json({success: true, data: newResponsible});
 })
 
 //GET responsables por ID
@@ -40,10 +40,10 @@ router.get("/:id", (req, res) => {
     const responsible = responsibles.find(r => r.id === id);
 
     if(!responsible){
-        return res.status(404).json({error: "Responsible not found"});
+        return res.status(404).json({message: "Responsable no encontrado"});
     }
 
-    res.json(responsible);
+    res.json({success: true, data: responsible});
 });
 
 //PUT actualizar responsable por ID
@@ -53,7 +53,7 @@ router.put("/:id", (req, res) => {
     const index = responsibles.findIndex(r => r.id === id);
 
     if(index === -1){
-        return res.status(404).json({error: "Responsible not found"});
+        return res.status(404).json({message: "Responsable no encontrado"});
     }
 
     const {name, email, phone, active } = req.body;
@@ -66,7 +66,7 @@ router.put("/:id", (req, res) => {
         active: active ?? responsibles[index].active
     };
 
-    res.json(responsibles[index]);
+    res.json({success: true, data: responsibles[index]});
 });
 
 module.exports = router;
