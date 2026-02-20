@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.use('/auth', authRoutes);
 router.use('/health', healthRoutes);
-router.use('/patients', patientsRoutes);
-router.use('/responsibles', responsibleRoutes);
+router.use('/pacientes', patientsRoutes);
+router.use('/responsables', responsibleRoutes);
 
 module.exports = router;
