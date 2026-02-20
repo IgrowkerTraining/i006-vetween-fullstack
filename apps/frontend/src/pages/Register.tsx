@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
@@ -22,45 +22,83 @@ const Register: React.FC = () => {
     specialties: [] as string[],
     consultancy: "",
     habilitation: "",
+    address: "",
+    phone: "",
     animalTypes: [] as string[],
     consultationCost: "",
   });
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
+  const [specialtiesOpen, setSpecialtiesOpen] = useState(false);
+  const specialtiesRef = useRef<HTMLDivElement>(null);
 
+  const [animalTypesOpen, setAnimalTypesOpen] = useState(false);
+  const animalTypesRef = useRef<HTMLDivElement>(null);
+
+  const [otherAnimalType, setOtherAnimalType] = useState("");
+  const [showOtherAnimalInput, setShowOtherAnimalInput] = useState(false);
+
+  const ANIMAL_TYPES_OPTIONS = [
+    "Perros",
+    "Gatos",
+    "Conejos",
+    "Hámster",
+    "Otro",
+  ];
+
+  const SPECIALTIES_OPTIONS = [
+    "Clínica general",
+    "Medicina preventiva",
+    "Cirugía general",
+    "Odontología",
+    "Nutrición",
+    "Dermatología",
+    "Diagnóstico",
+    "Urgencias leves",
+    "Otra",
+  ];
+
+  const [otherSpecialty, setOtherSpecialty] = useState("");
+  const [showOtherSpecialtyInput, setShowOtherSpecialtyInput] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleCheckboxChange = (value: string) => {
     setFormData((prev) => {
-      if (checked) {
-        return {
-          ...prev,
-          specialties: [...prev.specialties, value],
-        };
-      } else {
-        return {
-          ...prev,
-          specialties: prev.specialties.filter((item) => item !== value),
-        };
-      }
+      const already = prev.specialties.includes(value);
+      return {
+        ...prev,
+        specialties: already
+          ? prev.specialties.filter((item) => item !== value)
+          : [...prev.specialties, value],
+      };
     });
   };
 
-  const handleAnimalTypeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-
+  const handleAnimalTypeChange = (value: string) => {
     setFormData((prev) => {
-      if (checked) {
-        return {
-          ...prev,
-          animalTypes: [...prev.animalTypes, value],
-        };
-      } else {
-        return {
-          ...prev,
-          animalTypes: prev.animalTypes.filter((item) => item !== value),
-        };
-      }
+      const already = prev.animalTypes.includes(value);
+      return {
+        ...prev,
+        animalTypes: already
+          ? prev.animalTypes.filter((item) => item !== value)
+          : [...prev.animalTypes, value],
+      };
     });
   };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (specialtiesRef.current && !specialtiesRef.current.contains(e.target as Node)) {
+        setSpecialtiesOpen(false);
+      }
+      if (animalTypesRef.current && !animalTypesRef.current.contains(e.target as Node)) {
+        setAnimalTypesOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -143,9 +181,35 @@ const Register: React.FC = () => {
               <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4">
                 <img src={onlylogo} alt="vetween logo" />
               </div>
-              <h1 className="text-3xl font-bold text-[#0b1001] mb-1">
+              <h1 className="text-3xl font-bold text-[#0b1001] mb-6">
                 Crear cuenta
               </h1>
+              
+              {/* Stepper */}
+              <div className="flex items-center justify-center w-full mb-2">
+                {/* Step 1 */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${step === 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    1
+                  </div>
+                  <span className={`mt-2 text-sm transition-all duration-300 ${step === 1 ? 'text-[#0b1001] font-semibold' : 'text-slate-400'}`}>
+                    Profesional
+                  </span>
+                </div>
+                
+                {/* Line */}
+                <div className="flex-1 h-[2px] bg-slate-300 mx-4"></div>
+                
+                {/* Step 2 */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${step === 2 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    2
+                  </div>
+                  <span className={`mt-2 text-sm transition-all duration-300 ${step === 2 ? 'text-[#0b1001] font-semibold' : 'text-slate-400'}`}>
+                    Clínica
+                  </span>
+                </div>
+              </div>
             </div>
 
             {serverError && (
@@ -213,24 +277,112 @@ const Register: React.FC = () => {
               <Input
                 label="Contraseña"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
                 error={errors.password}
                 value={formData.password}
                 onChange={handleChange}
+                suffix={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="focus:outline-none pointer-events-auto"
+                  >
+                    {showPassword ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-1.664 1.664a2.25 2.25 0 0 1-3.182 0l-1.664-1.664Z"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                }
               />
               <Input
                 label="Confirmar Contraseña"
                 name="confirmPassword"
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
                 error={errors.confirmPassword}
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                suffix={
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="focus:outline-none pointer-events-auto"
+                  >
+                    {showConfirmPassword ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-1.664 1.664a2.25 2.25 0 0 1-3.182 0l-1.664-1.664Z"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                }
               />
               <div className="md:col-span-2">
                 <Input
@@ -244,41 +396,229 @@ const Register: React.FC = () => {
                 />
               </div>
 
-              <div className="md:col-span-2 mt-4">
+              <div className="md:col-span-2 mt-4" ref={animalTypesRef}>
                 <label className="block text-sm font-semibold text-[#0b1001] mb-1">
-                  Especialidad
+                  Especies atendidas
                 </label>
-                <p className="text-xs text-gray-500 mb-3">
+                <p className="text-xs text-gray-500 mb-2">
                   Seleccioná todas las que correspondan
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {[
-                    "Clínica general",
-                    "Medicina preventiva",
-                    "Cirugía general",
-                    "Odontología",
-                    "Nutrición",
-                    "Dermatología",
-                    "Diagnóstico",
-                    "Urgencias leves",
-                    "Otra",
-                  ].map((specialty) => (
-                    <label
-                      key={specialty}
-                      className="flex items-center gap-2 text-sm text-gray-700"
-                    >
-                      <input
-                        type="checkbox"
-                        value={specialty}
-                        checked={formData.specialties.includes(specialty)}
-                        onChange={handleCheckboxChange}
-                        className="w-4 h-4 accent-indigo-600"
-                      />
-                      {specialty}
-                    </label>
-                  ))}
-                </div>
+                {/* Trigger input */}
+                <button
+                  type="button"
+                  onClick={() => setAnimalTypesOpen((prev) => !prev)}
+                  className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className={formData.animalTypes.length === 0 ? "text-slate-300" : "text-indigo-800 truncate pr-2"}>
+                    {formData.animalTypes.length === 0
+                      ? "Seleccionar tipos de animales…"
+                      : formData.animalTypes.join(", ")}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${animalTypesOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown list */}
+                {animalTypesOpen && (
+                  <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden">
+                    <div className="max-h-52 overflow-y-auto p-2 grid grid-cols-1 gap-1">
+                      {ANIMAL_TYPES_OPTIONS.map((animal) => (
+                        <label
+                          key={animal}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
+                        >
+                          <input
+                            type="checkbox"
+                            value={animal}
+                            checked={formData.animalTypes.includes(animal)}
+                            onChange={() => {
+                              handleAnimalTypeChange(animal);
+                              if (animal === "Otro") {
+                                setShowOtherAnimalInput(!showOtherAnimalInput);
+                              }
+                            }}
+                            className="w-4 h-4 accent-indigo-600 flex-shrink-0"
+                          />
+                          {animal}
+                        </label>
+                      ))}
+                      {showOtherAnimalInput && (
+                        <div className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            placeholder="Especificar otro tipo..."
+                            value={otherAnimalType}
+                            onChange={(e) => {
+                              setOtherAnimalType(e.target.value);
+                              if (e.target.value && !formData.animalTypes.includes("Otro")) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  animalTypes: [...prev.animalTypes, "Otro"],
+                                }));
+                              }
+                            }}
+                            onBlur={() => {
+                              if (otherAnimalType.trim() && !formData.animalTypes.includes(otherAnimalType.trim())) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  animalTypes: [...prev.animalTypes.filter(a => a !== "Otro"), otherAnimalType.trim()],
+                                }));
+                              }
+                            }}
+                            className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                            autoFocus
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {formData.animalTypes.length > 0 && (
+                      <div className="border-t border-slate-100 px-3 py-2 flex justify-between items-center">
+                        <span className="text-xs text-slate-500">
+                          {formData.animalTypes.length} seleccionado{formData.animalTypes.length !== 1 ? "s" : ""}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({ ...prev, animalTypes: [] }));
+                            setOtherAnimalType("");
+                            setShowOtherAnimalInput(false);
+                          }}
+                          className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                        >
+                          Limpiar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 mt-4" ref={specialtiesRef}>
+                <label className="block text-sm font-semibold text-[#0b1001] mb-1">
+                  Especialidad
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Seleccioná todas las que correspondan
+                </p>
+
+                {/* Trigger input */}
+                <button
+                  type="button"
+                  onClick={() => setSpecialtiesOpen((prev) => !prev)}
+                  className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className={formData.specialties.length === 0 ? "text-slate-300" : "text-indigo-800 truncate pr-2"}>
+                    {formData.specialties.length === 0
+                      ? "Seleccionar especialidades…"
+                      : formData.specialties.join(", ")}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${specialtiesOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {specialtiesOpen && (
+                  <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden">
+                    <div className="max-h-52 overflow-y-auto p-2 grid grid-cols-1 gap-1">
+                      {SPECIALTIES_OPTIONS.map((specialty) => (
+                        <label
+                          key={specialty}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
+                        >
+                          <input
+                            type="checkbox"
+                            value={specialty}
+                            checked={formData.specialties.includes(specialty)}
+                            onChange={() => {
+                              handleCheckboxChange(specialty);
+                              if (specialty === "Otra") {
+                                setShowOtherSpecialtyInput(!showOtherSpecialtyInput);
+                              }
+                            }}
+                            className="w-4 h-4 accent-indigo-600 flex-shrink-0"
+                          />
+                          {specialty}
+                        </label>
+                      ))}
+                      {showOtherSpecialtyInput && (
+                        <div className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            placeholder="Especificar otra especialidad..."
+                            value={otherSpecialty}
+                            onChange={(e) => {
+                              setOtherSpecialty(e.target.value);
+                              if (e.target.value && !formData.specialties.includes("Otra")) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  specialties: [...prev.specialties, "Otra"],
+                                }));
+                              }
+                            }}
+                            onBlur={() => {
+                              if (otherSpecialty.trim() && !formData.specialties.includes(otherSpecialty.trim())) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  specialties: [...prev.specialties.filter(s => s !== "Otra"), otherSpecialty.trim()],
+                                }));
+                              }
+                            }}
+                            className="w-full px-2 py-1.5 text-sm text-gray-700 border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                            autoFocus
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {formData.specialties.length > 0 && (
+                      <div className="border-t border-slate-100 px-3 py-2 flex justify-between items-center">
+                        <span className="text-xs text-slate-500">
+                          {formData.specialties.length} seleccionada{formData.specialties.length !== 1 ? "s" : ""}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({ ...prev, specialties: [] }));
+                            setOtherSpecialty("");
+                            setShowOtherSpecialtyInput(false);
+                          }}
+                          className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                        >
+                          Limpiar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 mt-4">
+                <Input
+                  label="Costo de consulta"
+                  name="consultationCost"
+                  type="number"
+                  placeholder="5000"
+                  prefix="$"
+                  disabled={isLoading}
+                  value={formData.consultationCost}
+                  onChange={handleChange}
+                  min="0"
+                />
               </div>
               
               <div className="md:col-span-2 mt-4">
@@ -296,13 +636,13 @@ const Register: React.FC = () => {
               className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
               <h2 className="font-bold text-[#0b1001] mb-1">
-                Datos Consultorio
+                Datos de la clínica
               </h2>
               <div className="md:col-span-2">
                 <Input
-                  label="Nombre Consultorio"
+                  label="Nombre"
                   name="consultancy"
-                  placeholder="Consultorio"
+                  placeholder="Nombre de la clínica"
                   required
                   disabled={isLoading}
                   value={formData.consultancy}
@@ -320,50 +660,27 @@ const Register: React.FC = () => {
                   onChange={handleChange}
                 />
               </div>
-
-              <div className="md:col-span-2 mt-4">
-                <label className="block text-sm font-semibold text-[#0b1001] mb-1">
-                  Tipos de animales atendidos
-                </label>
-                <p className="text-xs text-gray-500 mb-3">
-                  Seleccioná todas las que correspondan
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {[
-                    "Perros",
-                    "Gatos",
-                    "Conejos",
-                    "Hámster",
-                    "Otro",
-                  ].map((animal) => (
-                    <label
-                      key={animal}
-                      className="flex items-center gap-2 text-sm text-gray-700"
-                    >
-                      <input
-                        type="checkbox"
-                        value={animal}
-                        checked={formData.animalTypes.includes(animal)}
-                        onChange={handleAnimalTypeChange}
-                        className="w-4 h-4 accent-indigo-600"
-                      />
-                      {animal}
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="md:col-span-2 mt-4">
+              <div className="md:col-span-2">
                 <Input
-                  label="Costo de consulta"
-                  name="consultationCost"
-                  type="number"
-                  placeholder="Ej: 5000"
+                  label="Dirección"
+                  name="address"
+                  placeholder="Dirección de la clínica"
+                  required
                   disabled={isLoading}
-                  value={formData.consultationCost}
+                  value={formData.address}
                   onChange={handleChange}
-                  min="0"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Número de teléfono"
+                  name="phone"
+                  type="tel"
+                  placeholder="(011)999-9999"
+                  required
+                  disabled={isLoading}
+                  value={formData.phone}
+                  onChange={handleChange}
                 />
               </div>
 
