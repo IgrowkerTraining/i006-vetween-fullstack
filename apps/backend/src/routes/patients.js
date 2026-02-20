@@ -21,6 +21,14 @@ router.post("/", (req, res) => {
         });
     }
 
+    const activePatients = patients.filter(p => p.active === true);
+
+    if(activePatients.length >= 3){
+        return res.status(400).json({
+            message: "No se pueden registrar más de 50 pacientes activos"
+        });
+    }
+
     const newPatient = {
         id: idCounter++,
         name,
@@ -58,12 +66,24 @@ router.put("/:id", (req, res) => {
         return res.status(404).json({message: "Paciente no encontrado"});
     }
 
+    const currentPatient = patients[patientIndex];
+
+    if(active === true && currentPatient.active === false){
+        const activePatients = patients.filter(p => p.active === true);
+
+        if(activePatients.length >= 3){
+            return res.status(400).json({
+                message: "No se pueden activar más de 50 pacientes"
+            });
+        }
+    }
+
     const updatedPatient = {
-        ...patients[patientIndex],
-        name: name ?? patients[patientIndex].name,
-        species: species ?? patients[patientIndex].species,
-        age: age ?? patients[patientIndex].age,
-        active: active ?? patients[patientIndex].active
+        ...currentPatient,
+        name: name ?? currentPatient.name,
+        species: species ?? currentPatient.species,
+        age: age ?? currentPatient.age,
+        active: active ?? currentPatient.active
     };
 
     patients[patientIndex] = updatedPatient;
