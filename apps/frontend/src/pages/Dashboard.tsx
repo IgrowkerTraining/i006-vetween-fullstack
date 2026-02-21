@@ -1,206 +1,193 @@
-import React, { useState, useEffect } from "react";
-import { User } from "../types";
-import { Button } from "../components/common/Button";
-import { getAIGreeting } from "../services/service";
-import { api } from "../services/api";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
-  const [greeting, setGreeting] = useState<string>("Loading greeting...");
-  const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
-  const [stats] = useState([
-    { label: "Cloud Storage", value: "1.2 TB", icon: "☁️" },
-    { label: "Active Sessions", value: "4", icon: "💻" },
-    { label: "Security Score", value: "98%", icon: "🛡️" },
-    { label: "Network Speed", value: "850 Mbps", icon: "⚡" },
-  ]);
+export interface Patient {
+  id: string
+  nombre: string
+  especie: string
+  responsable: string
+  ultimaVisita: string
+  estado: string
+}
 
-  useEffect(() => {
-    const initDashboard = async () => {
-      const [msg, online] = await Promise.all([
-        getAIGreeting(user?.name || ""),
-        api.checkHealth(),
-      ]);
-      setGreeting(msg);
-      setIsBackendOnline(online);
-    };
-    initDashboard();
-  }, [user?.name]);
+const samplePatients: Patient[] = [
+  { id: "1", nombre: "Luna", especie: "Canino", responsable: "Maria Lopez", ultimaVisita: "15/02/2026", estado: "Activo" },
+  { id: "2", nombre: "Milo", especie: "Felino", responsable: "Juan Perez", ultimaVisita: "10/02/2026", estado: "Activo" },
+  { id: "3", nombre: "Rocky", especie: "Canino", responsable: "Ana Garcia", ultimaVisita: "08/02/2026", estado: "Inactivo" },
+]
+
+function VetweenLogo({ className = "size-16" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-label="Vetween VMS logo">
+      <circle cx="38" cy="55" r="28" fill="#5BC0BE" opacity="0.7" />
+      <rect x="44" y="18" width="18" height="60" rx="9" fill="#3A86C9" />
+      <rect x="30" y="34" width="46" height="18" rx="9" fill="#3A86C9" />
+      <rect x="44" y="34" width="18" height="18" rx="4" fill="#68D8D6" opacity="0.6" />
+    </svg>
+  )
+}
+
+function PawIcon({ className = "size-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
+      <ellipse cx="32" cy="42" rx="14" ry="12" fill="currentColor" />
+      <ellipse cx="16" cy="24" rx="6" ry="8" transform="rotate(-15 16 24)" fill="currentColor" />
+      <ellipse cx="48" cy="24" rx="6" ry="8" transform="rotate(15 48 24)" fill="currentColor" />
+      <ellipse cx="23" cy="18" rx="5.5" ry="7.5" transform="rotate(-5 23 18)" fill="currentColor" />
+      <ellipse cx="41" cy="18" rx="5.5" ry="7.5" transform="rotate(5 41 18)" fill="currentColor" />
+    </svg>
+  )
+}
+
+const navItems = [
+  { label: "Pacientes", id: "pacientes" },
+  { label: "Historial clinico", id: "historial" },
+  { label: "Resumen clinico", id: "resumen" },
+  { label: "Administracion", id: "administracion" },
+]
+
+export default function Dashboard() {
+  const navigate = useNavigate()
+  const { logout } = useAuth()
+  const [activeNav, setActiveNav] = useState("pacientes")
+  const [patients, setPatients] = useState<Patient[]>([])
+
+  const handleAddPatient = () => {
+    if (patients.length === 0) {
+      setPatients(samplePatients)
+    }
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate("/login", { replace: true })
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <nav className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2.5}
-              stroke="currentColor"
-              className="w-5 h-5 text-white"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
-              />
-            </svg>
-          </div>
-          <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-            NEXUS
-          </span>
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <aside className="flex h-screen w-56 flex-col border-r border-border bg-card">
+        <div className="flex items-center justify-center py-6">
+          <VetweenLogo className="size-20" />
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex flex-col items-end">
-            <span className="text-sm font-medium text-white">{user.name}</span>
-            <div className="flex items-center gap-1.5">
-              <div
-                className={`w-1.5 h-1.5 rounded-full ${isBackendOnline ? "bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.8)]" : "bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)]"} animate-pulse`}
-              ></div>
-              <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                {isBackendOnline ? "Backend Online" : "Backend Offline"}
-              </span>
-            </div>
-          </div>
-          <img
-            src={user.avatar}
-            alt={user.name}
-            className="w-10 h-10 rounded-full border-2 border-slate-800 shadow-lg"
-          />
-          <Button variant="outline" className="hidden sm:flex" onClick={logout}>
-            Log Out
-          </Button>
-        </div>
-      </nav>
+        <nav className="flex flex-1 flex-col px-3" aria-label="Navegacion principal">
+          <ul className="flex flex-col gap-1">
+            {navItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => setActiveNav(item.id)}
+                  className={`flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                    activeNav === item.id
+                      ? "bg-vetween-indigo text-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-muted"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full p-6 lg:p-10">
-        <header className="mb-10">
-          <h2 className="text-3xl font-bold text-white mb-2">{greeting}</h2>
-          <p className="text-slate-400">
-            Everything looks optimal in your workspace today.
-          </p>
+        <div className="border-t border-border px-3 py-3">
+          <button className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted">
+            Mi cuenta
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted"
+          >
+            Cerrar sesion
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="flex flex-1 flex-col overflow-y-auto">
+        <header className="flex items-center justify-between border-b border-border bg-card px-8 py-5">
+          <div>
+            <p className="text-sm text-muted-foreground">Hola, usuario</p>
+            <h1 className="text-2xl font-bold text-foreground">Pacientes</h1>
+          </div>
+          <button
+            onClick={handleAddPatient}
+            className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
+          >
+            <PawIcon className="size-5" />
+            {"Anadir paciente"}
+          </button>
         </header>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {stats.map((stat, i) => (
-            <div
-              key={i}
-              className="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl hover:border-indigo-500/50 transition-all duration-300 group"
-            >
-              <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                {stat.icon}
-              </div>
-              <p className="text-slate-500 text-sm font-medium uppercase tracking-wider">
-                {stat.label}
-              </p>
-              <h3 className="text-2xl font-bold text-white mt-1">
-                {stat.value}
-              </h3>
-            </div>
-          ))}
-        </div>
+        <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Buscar paciente..."
+              className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
+            />
+          </div>
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="bg-vetween-indigo text-accent-foreground">
+                  <th className="px-6 py-3 font-semibold">Nombre</th>
+                  <th className="px-6 py-3 font-semibold">Especie</th>
+                  <th className="px-6 py-3 font-semibold">Responsable</th>
+                  <th className="px-6 py-3 font-semibold">Visita</th>
+                  <th className="px-6 py-3 font-semibold">Estado</th>
+                  <th className="px-6 py-3 font-semibold">Editar</th>
+                  <th className="px-6 py-3 font-semibold">Eliminar</th>
+                </tr>
+              </thead>
+              {patients.length > 0 && (
+                <tbody>
+                  {patients.map((patient) => (
+                    <tr key={patient.id} className="text-black border-t border-border transition-colors hover:bg-muted/60">
+                      <td className="px-6 py-3 font-medium">{patient.nombre}</td>
+                      <td className="px-6 py-3">{patient.especie}</td>
+                      <td className="px-6 py-3">{patient.responsable}</td>
+                      <td className="px-6 py-3">{patient.ultimaVisita}</td>
+                      <td className="px-6 py-3">
+                        <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          patient.estado === "Activo"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-red-100 text-red-700"
+                        }`}>
+                          {patient.estado}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3">
+                        <button className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo">
+                          Editar
+                        </button>
+                      </td>
+                      <td className="px-6 py-3">
+                        <button className="text-sm font-medium text-red-500 transition-colors hover:text-red-700">
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              )}
+            </table>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <section className="lg:col-span-2 space-y-6">
-            <h3 className="text-xl font-semibold text-white">System Logs</h3>
-            <div className="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden">
-              {[
-                {
-                  action: "New login detected",
-                  location: "San Francisco, US",
-                  time: "2 mins ago",
-                  status: "secure",
-                },
-                {
-                  action: "Database sync",
-                  location: "Global-Edge-01",
-                  time: "1 hour ago",
-                  status: "success",
-                },
-                {
-                  action: "Security patch applied",
-                  location: "Auto-update",
-                  time: "3 hours ago",
-                  status: "success",
-                },
-                {
-                  action: "Password rotation reminder",
-                  location: "User node",
-                  time: "5 hours ago",
-                  status: "pending",
-                },
-              ].map((log, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-4 border-b border-slate-800 last:border-0 hover:bg-slate-800/20 transition-colors"
-                >
-                  <div className="flex gap-4 items-center">
-                    <div
-                      className={`w-2 h-2 rounded-full ${log.status === "secure" || log.status === "success" ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"}`}
-                    ></div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-200">
-                        {log.action}
-                      </p>
-                      <p className="text-xs text-slate-500">{log.location}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-slate-600 font-medium">
-                    {log.time}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            <h3 className="text-xl font-semibold text-white">
-              Identity Insight
-            </h3>
-            <div className="bg-indigo-600/10 border border-indigo-500/20 p-6 rounded-2xl">
-              <div className="flex items-center gap-4 mb-6">
-                <img
-                  src={user.avatar}
-                  className="w-16 h-16 rounded-2xl"
-                  alt=""
-                />
-                <div>
-                  <h4 className="font-bold text-white text-lg">{user.name}</h4>
-                  <p className="text-indigo-400 text-sm">@{user.username}</p>
-                </div>
+            {patients.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16">
+                <PawIcon className="size-16 text-muted-foreground/40" />
+                <h3 className="mt-4 text-lg font-semibold text-foreground">
+                  No hay pacientes registrados aun
+                </h3>
+                <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
+                  {"Agrega uno nuevo haciendo click en el boton superior."}
+                </p>
               </div>
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Account ID</span>
-                  <span className="text-slate-200 font-mono">{user.id}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Encryption Level</span>
-                  <span className="text-emerald-400 font-bold">SHA-512</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Member Since</span>
-                  <span className="text-slate-200">Feb 2024</span>
-                </div>
-              </div>
-              <Button variant="primary" className="w-full mt-6">
-                Edit Profile
-              </Button>
-            </div>
-          </section>
-        </div>
+            )}
+          </div>
+        </section>
       </main>
-
-      <div className="sm:hidden sticky bottom-0 p-4 bg-slate-950 border-t border-slate-800">
-        <Button variant="outline" className="w-full" onClick={logout}>
-          Log Out of Nexus
-        </Button>
-      </div>
     </div>
-  );
-};
-
-export default Dashboard;
+  )
+}
