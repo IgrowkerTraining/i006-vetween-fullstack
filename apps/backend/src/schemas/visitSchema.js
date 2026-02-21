@@ -13,14 +13,24 @@ const visitSchema = Joi.object({
         'any.required': 'Debes indicar el motivo de la consulta'
     }),
 
-    diagnostico: Joi.string().trim().allow(null, '').optional(),
+    diagnostico: Joi.string().trim().max(2000).allow(null, '').optional().messages({
+        'string.max': 'El diagnóstico no puede tener más de 2000 caracteres'
+    }),
     
-    tratamiento: Joi.string().trim().allow(null, '').optional(),
+    tratamiento: Joi.string().trim().max(2000).allow(null, '').optional().messages({
+        'string.max': 'El tratamiento no puede tener más de 2000 caracteres'
+    }),
     
-    observaciones: Joi.string().trim().allow(null, '').optional(),
+    observaciones: Joi.string().trim().max(2000).allow(null, '').optional().messages({
+        'string.max': 'Las observaciones no pueden tener más de 2000 caracteres'
+    }),
 
-    estado: Joi.boolean().default(true).optional().messages({
+    estado: Joi.boolean().default(false).optional().messages({
         'boolean.base': 'El estado debe ser un valor booleano'
+    }),
+
+    historial_previo: Joi.boolean().default(false).optional().messages({
+        'boolean.base': 'El campo de historial previo debe ser un valor booleano',
     }),
 
     id_paciente: Joi.number().integer().positive().required().messages({

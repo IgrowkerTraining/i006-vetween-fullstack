@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const ResponseHelper = require('../utils/responseHelper');
 
 const protect = (req, res, next) => {
     let token;
@@ -22,12 +23,12 @@ const protect = (req, res, next) => {
             next(); // Continuar al controlador
         } catch (error) {
             console.error(error);
-            res.status(401).json({ success: false, message: 'No autorizado, token inválido' });
+            ResponseHelper.unauthorized(res, 'No autorizado, token inválido'); 
         }
     }
 
     if (!token) {
-        res.status(401).json({ success: false, message: 'No autorizado, no hay token' });
+        ResponseHelper.unauthorized(res, 'No autorizado, no hay token');
     }
 };
 
