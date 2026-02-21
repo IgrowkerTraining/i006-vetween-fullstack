@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
@@ -6,16 +6,101 @@ import { User } from "../types";
 import { getSecurityTip } from "../services/service";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
+import logo from "../assets/logo.svg";
+import onlylogo from "../assets/onlylogo.svg"
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
+    registration: "",
+    specialties: [] as string[],
+    consultancy: "",
+    habilitation: "",
+    address: "",
+    phone: "",
+    animalTypes: [] as string[],
+    consultationCost: "",
   });
+
+  const [specialtiesOpen, setSpecialtiesOpen] = useState(false);
+  const specialtiesRef = useRef<HTMLDivElement>(null);
+
+  const [animalTypesOpen, setAnimalTypesOpen] = useState(false);
+  const animalTypesRef = useRef<HTMLDivElement>(null);
+
+  const [otherAnimalType, setOtherAnimalType] = useState("");
+  const [showOtherAnimalInput, setShowOtherAnimalInput] = useState(false);
+
+  const ANIMAL_TYPES_OPTIONS = [
+    "Perros",
+    "Gatos",
+    "Conejos",
+    "Hámster",
+    "Otro",
+  ];
+
+  const SPECIALTIES_OPTIONS = [
+    "Clínica general",
+    "Medicina preventiva",
+    "Cirugía general",
+    "Odontología",
+    "Nutrición",
+    "Dermatología",
+    "Diagnóstico",
+    "Urgencias leves",
+    "Otra",
+  ];
+
+  const [otherSpecialty, setOtherSpecialty] = useState("");
+  const [showOtherSpecialtyInput, setShowOtherSpecialtyInput] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const handleCheckboxChange = (value: string) => {
+    setFormData((prev) => {
+      const already = prev.specialties.includes(value);
+      return {
+        ...prev,
+        specialties: already
+          ? prev.specialties.filter((item) => item !== value)
+          : [...prev.specialties, value],
+      };
+    });
+  };
+
+  const handleAnimalTypeChange = (value: string) => {
+    setFormData((prev) => {
+      const already = prev.animalTypes.includes(value);
+      return {
+        ...prev,
+        animalTypes: already
+          ? prev.animalTypes.filter((item) => item !== value)
+          : [...prev.animalTypes, value],
+      };
+    });
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (specialtiesRef.current && !specialtiesRef.current.contains(e.target as Node)) {
+        setSpecialtiesOpen(false);
+      }
+      if (animalTypesRef.current && !animalTypesRef.current.contains(e.target as Node)) {
+        setAnimalTypesOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [securityTip, setSecurityTip] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -64,8 +149,13 @@ const Register: React.FC = () => {
     try {
       const response = await api.register({
         name: formData.name,
+        lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
+        registration: formData.registration,
+        specialties: formData.specialties,
+        consultancy: formData.consultancy,
+        habilitation: formData.habilitation,
       });
       login(response.user);
       navigate("/dashboard");
@@ -77,129 +167,552 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950">
-      <div className="w-full max-w-lg">
-        <div className="bg-slate-900/40 backdrop-blur-xl border border-slate-800 p-8 rounded-2xl shadow-2xl">
-          <div className="flex flex-col items-center mb-6">
-            <h1 className="text-3xl font-bold text-white mb-1">
-              Create Account
-            </h1>
-            <p className="text-slate-400">Join the Example digital ecosystem</p>
-          </div>
+    <div className="min-h-screen flex bg-white">
+      <aside className="hidden md:flex w-72 bg-[#f1f9ff] items-center justify-center shadow-2xl">
+        <div className="w-48">
+          <img src={logo} alt="Vetween Logo" className="w-full" />
+        </div>
+      </aside>
 
-          {serverError && (
-            <div className="mb-6 bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-5 h-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+      <main className="flex-1 flex items-center justify-center p-6 md:p-10">
+        <div className="w-full max-w-md">
+          <div className="bg-[#f1f9ff] backdrop-blur-xl border border-slate-800 p-8 rounded-2xl shadow-2xl">
+            <div className="flex flex-col items-center mb-8">
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4">
+                <img src={onlylogo} alt="vetween logo" />
+              </div>
+              <h1 className="text-3xl font-bold text-[#0b1001] mb-6">
+                Crear cuenta
+              </h1>
+              
+              {/* Stepper */}
+              <div className="flex items-center justify-center w-full mb-2">
+                {/* Step 1 */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${step === 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    1
+                  </div>
+                  <span className={`mt-2 text-sm transition-all duration-300 ${step === 1 ? 'text-[#0b1001] font-semibold' : 'text-slate-400'}`}>
+                    Profesional
+                  </span>
+                </div>
+                
+                {/* Line */}
+                <div className="flex-1 h-[2px] bg-slate-300 mx-4"></div>
+                
+                {/* Step 2 */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${step === 2 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    2
+                  </div>
+                  <span className={`mt-2 text-sm transition-all duration-300 ${step === 2 ? 'text-[#0b1001] font-semibold' : 'text-slate-400'}`}>
+                    Clínica
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {serverError && (
+              <div className="mb-6 bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                  />
+                </svg>
+                {serverError}
+              </div>
+            )}
+
+            {step === 1 && (
+            <form
+              onSubmit={(e) => { e.preventDefault(); setStep(2); }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <h2 className="font-bold text-[#0b1001] mb-1">
+                Datos Básicos
+              </h2>
+              <div className="md:col-span-2">
+                <Input
+                  label="Nombre"
+                  name="name"
+                  placeholder="Nombre"
+                  required
+                  disabled={isLoading}
+                  value={formData.name}
+                  onChange={handleChange}
                 />
-              </svg>
-              {serverError}
-            </div>
-          )}
-
-          <form
-            onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <div className="md:col-span-2">
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Apellido"
+                  name="lastName"
+                  placeholder="Apellido"
+                  required
+                  disabled={isLoading}
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Email"
+                  name="email"
+                  type="email"
+                  placeholder="nombre@email.com"
+                  required
+                  disabled={isLoading}
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
               <Input
-                label="Full Name"
-                name="name"
-                placeholder="John Doe"
+                label="Contraseña"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
                 required
                 disabled={isLoading}
-                value={formData.name}
+                error={errors.password}
+                value={formData.password}
                 onChange={handleChange}
+                suffix={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="focus:outline-none pointer-events-auto"
+                  >
+                    {showPassword ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-1.664 1.664a2.25 2.25 0 0 1-3.182 0l-1.664-1.664Z"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                }
               />
-            </div>
-            <div className="md:col-span-2">
               <Input
-                label="Email Address"
-                name="email"
-                type="email"
-                placeholder="name@company.com"
+                label="Confirmar Contraseña"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="••••••••"
                 required
                 disabled={isLoading}
-                value={formData.email}
+                error={errors.confirmPassword}
+                value={formData.confirmPassword}
                 onChange={handleChange}
+                suffix={
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="focus:outline-none pointer-events-auto"
+                  >
+                    {showConfirmPassword ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-1.664 1.664a2.25 2.25 0 0 1-3.182 0l-1.664-1.664Z"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                }
               />
-            </div>
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              required
-              disabled={isLoading}
-              error={errors.password}
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <Input
-              label="Confirm Password"
-              name="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              required
-              disabled={isLoading}
-              error={errors.confirmPassword}
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
+              <div className="md:col-span-2">
+                <Input
+                  label="Número de Matrícula"
+                  name="registration"
+                  placeholder="Matrícula"
+                  required
+                  disabled={isLoading}
+                  value={formData.registration}
+                  onChange={handleChange}
+                />
+              </div>
 
-            <div className="md:col-span-2 mt-4">
-              <Button type="submit" className="w-full" isLoading={isLoading}>
-                Complete Registration
-              </Button>
-            </div>
-          </form>
+              <div className="md:col-span-2 mt-4" ref={animalTypesRef}>
+                <label className="block text-sm font-semibold text-[#0b1001] mb-1">
+                  Especies atendidas
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Seleccioná todas las que correspondan
+                </p>
 
-          {securityTip && (
-            <div className="mt-6 p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-xl">
-              <div className="flex items-start gap-3">
-                <div className="p-1.5 bg-indigo-500/20 rounded-lg text-indigo-400 mt-0.5">
+                {/* Trigger input */}
+                <button
+                  type="button"
+                  onClick={() => setAnimalTypesOpen((prev) => !prev)}
+                  className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className={formData.animalTypes.length === 0 ? "text-slate-300" : "text-indigo-800 truncate pr-2"}>
+                    {formData.animalTypes.length === 0
+                      ? "Seleccionar tipos de animales…"
+                      : formData.animalTypes.join(", ")}
+                  </span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
+                    className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${animalTypesOpen ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={2}
                     stroke="currentColor"
-                    className="w-4 h-4"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.456-2.454L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
                   </svg>
-                </div>
-              </div>
-            </div>
-          )}
+                </button>
 
-          <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-            <p className="text-slate-400 text-sm">
-              Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
-              >
-                Sign In
-              </Link>
-            </p>
+                {/* Dropdown list */}
+                {animalTypesOpen && (
+                  <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden">
+                    <div className="max-h-52 overflow-y-auto p-2 grid grid-cols-1 gap-1">
+                      {ANIMAL_TYPES_OPTIONS.map((animal) => (
+                        <label
+                          key={animal}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
+                        >
+                          <input
+                            type="checkbox"
+                            value={animal}
+                            checked={formData.animalTypes.includes(animal)}
+                            onChange={() => {
+                              handleAnimalTypeChange(animal);
+                              if (animal === "Otro") {
+                                setShowOtherAnimalInput(!showOtherAnimalInput);
+                              }
+                            }}
+                            className="w-4 h-4 accent-indigo-600 flex-shrink-0"
+                          />
+                          {animal}
+                        </label>
+                      ))}
+                      {showOtherAnimalInput && (
+                        <div className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            placeholder="Especificar otro tipo..."
+                            value={otherAnimalType}
+                            onChange={(e) => {
+                              setOtherAnimalType(e.target.value);
+                              if (e.target.value && !formData.animalTypes.includes("Otro")) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  animalTypes: [...prev.animalTypes, "Otro"],
+                                }));
+                              }
+                            }}
+                            onBlur={() => {
+                              if (otherAnimalType.trim() && !formData.animalTypes.includes(otherAnimalType.trim())) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  animalTypes: [...prev.animalTypes.filter(a => a !== "Otro"), otherAnimalType.trim()],
+                                }));
+                              }
+                            }}
+                            className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                            autoFocus
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {formData.animalTypes.length > 0 && (
+                      <div className="border-t border-slate-100 px-3 py-2 flex justify-between items-center">
+                        <span className="text-xs text-slate-500">
+                          {formData.animalTypes.length} seleccionado{formData.animalTypes.length !== 1 ? "s" : ""}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({ ...prev, animalTypes: [] }));
+                            setOtherAnimalType("");
+                            setShowOtherAnimalInput(false);
+                          }}
+                          className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                        >
+                          Limpiar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 mt-4" ref={specialtiesRef}>
+                <label className="block text-sm font-semibold text-[#0b1001] mb-1">
+                  Especialidad
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Seleccioná todas las que correspondan
+                </p>
+
+                {/* Trigger input */}
+                <button
+                  type="button"
+                  onClick={() => setSpecialtiesOpen((prev) => !prev)}
+                  className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className={formData.specialties.length === 0 ? "text-slate-300" : "text-indigo-800 truncate pr-2"}>
+                    {formData.specialties.length === 0
+                      ? "Seleccionar especialidades…"
+                      : formData.specialties.join(", ")}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${specialtiesOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {specialtiesOpen && (
+                  <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden">
+                    <div className="max-h-52 overflow-y-auto p-2 grid grid-cols-1 gap-1">
+                      {SPECIALTIES_OPTIONS.map((specialty) => (
+                        <label
+                          key={specialty}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
+                        >
+                          <input
+                            type="checkbox"
+                            value={specialty}
+                            checked={formData.specialties.includes(specialty)}
+                            onChange={() => {
+                              handleCheckboxChange(specialty);
+                              if (specialty === "Otra") {
+                                setShowOtherSpecialtyInput(!showOtherSpecialtyInput);
+                              }
+                            }}
+                            className="w-4 h-4 accent-indigo-600 flex-shrink-0"
+                          />
+                          {specialty}
+                        </label>
+                      ))}
+                      {showOtherSpecialtyInput && (
+                        <div className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            placeholder="Especificar otra especialidad..."
+                            value={otherSpecialty}
+                            onChange={(e) => {
+                              setOtherSpecialty(e.target.value);
+                              if (e.target.value && !formData.specialties.includes("Otra")) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  specialties: [...prev.specialties, "Otra"],
+                                }));
+                              }
+                            }}
+                            onBlur={() => {
+                              if (otherSpecialty.trim() && !formData.specialties.includes(otherSpecialty.trim())) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  specialties: [...prev.specialties.filter(s => s !== "Otra"), otherSpecialty.trim()],
+                                }));
+                              }
+                            }}
+                            className="w-full px-2 py-1.5 text-sm text-gray-700 border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                            autoFocus
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {formData.specialties.length > 0 && (
+                      <div className="border-t border-slate-100 px-3 py-2 flex justify-between items-center">
+                        <span className="text-xs text-slate-500">
+                          {formData.specialties.length} seleccionada{formData.specialties.length !== 1 ? "s" : ""}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({ ...prev, specialties: [] }));
+                            setOtherSpecialty("");
+                            setShowOtherSpecialtyInput(false);
+                          }}
+                          className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                        >
+                          Limpiar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2 mt-4">
+                <Input
+                  label="Costo de consulta"
+                  name="consultationCost"
+                  type="number"
+                  placeholder="5000"
+                  prefix="$"
+                  disabled={isLoading}
+                  value={formData.consultationCost}
+                  onChange={handleChange}
+                  min="0"
+                />
+              </div>
+              
+              <div className="md:col-span-2 mt-4">
+                <button type="submit" className="w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-indigo-500/20 mb-5 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
+                  Siguiente
+                </button>
+              </div>
+
+            </form>
+            )}
+
+            {step === 2 && (
+            <form
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <h2 className="font-bold text-[#0b1001] mb-1">
+                Datos de la clínica
+              </h2>
+              <div className="md:col-span-2">
+                <Input
+                  label="Nombre"
+                  name="consultancy"
+                  placeholder="Nombre de la clínica"
+                  required
+                  disabled={isLoading}
+                  value={formData.consultancy}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Número Habilitación"
+                  name="habilitation"
+                  placeholder="Número Habilitación"
+                  required
+                  disabled={isLoading}
+                  value={formData.habilitation}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Dirección"
+                  name="address"
+                  placeholder="Dirección de la clínica"
+                  required
+                  disabled={isLoading}
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Número de teléfono"
+                  name="phone"
+                  type="tel"
+                  placeholder="(011)999-9999"
+                  required
+                  disabled={isLoading}
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="md:col-span-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-indigo-500/20 mb-5 bg-slate-700 hover:bg-slate-600 text-white">
+                  Atrás
+                </button>
+                <Button type="submit" className="w-full" isLoading={isLoading}>
+                  Crear Cuenta
+                </Button>
+              </div>
+
+            </form>
+            )}
+
+            <div className="mt-8 pt-6 border-t border-slate-800 text-center">
+              <p className="text-slate-400 text-sm">
+                ¿Ya tenés cuenta?{" "}
+                <Link
+                  to="/login"
+                  className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
+                >
+                  Iniciá sesión
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
