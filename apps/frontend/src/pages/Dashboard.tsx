@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import onlylogo from "../assets/onlylogo.svg";
+import pawIcon from "../assets/pawIcon.svg";
+import pawIconPlus from "../assets/pawIconPlus.svg";
 
 export interface Patient {
   id: string
@@ -17,16 +20,6 @@ const samplePatients: Patient[] = [
   { id: "3", nombre: "Rocky", especie: "Canino", responsable: "Ana Garcia", ultimaVisita: "08/02/2026", estado: "Inactivo" },
 ]
 
-function VetweenLogo({ className = "size-16" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-label="Vetween VMS logo">
-      <circle cx="38" cy="55" r="28" fill="#5BC0BE" opacity="0.7" />
-      <rect x="44" y="18" width="18" height="60" rx="9" fill="#3A86C9" />
-      <rect x="30" y="34" width="46" height="18" rx="9" fill="#3A86C9" />
-      <rect x="44" y="34" width="18" height="18" rx="4" fill="#68D8D6" opacity="0.6" />
-    </svg>
-  )
-}
 
 function PawIcon({ className = "size-6" }: { className?: string }) {
   return (
@@ -42,9 +35,9 @@ function PawIcon({ className = "size-6" }: { className?: string }) {
 
 const navItems = [
   { label: "Pacientes", id: "pacientes" },
-  { label: "Historial clinico", id: "historial" },
-  { label: "Resumen clinico", id: "resumen" },
-  { label: "Administracion", id: "administracion" },
+  { label: "Historial clínico", id: "historial" },
+  { label: "Resumen clínico", id: "resumen" },
+  { label: "Administración", id: "administracion" },
 ]
 
 export default function Dashboard() {
@@ -69,7 +62,7 @@ export default function Dashboard() {
       {/* Sidebar */}
       <aside className="flex h-screen w-56 flex-col border-r border-border bg-card">
         <div className="flex items-center justify-center py-6">
-          <VetweenLogo className="size-20" />
+          <img src={onlylogo} alt="vetween Logo" className="w-full" />
         </div>
 
         <nav className="flex flex-1 flex-col px-3" aria-label="Navegacion principal">
@@ -80,7 +73,7 @@ export default function Dashboard() {
                   onClick={() => setActiveNav(item.id)}
                   className={`flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     activeNav === item.id
-                      ? "bg-vetween-indigo text-accent-foreground"
+                      ? "bg-indigo-600 text-accent-foreground"
                       : "text-sidebar-foreground hover:bg-muted"
                   }`}
                 >
@@ -99,7 +92,7 @@ export default function Dashboard() {
             onClick={handleLogout}
             className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted"
           >
-            Cerrar sesion
+            Cerrar sesión
           </button>
         </div>
       </aside>
@@ -115,7 +108,7 @@ export default function Dashboard() {
             onClick={handleAddPatient}
             className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
           >
-            <PawIcon className="size-5" />
+            <img src={pawIconPlus} alt="Paw Icon Add" className="size-10" />
             {"Anadir paciente"}
           </button>
         </header>
@@ -131,7 +124,7 @@ export default function Dashboard() {
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-vetween-indigo text-accent-foreground">
+                <tr className="bg-indigo-600 text-accent-foreground">
                   <th className="px-6 py-3 font-semibold">Nombre</th>
                   <th className="px-6 py-3 font-semibold">Especie</th>
                   <th className="px-6 py-3 font-semibold">Responsable</th>
@@ -176,7 +169,7 @@ export default function Dashboard() {
 
             {patients.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16">
-                <PawIcon className="size-16 text-muted-foreground/40" />
+                <img src={pawIcon} alt="paw icon" />
                 <h3 className="mt-4 text-lg font-semibold text-foreground">
                   No hay pacientes registrados aun
                 </h3>
