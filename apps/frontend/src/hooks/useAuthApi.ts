@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useApi } from './useApi';
-import { api } from '../services/api';
+import { api, RegisterRequest, LoginRequest } from '../services/api';
 import { User } from '../types';
 
 export const useAuthApi = () => {
@@ -12,11 +12,11 @@ export const useAuthApi = () => {
     throw new Error('useAuthApi.login requires credentials');
   }, []);
 
-  const register = useCallback(async (userData: { name: string; email: string; password: string }) => {
+  const register = useCallback(async (userData: RegisterRequest) => {
     return api.register(userData);
   }, []);
 
-  const login = useCallback(async (credentials: { email: string; password: string }) => {
+  const login = useCallback(async (credentials: LoginRequest) => {
     return api.login(credentials);
   }, []);
 

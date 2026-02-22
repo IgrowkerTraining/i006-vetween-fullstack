@@ -27,15 +27,15 @@ class AuthController {
 
   async login(req, res) {
     try {
-      const { email, password } = req.body;
+      const { email, contraseña } = req.body;
 
-      if (!email || !password) {
+      if (!email || !contraseña) {
         return res.status(400).json({ 
-          error: "Email and password are required" 
+          error: "Email and contraseña are required" 
         });
       }
 
-      const user = await userService.authenticate(email, password);
+      const user = await userService.authenticate(email, contraseña);
       
       res.json({
         user: user.toJSON(),

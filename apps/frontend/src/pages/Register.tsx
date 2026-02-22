@@ -148,14 +148,18 @@ const Register: React.FC = () => {
 
     try {
       const response = await api.register({
-        name: formData.name,
-        lastName: formData.lastName,
+        nombre: formData.name,
+        apellido: formData.lastName,
         email: formData.email,
         password: formData.password,
-        registration: formData.registration,
-        specialties: formData.specialties,
-        consultancy: formData.consultancy,
-        habilitation: formData.habilitation,
+        matricula: parseInt(formData.registration) || 0,
+        especialidad: formData.specialties.join(", "),
+        tipos_animales: [formData.animalTypes],
+        costo_consulta: parseFloat(formData.consultationCost) || 0,
+        nombre_consultorio: formData.consultancy,
+        num_habilitacion: formData.habilitation,
+        direccion: formData.address,
+        telefono: formData.phone,
       });
       login(response.user);
       navigate("/dashboard");

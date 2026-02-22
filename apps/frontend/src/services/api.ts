@@ -1,8 +1,28 @@
 import { User } from "../types";
 import { API_ENDPOINTS } from "../constants/routes";
 
+export interface LoginRequest {
+  email: string;
+  contraseña: string;
+}
+
+export interface RegisterRequest {
+  nombre: string;
+  apellido: string;
+  email: string;
+  password: string;
+  matricula: number;
+  especialidad: string;
+  tipos_animales: string[][];
+  costo_consulta: number;
+  nombre_consultorio: string;
+  num_habilitacion: string;
+  direccion: string;
+  telefono: string;
+}
+
 export const api = {
-  async register(data: any): Promise<{ user: User; message: string }> {
+  async register(data: RegisterRequest): Promise<{ user: User; message: string }> {
     const response = await fetch(
       `${API_ENDPOINTS.BASE}${API_ENDPOINTS.AUTH.REGISTER}`,
       {
@@ -20,7 +40,7 @@ export const api = {
   },
 
   async login(
-    data: any,
+    data: LoginRequest,
   ): Promise<{ user: User; token: string; message: string }> {
     const response = await fetch(
       `${API_ENDPOINTS.BASE}${API_ENDPOINTS.AUTH.LOGIN}`,
