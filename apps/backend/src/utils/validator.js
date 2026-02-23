@@ -31,7 +31,7 @@ class Validator {
     if (emailError) errors.push({ field: 'email', message: emailError });
     
     const passwordError = this.required(data.password, 'Password') || 
-                         this.minLength(data.password, 6);
+                          this.minLength(data.password, 6);
     if (passwordError) errors.push({ field: 'password', message: passwordError });
     
     return errors;

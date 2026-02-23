@@ -1,54 +1,67 @@
+const { registerSchema, loginSchema } = require('../schemas/authSchema');
 const userService = require('../services/userService');
 
-class AuthController {
-  async register(req, res) {
+const register = async (req, res) => {
     try {
-      const { name, email, password } = req.body;
+        // Validar datos con Joi
+        // abortEarly: false nos muestra TODOS los errores del formulario, no solo el primero
+        const { error, value } = registerSchema.validate(req.body, { abortEarly: false });
+        
+        if (error) {
+            // Formatear errores de Joi para que sean fáciles de leer en el front
+            const errorMessages = error.details.map(detail => detail.message);
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Errores de validación',
+                errors: errorMessages
+            });
+        }
 
-      if (!name || !email || !password) {
-        return res.status(400).json({ 
-          error: "All fields are required" 
+        const result = await userService.registerUser(value);
+
+        res.status(201).json({
+            success: true,
+            message: 'Clínica y Veterinario registrados exitosamente',
+            data: result
         });
-      }
 
-      const newUser = await userService.create({ name, email, password });
-      
-      res.status(201).json({
-        user: newUser.toJSON(),
-        message: "User registered successfully",
-      });
     } catch (error) {
-      if (error.message === 'User already exists') {
-        return res.status(409).json({ error: error.message });
-      }
-      res.status(500).json({ error: "Registration failed" });
-    }
-  }
+        console.error("Register Error:", error);
+        
+        let statusCode = 500;
+        if (error.message.includes('ya están registrados') || error.message.includes('Ya existe una clínica con ese número de habilitación')) {
+            statusCode = 409;
+        }
 
-  async login(req, res) {
+        res.status(statusCode).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+const login = async (req, res) => {
     try {
-      const { email, contraseña } = req.body;
+        const { error, value } = loginSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.details[0].message });
+        }
 
-      if (!email || !contraseña) {
-        return res.status(400).json({ 
-          error: "Email and contraseña are required" 
+        const { user, token } = await userService.loginUser(value.email, value.password);
+
+        res.json({
+            success: true,
+            message: 'Login exitoso',
+            token,
+            user
         });
-      }
 
-      const user = await userService.authenticate(email, contraseña);
-      
-      res.json({
-        user: user.toJSON(),
-        token: "mock-jwt-token-" + user.id,
-        message: "Login successful",
-      });
     } catch (error) {
-      if (error.message === 'Invalid email or password') {
-        return res.status(401).json({ error: error.message });
-      }
-      res.status(500).json({ error: "Login failed" });
+        res.status(401).json({
+            success: false,
+            message: error.message
+        });
     }
-  }
-}
+};
 
-module.exports = new AuthController();
+module.exports = { register, login };
