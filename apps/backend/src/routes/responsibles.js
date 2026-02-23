@@ -12,20 +12,23 @@ router.get("/", (req, res) => {
 
 //POST crear responsable
 router.post("/", (req, res) => {
-    const {name, email, phone } = req.body;
+    const {nombre, apellido, email, telefono, direccion, relacion } = req.body;
 
-    if(!name || !email || !phone){
+    if(nombre === undefined || apellido === undefined || email === undefined || telefono === undefined || direccion === undefined || relacion === undefined){
         return res.status(400).json({
             message: "Faltan campos requeridos"
         });
     }
 
     const newResponsible = {
-        id: idCounter++,
-        name,
+        id_responsable: idCounter++,
+        nombre,
+        apellido,
         email,
-        phone,
-        active: true
+        telefono,
+        direccion,
+        relacion,
+        activo: true
     };
 
     responsibles.push(newResponsible);
@@ -37,7 +40,7 @@ router.post("/", (req, res) => {
 router.get("/:id", (req, res) => {
     const id = parseInt(req.params.id);
 
-    const responsible = responsibles.find(r => r.id === id);
+    const responsible = responsibles.find(r => r.id_responsable === id);
 
     if(!responsible){
         return res.status(404).json({message: "Responsable no encontrado"});
@@ -50,20 +53,23 @@ router.get("/:id", (req, res) => {
 router.put("/:id", (req, res) => {
     const id = parseInt(req.params.id);
 
-    const index = responsibles.findIndex(r => r.id === id);
+    const index = responsibles.findIndex(r => r.id_responsable === id);
 
     if(index === -1){
         return res.status(404).json({message: "Responsable no encontrado"});
     }
 
-    const {name, email, phone, active } = req.body;
+    const {nombre, apellido, email, telefono, direccion, relacion, activo } = req.body;
 
     responsibles[index] = {
         ...responsibles[index],
-        name: name ?? responsibles[index].name,
+        nombre: nombre ?? responsibles[index].nombre,
+        apellido: apellido ?? responsibles[index].apellido,
         email: email ?? responsibles[index].email,
-        phone: phone ?? responsibles[index].phone,
-        active: active ?? responsibles[index].active
+        telefono: telefono ?? responsibles[index].telefono,
+        direccion: direccion ?? responsibles[index].direccion,
+        relacion: relacion ?? responsibles[index].relacion,
+        activo: activo ?? responsibles[index].activo
     };
 
     res.json({success: true, data: responsibles[index]});
