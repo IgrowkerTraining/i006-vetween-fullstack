@@ -10,14 +10,14 @@ export interface Patient {
   nombre: string
   especie: string
   responsable: string
-  ultimaVisita: string
+  
   estado: string
 }
 
 const samplePatients: Patient[] = [
-  { id: "1", nombre: "Luna", especie: "Canino", responsable: "Maria Lopez", ultimaVisita: "15/02/2026", estado: "Activo" },
-  { id: "2", nombre: "Milo", especie: "Felino", responsable: "Juan Perez", ultimaVisita: "10/02/2026", estado: "Activo" },
-  { id: "3", nombre: "Rocky", especie: "Canino", responsable: "Ana Garcia", ultimaVisita: "08/02/2026", estado: "Inactivo" },
+  { id: "1", nombre: "Luna", especie: "Canino", responsable: "Maria Lopez", estado: "Activo" },
+  { id: "2", nombre: "Milo", especie: "Felino", responsable: "Juan Perez",  estado: "Activo" },
+  { id: "3", nombre: "Rocky", especie: "Canino", responsable: "Ana Garcia",  estado: "Inactivo" },
 ]
 
 
@@ -125,10 +125,10 @@ export default function Dashboard() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-indigo-600 text-accent-foreground">
+                  <th className="px-6 py-3 font-semibold">ID</th>
                   <th className="px-6 py-3 font-semibold">Nombre</th>
                   <th className="px-6 py-3 font-semibold">Especie</th>
                   <th className="px-6 py-3 font-semibold">Responsable</th>
-                  <th className="px-6 py-3 font-semibold">Visita</th>
                   <th className="px-6 py-3 font-semibold">Estado</th>
                   <th className="px-6 py-3 font-semibold">Editar</th>
                   <th className="px-6 py-3 font-semibold">Eliminar</th>
@@ -138,10 +138,10 @@ export default function Dashboard() {
                 <tbody>
                   {patients.map((patient) => (
                     <tr key={patient.id} className="text-black border-t border-border transition-colors hover:bg-muted/60">
+                      <td className="px-6 py-3 font-medium">{patient.id}</td>
                       <td className="px-6 py-3 font-medium">{patient.nombre}</td>
                       <td className="px-6 py-3">{patient.especie}</td>
-                      <td className="px-6 py-3">{patient.responsable}</td>
-                      <td className="px-6 py-3">{patient.ultimaVisita}</td>
+                      <td className="px-6 py-3">{patient.responsable}</td>              
                       <td className="px-6 py-3">
                         <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           patient.estado === "Activo"

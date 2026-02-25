@@ -1,40 +1,116 @@
-const User = require('../models/User');
+const supabase = require('../config/supabaseClient');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-class UserService {
-  constructor() {
-    this.users = [];
-  }
+const registerUser = async (userData) => {
+    try {
+        const { data: existingUser } = await supabase
+            .from('veterinario')
+            .select('email, matricula')
+            .or(`email.eq.${userData.email}`)
+            .single();
 
-  findByEmail(email) {
-    return this.users.find(user => user.email === email);
-  }
+        if (existingUser) {
+            throw new Error('El email o la matrícula ya están registrados');
+        }
 
-  findById(id) {
-    return this.users.find(user => user.id === id);
-  }
+        // Hashear contraseña
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(userData.password, salt);
 
-  async create(userData) {
-    const existingUser = this.findByEmail(userData.email);
-    if (existingUser) {
-      throw new Error('User already exists');
+        // Crear la clínica primero para obtener su ID y vincularla al veterinario
+        const nuevaClinica = {
+            nombre: userData.nombre_consultorio,
+            num_habilitacion: userData.num_habilitacion,
+            direccion: userData.direccion,
+            telefono: userData.telefono
+        };
+
+        const { data: clinicaCreada, error: errorClinica } = await supabase
+            .from('clinica')
+            .insert([nuevaClinica])
+            .select()
+            .single();
+
+        if (errorClinica) {
+            // Manejo específico si la clínica ya existe (por el UNIQUE del num_habilitacion)
+            if (errorClinica.code === '23505') { 
+                throw new Error('Ya existe una clínica registrada con ese número de habilitación.');
+            }
+            throw new Error('Error al registrar la clínica: ' + errorClinica.message);
+        }
+
+        const nuevoVeterinario = {
+            nombre: userData.nombre,
+            apellido: userData.apellido,
+            email: userData.email,
+            contraseña: hashedPassword,
+            matricula: userData.matricula,
+            especialidad: userData.especialidad,
+            tipos_animales: userData.tipos_animales,
+            costo_consulta: userData.costo_consulta,
+            
+            id_clinica: clinicaCreada.id_clinica
+        };
+
+        const { data: veterinarioCreado, error: errorVet } = await supabase
+            .from('veterinario')
+            .insert([nuevoVeterinario])
+            .select()
+            .single();
+
+        if (errorVet) {
+            // Rollback manual: Si falla crear el veterinario, borramos la clínica creada
+            await supabase.from('clinica').delete().eq('id_clinica', clinicaCreada.id_clinica);
+            throw new Error('Error al registrar al veterinario: ' + errorVet.message);
+        }
+
+        return { veterinario: veterinarioCreado, clinica: clinicaCreada };
+
+    } catch (error) {
+        throw error;
     }
+};
 
-    const newUser = User.create(userData);
-    this.users.push(newUser);
-    return newUser;
-  }
+const loginUser = async (email, password) => {
+    try {
+        const { data: user, error } = await supabase
+            .from('veterinario')
+            .select('*')
+            .eq('email', email)
+            .single();
 
-  async authenticate(email, password) {
-    const user = this.findByEmail(email);
-    if (!user || user.password !== password) {
-      throw new Error('Invalid email or password');
+        if (error || !user) {
+            throw new Error('Credenciales inválidas'); 
+        }
+
+        const validPassword = await bcrypt.compare(password, user.contraseña);
+        if (!validPassword) {
+            throw new Error('Credenciales inválidas');
+        }
+
+        // Generar Token JWT 
+        const token = jwt.sign(
+            { 
+                id: user.id_veterinario, 
+                email: user.email,
+                id_clinica: user.id_clinica 
+            }, 
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        );
+
+        // Quita la contraseña del objeto a devolver
+        const { contraseña, ...userWithoutPassword } = user;
+        
+        return { user: userWithoutPassword, token };
+
+    } catch (error) {
+        throw error;
     }
-    return user;
-  }
+};
 
-  getAllUsers() {
-    return this.users.map(user => user.toJSON());
-  }
-}
-
-module.exports = new UserService();
+module.exports = {
+    registerUser,
+    loginUser
+};
