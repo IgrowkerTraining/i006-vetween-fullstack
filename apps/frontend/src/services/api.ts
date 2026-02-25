@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from "../constants/routes";
 
 export interface LoginRequest {
   email: string;
-  contraseña: string;
+  password: string;
 }
 
 export interface RegisterRequest {

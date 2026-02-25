@@ -7,7 +7,7 @@ export const ROUTES = {
 } as const;
 
 export const API_ENDPOINTS = {
-  BASE: 'https://virtserver.swaggerhub.com/personal-c69/Vetween/1.0.0',
+  BASE: 'http://localhost:3000/api',
   AUTH: {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",

@@ -23,7 +23,7 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
-      const response = await api.login({ email, contraseña: password });
+      const response = await api.login({ email, password });
       login(response.user);
       navigate("/dashboard");
     } catch (err: any) {
