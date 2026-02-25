@@ -19,7 +19,7 @@ const Register: React.FC = () => {
     password: "",
     confirmPassword: "",
     registration: "",
-    specialties: [] as string[],
+    specialties: "",
     consultancy: "",
     habilitation: "",
     address: "",
@@ -46,33 +46,21 @@ const Register: React.FC = () => {
   ];
 
   const SPECIALTIES_OPTIONS = [
-    "Clínica general",
-    "Medicina preventiva",
-    "Cirugía general",
-    "Odontología",
-    "Nutrición",
-    "Dermatología",
-    "Diagnóstico",
-    "Urgencias leves",
-    "Otra",
+    "Compania",
+    "Produccion",
+    "Silvestres",
+    "Exoticos",
+    "Acuaticos",
   ];
 
-  const [otherSpecialty, setOtherSpecialty] = useState("");
-  const [showOtherSpecialtyInput, setShowOtherSpecialtyInput] = useState(false);
+
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleCheckboxChange = (value: string) => {
-    setFormData((prev) => {
-      const already = prev.specialties.includes(value);
-      return {
-        ...prev,
-        specialties: already
-          ? prev.specialties.filter((item) => item !== value)
-          : [...prev.specialties, value],
-      };
-    });
+  const handleSpecialtyChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, specialties: value }));
+    setSpecialtiesOpen(false);
   };
 
   const handleAnimalTypeChange = (value: string) => {
@@ -153,8 +141,8 @@ const Register: React.FC = () => {
         email: formData.email,
         password: formData.password,
         matricula: parseInt(formData.registration) || 0,
-        especialidad: formData.specialties.join(", "),
-        tipos_animales: [formData.animalTypes],
+        especialidad: formData.specialties,
+        tipos_animales: formData.animalTypes,
         costo_consulta: parseFloat(formData.consultationCost) || 0,
         nombre_consultorio: formData.consultancy,
         num_habilitacion: formData.habilitation,
@@ -511,7 +499,7 @@ const Register: React.FC = () => {
                   Especialidad
                 </label>
                 <p className="text-xs text-gray-500 mb-2">
-                  Seleccioná todas las que correspondan
+                  Seleccioná una opción
                 </p>
 
                 {/* Trigger input */}
@@ -520,10 +508,8 @@ const Register: React.FC = () => {
                   onClick={() => setSpecialtiesOpen((prev) => !prev)}
                   className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
                 >
-                  <span className={formData.specialties.length === 0 ? "text-slate-300" : "text-indigo-800 truncate pr-2"}>
-                    {formData.specialties.length === 0
-                      ? "Seleccionar especialidades…"
-                      : formData.specialties.join(", ")}
+                  <span className={formData.specialties === "" ? "text-slate-300" : "text-indigo-800 truncate pr-2"}>
+                    {formData.specialties === "" ? "Seleccionar especialidad…" : formData.specialties}
                   </span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -539,74 +525,24 @@ const Register: React.FC = () => {
 
                 {specialtiesOpen && (
                   <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden">
-                    <div className="max-h-52 overflow-y-auto p-2 grid grid-cols-1 gap-1">
+                    <div className="p-2 grid grid-cols-1 gap-1">
                       {SPECIALTIES_OPTIONS.map((specialty) => (
                         <label
                           key={specialty}
                           className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
                         >
                           <input
-                            type="checkbox"
+                            type="radio"
+                            name="specialty"
                             value={specialty}
-                            checked={formData.specialties.includes(specialty)}
-                            onChange={() => {
-                              handleCheckboxChange(specialty);
-                              if (specialty === "Otra") {
-                                setShowOtherSpecialtyInput(!showOtherSpecialtyInput);
-                              }
-                            }}
+                            checked={formData.specialties === specialty}
+                            onChange={() => handleSpecialtyChange(specialty)}
                             className="w-4 h-4 accent-indigo-600 flex-shrink-0"
                           />
                           {specialty}
                         </label>
                       ))}
-                      {showOtherSpecialtyInput && (
-                        <div className="px-2 py-1.5">
-                          <input
-                            type="text"
-                            placeholder="Especificar otra especialidad..."
-                            value={otherSpecialty}
-                            onChange={(e) => {
-                              setOtherSpecialty(e.target.value);
-                              if (e.target.value && !formData.specialties.includes("Otra")) {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  specialties: [...prev.specialties, "Otra"],
-                                }));
-                              }
-                            }}
-                            onBlur={() => {
-                              if (otherSpecialty.trim() && !formData.specialties.includes(otherSpecialty.trim())) {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  specialties: [...prev.specialties.filter(s => s !== "Otra"), otherSpecialty.trim()],
-                                }));
-                              }
-                            }}
-                            className="w-full px-2 py-1.5 text-sm text-gray-700 border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                            autoFocus
-                          />
-                        </div>
-                      )}
                     </div>
-                    {formData.specialties.length > 0 && (
-                      <div className="border-t border-slate-100 px-3 py-2 flex justify-between items-center">
-                        <span className="text-xs text-slate-500">
-                          {formData.specialties.length} seleccionada{formData.specialties.length !== 1 ? "s" : ""}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFormData((prev) => ({ ...prev, specialties: [] }));
-                            setOtherSpecialty("");
-                            setShowOtherSpecialtyInput(false);
-                          }}
-                          className="text-xs text-red-400 hover:text-red-600 transition-colors"
-                        >
-                          Limpiar
-                        </button>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>

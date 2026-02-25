@@ -13,7 +13,7 @@ export interface RegisterRequest {
   password: string;
   matricula: number;
   especialidad: string;
-  tipos_animales: string[][];
+  tipos_animales: string[];
   costo_consulta: number;
   nombre_consultorio: string;
   num_habilitacion: string;
