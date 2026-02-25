@@ -1,20 +1,32 @@
-//Array en memoria
-let patients = [];
-let idCounter = 1;
-
+const supabase = require('../config/supabaseClient');
+const { update } = require('../controllers/patientsController');
 
 //Obtener todos los pacientes
-const getAllPatients = () => {
-    return patients;
+const getAllPatients = async () => {
+    const { data, error } = await supabase
+    .from('pacientes')
+    .select('*');
+
+    if(error) throw error;
+
+    return data;
 };
 
 //Obtener paciente por ID
-const getPatientById = (id) => {
-    return patients.find(p => p.id_paciente === id);
+const getPatientById = async (id) => {
+    const { data, error } = await supabase
+    .from('pacientes')
+    .select('*')
+    .eq('id_pacientes', id)
+    .maybeSingle();
+
+    if(error) throw error;
+
+    return data;
 };
 
 //Crear paciente
-const createPatient = (data) => {
+const createPatient = async (patientData) => {
     const {
         nombre, 
         especie, 
@@ -29,7 +41,7 @@ const createPatient = (data) => {
         num_microchip, 
         id_responsable,
         id_clinica
-    } = data;
+    } = patientData;
 
     //Validacion de campos requeridos
     if(
@@ -54,15 +66,33 @@ const createPatient = (data) => {
         throw new Error("Debe especificar el número de microchip");
     }
 
-    //Límite de pacientes activos
-    const activePatients = patients.filter(p => p.activo === true);
+    //Validar que exista el responsable
+    const { data: responsable, error: responsableError } = await supabase
+    .from('responsables')
+    .select('id_responsables')
+    .eq('id_responsables', id_responsable)
+    .maybeSingle();
 
-    if(activePatients.length >= 3){
-        throw new Error("No se pueden registrar más de 50 pacientes activos");
+    if(responsableError) throw responsableError;
+
+    if(!responsable){
+        throw new Error ("El responsable no existe")
     }
 
-    const newPatient = {
-        id_paciente: idCounter++,
+    //Validar que exista la clinica
+    const { data: clinica, error: clinicaError } = await supabase
+    .from('clinica')
+    .select('id_clinica')
+    .eq('id_clinica', id_clinica)
+    .maybeSingle();
+
+    if(!clinica){
+        throw new Error("La clinica no existe")
+    }
+
+    const { data, error } = await supabase
+    .from('pacientes')
+    .insert([{
         nombre,
         especie,
         edad,
@@ -74,86 +104,106 @@ const createPatient = (data) => {
         esterilizado,
         tiene_microchip,
         num_microchip: num_microchip || null,        
-        activo: true,
+        activo: false,
         id_responsable,
         id_clinica
-    };
+    }])
+    .select()
+    .maybeSingle();
 
-    patients.push(newPatient);
+    if(error) throw error;
 
-    return newPatient;
+    return data;
 };
 
 //Actualizar paciente
-const updatePatient = (id, data) => {
-    const patientIndex = patients.findIndex(p => p.id_paciente === id);
+const updatePatient = async (id, updateData) => {
 
-    if(patientIndex === -1){
-        return null;
-    }
+    //Verificar que exista el paciente
+    const { data: patient, error: patientError } = await supabase
+    .from('pacientes')
+    .select('id_pacientes, activo')
+    .eq('id_pacientes', id)
+    .maybeSingle();
 
-    const currentPatient = patients[patientIndex];
+    if(patientError) throw patientError;
+    if(!patient) throw new Error("Paciente no encontrado");
 
-    const {
-        nombre,
-        especie,
-        edad,
-        color,
-        senia,
-        sexo,
-        raza,
-        peso,
-        esterilizado,
-        tiene_microchip,
-        num_microchip,
-        activo,
-        id_responsable,
-        id_clinica
-    } = data;
+    if(updateData.activo === true && patient.activo === false){
 
-    //Validacion limite si se activa manualmente
-    if(activo === true && currentPatient.activo === false){
-        const activePatients = patients.filter(p => p.activo === true);
+        //Verificar que tenga visitas
+        const { count: visitCount, error: visitError } = await supabase
+        .from('visitas')
+        .select('*', { count: 'exact', head: true})
+        .eq('id_paciente', id);
 
-        if(activePatients.length >= 3){            
-            throw new Error("No se pueden activar más de 50 pacientes")
+        if(visitError) throw visitError;
+
+        if(visitCount === 0){
+            throw new Error("No se puede activar un paciente sin visitas registradas");
+        }
+
+        //Verificar limite de pacientes activos
+        const { count: activeCount, error: countError } = await supabase
+        .from('pacientes')
+        .select('*', { count: 'exact', head: true})
+        .eq('activo', true)
+
+        if(countError) throw countError;
+
+        if(activeCount >= 3){
+            throw new Error("No se pueden registrar más de 50 pacientes activos")
         }
     }
 
-    const updatedPatient = {
-        ...currentPatient,
-        nombre: nombre ?? currentPatient.nombre,
-        especie: especie ?? currentPatient.especie,
-        edad: edad ?? currentPatient.edad,
-        color: color ?? currentPatient.color,
-        senia: senia ?? currentPatient.senia,
-        sexo: sexo ?? currentPatient.sexo,
-        raza: raza ?? currentPatient.raza,
-        peso: peso ?? currentPatient.peso,
-        esterilizado: esterilizado ?? currentPatient.esterilizado,
-        tiene_microchip: tiene_microchip ?? currentPatient.tiene_microchip,
-        num_microchip: num_microchip ?? currentPatient.num_microchip,
-        activo: activo ?? currentPatient.activo,
-        id_responsable: id_responsable ?? currentPatient.id_responsable,
-        id_clinica: id_clinica ?? currentPatient.id_clinica
-    };
+    const { data, error } = await supabase
+    .from('pacientes')
+    .update(updateData)
+    .eq('id_pacientes', id)
+    .select()
+    .maybeSingle();
 
-    patients[patientIndex] = updatedPatient;
+    if(error) throw error;
 
-    return updatedPatient;
+    return data;
 };
 
 //Eliminar paciente
-const deletePatient = (id) => {
-    const patientIndex = patients.findIndex(p => p.id_paciente === id);
+const deletePatient = async (id) => {
 
-    if(patientIndex === -1){
-        return null;
+    //Verificar que el paciente exista
+    const { data: paciente, error: pacienteError } = await supabase
+    .from('pacientes')
+    .select('id_pacientes')
+    .eq('id_pacientes', id)
+    .maybeSingle();
+
+    if(pacienteError) throw pacienteError;
+
+    if(!paciente){
+        throw new Error("El paciente no existe");
     }
 
-    const deletedPatient = patients.splice(patientIndex, 1);
+    //Verificar si tiene visitas registradas
+    const { count, error: visitError } = await supabase
+    .from('visitas')
+    .select('*', { count: 'exact', head: true})
+    .eq('id_paciente', id);
 
-    return deletedPatient[0];
+    if(visitError) throw visitError;
+
+    if(count > 0){
+        throw new Error("No se puede eliminar un paciente con visitas registradas")
+    }
+
+    const { error } = await supabase
+    .from('pacientes')
+    .delete()
+    .eq('id_pacientes', id)
+
+    if(error) throw error;
+
+    return {success: true, message: "Paciente eliminado correctamente"};
 };
 
 module.exports = {

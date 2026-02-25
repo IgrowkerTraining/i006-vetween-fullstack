@@ -1,28 +1,37 @@
 const patientsService = require("../services/patientsService");
 
 //Obtener todos los pacientes
-const getAll = (req, res) => {
-    const patients = patientsService.getAllPatients();
-    res.json({success: true, data: patients});
+const getAll = async (req, res) => {
+    try {
+        const patients = await patientsService.getAllPatients();
+
+        res.json({success: true, data: patients});
+    } catch (error) {
+        res.status(500).json({message: error.message})
+    }
 };
 
 //Obtener paciente por ID
-const getById = (req, res) => {
-    const id = parseInt(req.params.id);
+const getById = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
 
-    const patient = patientsService.getPatientById(id);
+        const patient = await patientsService.getPatientById(id);
 
-    if(!patient){
-        return res.status(404).json({message: "Paciente no encontrado"})
+        if(!patient){
+            return res.status(404).json({message: "Paciente no encontrado"})
+        }
+
+        res.json({success: true, data: patient});
+    } catch (error) {
+        res.status(500).json({message: error.message})
     }
-
-    res.json({success: true, data: patient});
 };
 
 //Crear paciente
-const create = (req, res) => {
+const create = async (req, res) => {
     try{
-        const newPatient = patientsService.createPatient(req.body);
+        const newPatient = await patientsService.createPatient(req.body);
 
         res.status(201).json({success: true, data: newPatient});
     } catch (error) {
@@ -31,11 +40,10 @@ const create = (req, res) => {
 };
 
 //Actualizar un paciente por ID
-const update = (req, res) => {
-    const id = parseInt(req.params.id);
-
+const update = async (req, res) => {    
     try {
-        const updatedPatient = patientsService.updatePatient(id, req.body);
+        const id = parseInt(req.params.id);
+        const updatedPatient = await patientsService.updatePatient(id, req.body);
 
         if(!updatedPatient){
             return res.status(404).json({message: "Paciente no encontrado"})
@@ -48,20 +56,15 @@ const update = (req, res) => {
 };
 
 //Eliminar un paciente por ID
-const remove = (req, res) => {
-    const id = parseInt(req.params.id);
+const remove = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const deletedPatient = await patientsService.deletePatient(id);
 
-    const deletedPatient = patientsService.deletePatient(id);
-
-    if(!deletedPatient){
-        return res.status(404).json({message: "Paciente no encontrado"})
+        return res.status(200).json(deletedPatient);
+    } catch (error) {
+        return res.status(500).json({message: error.message})
     }
-
-    res.json({
-        success: true,
-        message: "Paciente eliminado correctamente",
-        patient: deletedPatient
-    });
 };
 
 module.exports = {
