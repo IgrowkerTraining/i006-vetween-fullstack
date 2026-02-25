@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import onlylogo from "../assets/onlylogo.svg";
 import pawIcon from "../assets/pawIcon.svg";
 import pawIconPlus from "../assets/pawIconPlus.svg";
+import Sidebar from "../components/layout/Sidebar";
 
 export interface Patient {
   id: string
@@ -21,29 +19,7 @@ const samplePatients: Patient[] = [
 ]
 
 
-function PawIcon({ className = "size-6" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden="true">
-      <ellipse cx="32" cy="42" rx="14" ry="12" fill="currentColor" />
-      <ellipse cx="16" cy="24" rx="6" ry="8" transform="rotate(-15 16 24)" fill="currentColor" />
-      <ellipse cx="48" cy="24" rx="6" ry="8" transform="rotate(15 48 24)" fill="currentColor" />
-      <ellipse cx="23" cy="18" rx="5.5" ry="7.5" transform="rotate(-5 23 18)" fill="currentColor" />
-      <ellipse cx="41" cy="18" rx="5.5" ry="7.5" transform="rotate(5 41 18)" fill="currentColor" />
-    </svg>
-  )
-}
-
-const navItems = [
-  { label: "Pacientes", id: "pacientes" },
-  { label: "Historial clínico", id: "historial" },
-  { label: "Resumen clínico", id: "resumen" },
-  { label: "Administración", id: "administracion" },
-]
-
 export default function Dashboard() {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
-  const [activeNav, setActiveNav] = useState("pacientes")
   const [patients, setPatients] = useState<Patient[]>([])
 
   const handleAddPatient = () => {
@@ -52,50 +28,9 @@ export default function Dashboard() {
     }
   }
 
-  const handleLogout = () => {
-    logout()
-    navigate("/login", { replace: true })
-  }
-
   return (
     <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <aside className="flex h-screen w-56 flex-col border-r border-border bg-card">
-        <div className="flex items-center justify-center py-6">
-          <img src={onlylogo} alt="vetween Logo" className="w-full" />
-        </div>
-
-        <nav className="flex flex-1 flex-col px-3" aria-label="Navegacion principal">
-          <ul className="flex flex-col gap-1">
-            {navItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => setActiveNav(item.id)}
-                  className={`flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                    activeNav === item.id
-                      ? "bg-indigo-600 text-accent-foreground"
-                      : "text-sidebar-foreground hover:bg-muted"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="border-t border-border px-3 py-3">
-          <button className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted">
-            Mi cuenta
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-      </aside>
+      <Sidebar />
 
       {/* Main content */}
       <main className="flex flex-1 flex-col overflow-y-auto">
