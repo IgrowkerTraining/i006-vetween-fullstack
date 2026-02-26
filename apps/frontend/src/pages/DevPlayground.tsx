@@ -5,7 +5,7 @@ import {
   PatientForm,
   PatientFormData,
   PatientFormMode,
-} from "../components/forms/PatientForm";
+} from "../components/patient/PatientForm";
 
 // Datos de ejemplo para modo edición
 const mockPatientData: PatientFormData = {

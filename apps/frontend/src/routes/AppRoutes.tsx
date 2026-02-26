@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import DevPlayground from "../pages/DevPlayground";
+import Patient from "../pages/Patient";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -35,6 +36,14 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route
+        path="/patient/:id"
+        element={
+          <ProtectedRoute>
+            <Patient />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Dev route - solo para desarrollo */}
       <Route path="/dev" element={<DevPlayground />} />

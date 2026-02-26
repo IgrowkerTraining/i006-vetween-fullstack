@@ -1,164 +1,172 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import pawIcon from "../assets/pawIcon.svg";
-import pawIconPlus from "../assets/pawIconPlus.svg";
-import Sidebar from "../components/layout/Sidebar";
-import { Modal } from "../components/common/Modal";
-import { PatientForm, PatientFormData } from "../components/forms/PatientForm";
-import { api } from "../services/api";
+import MainLayout from "../components/layout/MainLayout";
+import PageHeader from "../components/common/PageHeader";
+import PatientButton from "../components/patient/PatientButton";
+import { ROUTES } from "../constants/routes";
 
 export interface Patient {
-  id: string
-  nombre: string
-  especie: string
-  responsable: string
-  
-  estado: string
+  id: string;
+  nombre: string;
+  especie: string;
+  responsable: string;
+
+  estado: string;
 }
 
 const samplePatients: Patient[] = [
-  { id: "1", nombre: "Luna", especie: "Canino", responsable: "Maria Lopez", estado: "Activo" },
-  { id: "2", nombre: "Milo", especie: "Felino", responsable: "Juan Perez",  estado: "Activo" },
-  { id: "3", nombre: "Rocky", especie: "Canino", responsable: "Ana Garcia",  estado: "Inactivo" },
-]
-
+  {
+    id: "1",
+    nombre: "Luna",
+    especie: "Canino",
+    responsable: "Maria Lopez",
+    estado: "Activo",
+  },
+  {
+    id: "2",
+    nombre: "Milo",
+    especie: "Felino",
+    responsable: "Juan Perez",
+    estado: "Activo",
+  },
+  {
+    id: "3",
+    nombre: "Rocky",
+    especie: "Canino",
+    responsable: "Ana Garcia",
+    estado: "Inactivo",
+  },
+];
 
 export default function Dashboard() {
-  const [patients, setPatients] = useState<Patient[]>([])
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isFormLoading, setIsFormLoading] = useState(false)
-  const [modalStep, setModalStep] = useState(1)
+  const navigate = useNavigate();
+  const [patients, setPatients] = useState<Patient[]>(samplePatients);
 
-  const handleAddPatient = () => setIsModalOpen(true)
-
-  const handleFormSubmit = async (data: PatientFormData) => {
-    setIsFormLoading(true)
-    try {
-      await api.createPatient({
-        nombre: data.patient.name,
-        especie: data.patient.species,
-        edad: parseFloat(data.patient.age) || 0,
-        color: data.patient.color,
-        senia: data.patient.characteristic,
-        sexo: data.patient.sex === "male" ? "Macho" : "Hembra",
-        raza: data.patient.breed,
-        peso: parseFloat(data.patient.weight) || 0,
-        esterilizado: data.patient.sterilized === "yes",
-        tiene_microchip: data.patient.microchip === "yes",
-        num_microchip: data.patient.microchipNumber,
-        activo: true,
-        id_responsable: 0, // TODO: obtener del responsable registrado
-        id_clinica: 0,     // TODO: obtener de la sesión del veterinario
-      })
-      setIsModalOpen(false)
-    } catch (err: any) {
-      console.error("Error al crear paciente:", err.message)
-    } finally {
-      setIsFormLoading(false)
-    }
-  }
+  const handlePatientClick = (patientId: string) => {
+    navigate(`${ROUTES.PATIENT}/${patientId}`);
+  };
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
+    <MainLayout>
+      <PageHeader
+        subtitle="Hola, usuario"
+        title="Pacientes"
+        actions={<PatientButton mode="create" />}
+      />
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={`Registrar paciente`}
-        size="lg"
-      >
-        <PatientForm
-          onSubmit={handleFormSubmit}
-          onCancel={() => setIsModalOpen(false)}
-          isLoading={isFormLoading}
-          onStepChange={setModalStep}
-        />
-      </Modal>
-
-      {/* Main content */}
-      <main className="flex flex-1 flex-col overflow-y-auto">
-        <header className="flex items-center justify-between border-b border-border bg-card px-8 py-5">
-          <div>
-            <p className="text-sm text-muted-foreground">Hola, usuario</p>
-            <h1 className="text-2xl font-bold text-foreground">Pacientes</h1>
-          </div>
-          <button
-            onClick={handleAddPatient}
-            className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
-          >
-            <img src={pawIconPlus} alt="Paw Icon Add" className="size-10" />
-            {"Añadir paciente"}
-          </button>
-        </header>
-
-        <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Buscar paciente..."
-              className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
-            />
-          </div>
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="bg-indigo-600 text-accent-foreground">
-                  <th className="px-6 py-3 font-semibold">ID</th>
-                  <th className="px-6 py-3 font-semibold">Nombre</th>
-                  <th className="px-6 py-3 font-semibold">Especie</th>
-                  <th className="px-6 py-3 font-semibold">Responsable</th>
-                  <th className="px-6 py-3 font-semibold">Estado</th>
-                  <th className="px-6 py-3 font-semibold">Editar</th>
-                  <th className="px-6 py-3 font-semibold">Eliminar</th>
-                </tr>
-              </thead>
-              {patients.length > 0 && (
-                <tbody>
-                  {patients.map((patient) => (
-                    <tr key={patient.id} className="text-black border-t border-border transition-colors hover:bg-muted/60">
-                      <td className="px-6 py-3 font-medium">{patient.id}</td>
-                      <td className="px-6 py-3 font-medium">{patient.nombre}</td>
-                      <td className="px-6 py-3">{patient.especie}</td>
-                      <td className="px-6 py-3">{patient.responsable}</td>              
-                      <td className="px-6 py-3">
-                        <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+      <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Buscar paciente..."
+            className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
+          />
+        </div>
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="bg-indigo-600 text-accent-foreground">
+                <th className="px-6 py-3 font-semibold">ID</th>
+                <th className="px-6 py-3 font-semibold">Nombre</th>
+                <th className="px-6 py-3 font-semibold">Especie</th>
+                <th className="px-6 py-3 font-semibold">Responsable</th>
+                <th className="px-6 py-3 font-semibold">Estado</th>
+                <th className="px-6 py-3 font-semibold">Editar</th>
+                <th className="px-6 py-3 font-semibold">Eliminar</th>
+              </tr>
+            </thead>
+            {patients.length > 0 && (
+              <tbody>
+                {patients.map((patient) => (
+                  <tr
+                    key={patient.id}
+                    className="text-black border-t border-border transition-colors hover:bg-muted/60"
+                  >
+                    <td
+                      className="px-6 py-3 font-medium cursor-pointer hover:text-vetween-teal"
+                      onClick={() => handlePatientClick(patient.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && handlePatientClick(patient.id)
+                      }
+                    >
+                      {patient.id}
+                    </td>
+                    <td
+                      className="px-6 py-3 font-medium cursor-pointer hover:text-vetween-teal"
+                      onClick={() => handlePatientClick(patient.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && handlePatientClick(patient.id)
+                      }
+                    >
+                      {patient.nombre}
+                    </td>
+                    <td
+                      className="px-6 py-3 cursor-pointer hover:text-vetween-teal"
+                      onClick={() => handlePatientClick(patient.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && handlePatientClick(patient.id)
+                      }
+                    >
+                      {patient.especie}
+                    </td>
+                    <td
+                      className="px-6 py-3 cursor-pointer hover:text-vetween-teal"
+                      onClick={() => handlePatientClick(patient.id)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && handlePatientClick(patient.id)
+                      }
+                    >
+                      {patient.responsable}
+                    </td>
+                    <td className="px-6 py-3">
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           patient.estado === "Activo"
                             ? "bg-emerald-100 text-emerald-700"
                             : "bg-red-100 text-red-700"
-                        }`}>
-                          {patient.estado}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3">
-                        <button className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo">
-                          Editar
-                        </button>
-                      </td>
-                      <td className="px-6 py-3">
-                        <button className="text-sm font-medium text-red-500 transition-colors hover:text-red-700">
-                          Eliminar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              )}
-            </table>
-
-            {patients.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16">
-                <img src={pawIcon} alt="paw icon" />
-                <h3 className="mt-4 text-lg font-semibold text-foreground">
-                  No hay pacientes registrados aun
-                </h3>
-                <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                  {"Agrega uno nuevo haciendo click en el boton superior."}
-                </p>
-              </div>
+                        }`}
+                      >
+                        {patient.estado}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3">
+                      <button className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo">
+                        Editar
+                      </button>
+                    </td>
+                    <td className="px-6 py-3">
+                      <button className="text-sm font-medium text-red-500 transition-colors hover:text-red-700">
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
-          </div>
-        </section>
-      </main>
-    </div>
-  )
+          </table>
+
+          {patients.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <img src={pawIcon} alt="paw icon" />
+              <h3 className="mt-4 text-lg font-semibold text-foreground">
+                No hay pacientes registrados aun
+              </h3>
+              <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
+                {"Agrega uno nuevo haciendo click en el boton superior."}
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+    </MainLayout>
+  );
 }
