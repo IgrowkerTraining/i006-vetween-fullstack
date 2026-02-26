@@ -1,51 +1,109 @@
-let responsibles = [];
-let idCounter = 1;
+const supabase = require("../config/supabaseClient");
 
-const getAll = () => {
-    return responsibles;
+// Obtener todos
+const getAll = async () => {
+    const { data, error } = await supabase
+        .from('responsables')
+        .select('*');
+
+    if (error) throw error;
+
+    return data;
 };
 
-const getById = (id) => {
-    return responsibles.find(r => r.id_responsable === id);
-};
+// Obtener por ID
+const getById = async (id) => {
+    const { data, error } = await supabase
+        .from('responsables')
+        .select('*')
+        .eq('id_responsables', id)
+        .maybeSingle();
 
-const create = (body) => {
-    const {nombre, apellido, email, telefono, direccion, relacion } = body;
+    if (error) throw error;
 
-
-    if(nombre === undefined || apellido === undefined || email === undefined || telefono === undefined || direccion === undefined || relacion === undefined){
-        return {message: "Faltan campos requeridos"};
+    if (!data) {
+        throw new Error("Responsable no encontrado");
     }
 
-    const newResponsible = {
-        id_responsable: idCounter++,
-        nombre,
-        apellido,
-        email,
-        telefono,
-        direccion,
-        relacion,
-        activo: true
-    };
-
-    responsibles.push(newResponsible);
-
-    return newResponsible;
+    return data;
 };
 
-const update = (id, body) => {
-    const index = responsibles.findIndex(r => r.id_responsable === id);
+// Crear responsable
+const create = async (body) => {
+    const { nombre, apellido, email, telefono, direccion, relacion } = body;
 
-    if(index === -1){
-        return null;
+    if (
+        nombre === undefined ||
+        apellido === undefined ||
+        email === undefined ||
+        telefono === undefined ||
+        direccion === undefined ||
+        relacion === undefined
+    ) {
+        throw new Error("Faltan campos requeridos");
     }
 
-    responsibles[index] = {
-        ...responsibles[index],
-        ...body
-    };
+    //Validacion de formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    return responsibles[index];
+    if (!emailRegex.test(email)) {
+        throw new Error("Email inválido");
+    }
+
+    //Verificar que el email no este duplicado
+    const { data: existingEmail } = await supabase
+    .from('responsables')
+    .select('id_responsables')
+    .eq('email', email)
+    .maybeSingle();
+
+    if (existingEmail) {
+        throw new Error("El email ya está registrado");
+    }
+
+    const { data, error } = await supabase
+        .from('responsables')
+        .insert([{
+            nombre,
+            apellido,
+            email,
+            telefono,
+            direccion,
+            relacion
+        }])
+        .select()
+        .maybeSingle();
+
+    if (error) throw error;
+
+    return data;
+};
+
+// Actualizar responsable
+const update = async (id, body) => {
+
+    const { data: existing, error: existError } = await supabase
+        .from('responsables')
+        .select('id_responsables')
+        .eq('id_responsables', id)
+        .maybeSingle();
+
+    if (existError) throw existError;
+
+    if (!existing) {
+        throw new Error("Responsable no encontrado");
+    }
+
+    const { data, error } = await supabase
+        .from('responsables')
+        .update(body)
+        .eq('id_responsables', id)
+        .select()
+        .maybeSingle();
+
+    if (error) throw error;
+
+    return data;
 };
 
 module.exports = {

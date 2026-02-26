@@ -1,43 +1,47 @@
 const responsablesService = require("../services/responsiblesService");
 
-const getAll = (req, res) => {
-    const responsibles = responsablesService.getAll();
-    res.json({success: true, data: responsibles});
+// Obtener todos
+const getAll = async (req, res) => {
+    try {
+        const responsibles = await responsablesService.getAll();
+        res.json({ success: true, data: responsibles });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 };
 
-const getById = (req, res) => {
-    const id = parseInt(req.params.id);
+// Obtener por ID
+const getById = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const responsible = await responsablesService.getById(id);
 
-    const responsible = responsablesService.getById(id);
-
-    if(!responsible){
-        return res.status(404).json({message: "Responsable no encontrado"});
+        res.json({ success: true, data: responsible });
+    } catch (error) {
+        res.status(404).json({ message: error.message });
     }
-
-    res.json({success: true, data: responsible});
 };
 
-const create = (req, res) => {
-    const result = responsablesService.create(req.body);
-
-    if(result.error){
-        return res.status(400).json({
-            message: result.error
-        })
+// Crear
+const create = async (req, res) => {
+    try {
+        const result = await responsablesService.create(req.body);
+        res.status(201).json({ success: true, data: result });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
-
-    res.status(201).json({success: true, data: result});
 };
 
-const update = (req, res) => {
-    const id = parseInt(req.params.id);
-    const updated = responsablesService.update(id, req.body);
+// Actualizar
+const update = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const updated = await responsablesService.update(id, req.body);
 
-    if(!updated){
-        return res.status(404).json({message: "Responsable no encontrado"});
+        res.json({ success: true, data: updated });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
-
-    res.json({success: true, data: updated});
 };
 
 module.exports = {
