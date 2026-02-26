@@ -2,15 +2,10 @@ const Joi = require('joi');
 
 // ENUMS
 const especialidadesValidas = [
-    'Compania', 'Produccion', 'Silvestres', 'Exoticos', 'Acuaticos'
+    'Compania', 'Acuaticos'
 ];
 
-const tiposAnimalesValidos = [
-    'Perros', 'Gatos', 'Conejos', 'Aves', 'Bovinos', 'Porcinos', 'Caprinos', 
-    'Ovinos', 'Aves de corral', 'Mamiferos silvestres', 'Aves silvestres', 
-    'Reptiles silvestres', 'Reptiles exoticos', 'Roedores exoticos', 'Aves exoticas', 
-    'Peces', 'Crustaceos'
-];
+const tiposAnimalesValidos = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
 
 const updateVeterinarianSchema = Joi.object({
     nombre: Joi.string().trim().min(2).max(50).messages({

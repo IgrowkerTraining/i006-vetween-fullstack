@@ -2,12 +2,7 @@ const Joi = require('joi');
 
 const sexosValidos = ['Macho', 'Hembra'];
 
-const especiesValidas = [
-    'Perros', 'Gatos', 'Conejos', 'Aves', 'Bovinos', 'Porcinos', 'Caprinos', 
-    'Ovinos', 'Aves de corral', 'Mamiferos silvestres', 'Aves silvestres', 
-    'Reptiles silvestres', 'Reptiles exoticos', 'Roedores exoticos', 'Aves exoticas', 
-    'Peces', 'Crustaceos'
-];
+const especiesValidas = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
 
 const patientSchema = Joi.object({
     nombre: Joi.string().trim().min(2).max(50).required().messages({

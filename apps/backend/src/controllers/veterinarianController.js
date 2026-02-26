@@ -26,7 +26,7 @@ const updateVeterinarian = async (req, res) => {
             return ResponseHelper.unauthorized(res, 'Usuario no autenticado');
         }
 
-        // req.body ya viene limpio y validado por el middleware de Joi
+        // req.body ya viene limpio y validado por el middleware validateData
         const updateData = req.body;
 
         const veterinarioActualizado = await veterinarioService.updateVeterinarian(idVeterinario, updateData);

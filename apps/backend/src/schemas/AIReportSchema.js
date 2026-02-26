@@ -1,28 +1,30 @@
 const Joi = require('joi');
 
-const aiReportSchema = Joi.object({
+const generarResumenSchema = Joi.object({
     id_paciente: Joi.number().integer().positive().required().messages({
         'number.base': 'El ID del paciente debe ser un número',
-        'any.required': 'El reporte debe estar asociado a un paciente'
+        'any.required': 'El ID del paciente es obligatorio'
     }),
 
-    id_request_ia: Joi.number().integer().allow(null).optional(),
+    datos_clinicos: Joi.object({
+        paciente: Joi.object().required().messages({
+            'any.required': 'Los datos del paciente son obligatorios'
+        }),
+        
+        // Joi.array() valida que se envie una lista de visitas (puede estar vacía)
+        visitas: Joi.array().required().messages({
+            'array.base': 'Las visitas deben enviarse en formato de lista',
+            'any.required': 'El historial de visitas es obligatorio'
+        }),
 
-    resumen_completo: Joi.string().trim().required().messages({
-        'string.empty': 'El resumen completo no puede estar vacío',
-        'any.required': 'El contenido del resumen es obligatorio'
-    }),
-
-    // JSON ESTRUCTURADO (Para la columna JSONB)
-    // Validar que sea un objeto válido con .unknown(true) que permite cualquier clave dentro.
-    resumen_estruct: Joi.object().unknown(true).allow(null).optional().messages({
-        'object.base': 'El resumen estructurado debe ser un objeto JSON válido'
-    }),
-
-    // METADATOS
-    modelo: Joi.string().trim().max(100).allow(null, '').optional(),
-    
-    fecha: Joi.date().iso().max('now').optional()
+        vacunas: Joi.array().required().messages({
+            'array.base': 'Las vacunas deben enviarse en formato de lista',
+            'any.required': 'El historial de vacunas es obligatorio'
+        })
+    }).required().messages({
+        'object.base': 'Los datos clínicos deben tener un formato válido',
+        'any.required': 'Se requieren los datos clínicos para generar el resumen'
+    })
 });
 
-module.exports = { aiReportSchema };
+module.exports = { generarResumenSchema };
