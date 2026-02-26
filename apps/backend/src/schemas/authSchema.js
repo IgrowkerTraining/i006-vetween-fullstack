@@ -1,16 +1,9 @@
 const Joi = require('joi');
 
 // Definimos ENUMS para validarlos con Joi
-const especialidadesValidas = [
-    'Compania', 'Produccion', 'Silvestres', 'Exoticos', 'Acuaticos'
-];
+const especialidadesValidas = ['Compania', 'Acuaticos'];
 
-const tiposAnimalesValidos = [
-    'Perros', 'Gatos', 'Conejos', 'Aves', 'Bovinos', 'Porcinos', 'Caprinos', 
-    'Ovinos', 'Aves de corral', 'Mamiferos silvestres', 'Aves silvestres', 
-    'Reptiles silvestres', 'Reptiles exoticos', 'Roedores exoticos', 'Aves exoticas', 
-    'Peces', 'Crustaceos'
-];
+const tiposAnimalesValidos = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
 
 // Esquema de validación para el register (registro)
 const registerSchema = Joi.object({
@@ -62,16 +55,19 @@ const registerSchema = Joi.object({
     }),
 
     // hacer UNIQUE a la clínica
-    num_habilitacion: Joi.string().trim().required().messages({
+    num_habilitacion: Joi.string().trim().min(5).max(200).required().messages({
         'string.empty': 'El número de habilitación municipal/sanitaria es obligatorio',
+        'string.min': 'El número de habilitación debe tener al menos 5 caracteres',
+        'string.max': 'El número de habilitación no puede tener más de 200 caracteres',
         'any.required': 'El número de habilitación es requerido para registrar la clínica'
     }),
 
-    direccion: Joi.string().trim().max(150).allow('').required().messages({
+    direccion: Joi.string().trim().min(6).max(150).required().messages({
         'string.empty': 'La dirección no puede estar vacía',
+        'string.min': 'La dirección debe tener al menos 6 caracteres',
         'string.max': 'La dirección no puede tener más de 150 caracteres'
     }),
-    telefono: Joi.string().trim().max(20).allow('').required().messages({
+    telefono: Joi.string().trim().max(20).required().messages({
         'string.empty': 'El teléfono no puede estar vacío',
         'string.max': 'El teléfono no puede tener más de 20 caracteres'
     })
