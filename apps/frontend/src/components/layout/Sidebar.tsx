@@ -1,19 +1,33 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import onlylogo from "../../assets/onlylogo.svg";
 
 const navItems = [
-  { label: "Pacientes", id: "pacientes" },
-  { label: "Historial clínico", id: "historial" },
-  { label: "Resumen clínico", id: "resumen" },
-  { label: "Administración", id: "administracion" },
+  { label: "Pacientes", id: "pacientes", path: "/dashboard" },
+  { label: "Historial clínico", id: "historial", path: "/dashboard" },
+  { label: "Resumen clínico", id: "resumen", path: "/dashboard" },
+  { label: "Mi Cuenta", id: "mi-cuenta", path: "/mi-cuenta" },
 ];
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
-  const [activeNav, setActiveNav] = useState("pacientes");
+  
+  // Determine active nav based on current path
+  const getActiveNav = () => {
+    const currentPath = location.pathname;
+    if (currentPath === "/mi-cuenta") return "mi-cuenta";
+    return "pacientes";
+  };
+  
+  const [activeNav, setActiveNav] = useState(getActiveNav);
+
+  const handleNavClick = (item: typeof navItems[0]) => {
+    setActiveNav(item.id);
+    navigate(item.path);
+  };
 
   const handleLogout = () => {
     logout();
@@ -31,7 +45,7 @@ const Sidebar: React.FC = () => {
           {navItems.map((item) => (
             <li key={item.id}>
               <button
-                onClick={() => setActiveNav(item.id)}
+                onClick={() => handleNavClick(item)}
                 className={`flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   activeNav === item.id
                     ? "bg-indigo-600 text-accent-foreground"
@@ -46,9 +60,6 @@ const Sidebar: React.FC = () => {
       </nav>
 
       <div className="border-t border-border px-3 py-3">
-        <button className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted">
-          Mi cuenta
-        </button>
         <button
           onClick={handleLogout}
           className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted"
