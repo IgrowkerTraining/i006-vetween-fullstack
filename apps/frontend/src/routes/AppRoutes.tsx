@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import MyAccount from "../pages/MyAccount";
+import ProfessionalProfile from "../pages/ProfessionalProfile";
 import DevPlayground from "../pages/DevPlayground";
 
 export const AppRoutes: React.FC = () => {
@@ -40,6 +41,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <MyAccount />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mi-cuenta/perfil-profesional"
+        element={
+          <ProtectedRoute>
+            <ProfessionalProfile />
           </ProtectedRoute>
         }
       />

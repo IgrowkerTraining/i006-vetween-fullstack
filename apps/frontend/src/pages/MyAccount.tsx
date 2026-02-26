@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import { useAuth } from "../hooks/useAuth";
 import stethoscopeIcon from "../assets/stethoscope.svg";
@@ -44,13 +45,14 @@ const MenuCard: React.FC<MenuCardProps> = ({ icon, title, description, onClick }
 };
 
 export default function MyAccount() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const userName = user?.name || "Usuario";
   const firstName = userName.split(" ")[0];
-  const clinicName = "Nombre de la clínica";
+  const consultancy = user?.consultancy || "Nombre de la clínica";
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -81,7 +83,7 @@ export default function MyAccount() {
         {/* User Info Section */}
         <section className="border-b border-border px-8 py-6">
           <div className="flex items-center gap-4">
-            {/* Avatar with upload - usando bg-vetween-teal */}
+            {/* Avatar with upload */}
             <div className="relative">
               <div
                 onClick={handleAvatarClick}
@@ -119,17 +121,18 @@ export default function MyAccount() {
               <h2 className="text-xl font-semibold text-foreground">
                 Dr(a). {userName}
               </h2>
-              <p className="text-muted-foreground">{clinicName}</p>
+              <p className="text-muted-foreground">{consultancy}</p>
             </div>
           </div>
         </section>
 
-        {/* Menu Cards - Flex Column - usando cores vetween-teal */}
+        {/* Menu Cards */}
         <section className="flex flex-col gap-4 px-8 py-6" aria-label="Opciones de cuenta">
           <MenuCard
             icon={stethoscopeIcon}
             title="Perfil Professional"
             description="Gestioná tu información personal y matrícula"
+            onClick={() => navigate("/mi-cuenta/perfil-profesional")}
           />
           <MenuCard
             icon={keyIcon}

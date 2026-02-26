@@ -3,7 +3,12 @@ export interface User {
   email: string;
   username: string;
   name: string;
+  lastName?: string;
   avatar?: string;
+  registration?: string;
+  specialties?: string;
+  animalTypes?: string[];
+  consultancy?: string;
 }
 
 export interface AuthState {

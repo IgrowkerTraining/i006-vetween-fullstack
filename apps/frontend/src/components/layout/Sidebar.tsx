@@ -18,7 +18,7 @@ const Sidebar: React.FC = () => {
   // Determine active nav based on current path
   const getActiveNav = () => {
     const currentPath = location.pathname;
-    if (currentPath === "/mi-cuenta") return "mi-cuenta";
+    if (currentPath === "/mi-cuenta" || currentPath.startsWith("/mi-cuenta/")) return "mi-cuenta";
     return "pacientes";
   };
   
