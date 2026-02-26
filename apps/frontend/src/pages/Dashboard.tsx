@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import pawIcon from "../assets/pawIcon.svg";
 import pawIconPlus from "../assets/pawIconPlus.svg";
 import Sidebar from "../components/layout/Sidebar";
+import { Modal } from "../components/common/Modal";
+import { PatientForm, PatientFormData } from "../components/forms/PatientForm";
+import { api } from "../services/api";
 
 export interface Patient {
   id: string
@@ -21,16 +24,56 @@ const samplePatients: Patient[] = [
 
 export default function Dashboard() {
   const [patients, setPatients] = useState<Patient[]>([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isFormLoading, setIsFormLoading] = useState(false)
+  const [modalStep, setModalStep] = useState(1)
 
-  const handleAddPatient = () => {
-    if (patients.length === 0) {
-      setPatients(samplePatients)
+  const handleAddPatient = () => setIsModalOpen(true)
+
+  const handleFormSubmit = async (data: PatientFormData) => {
+    setIsFormLoading(true)
+    try {
+      await api.createPatient({
+        nombre: data.patient.name,
+        especie: data.patient.species,
+        edad: parseFloat(data.patient.age) || 0,
+        color: data.patient.color,
+        senia: data.patient.characteristic,
+        sexo: data.patient.sex === "male" ? "Macho" : "Hembra",
+        raza: data.patient.breed,
+        peso: parseFloat(data.patient.weight) || 0,
+        esterilizado: data.patient.sterilized === "yes",
+        tiene_microchip: data.patient.microchip === "yes",
+        num_microchip: data.patient.microchipNumber,
+        activo: true,
+        id_responsable: 0, // TODO: obtener del responsable registrado
+        id_clinica: 0,     // TODO: obtener de la sesión del veterinario
+      })
+      setIsModalOpen(false)
+    } catch (err: any) {
+      console.error("Error al crear paciente:", err.message)
+    } finally {
+      setIsFormLoading(false)
     }
   }
 
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={`Registrar paciente`}
+        size="lg"
+      >
+        <PatientForm
+          onSubmit={handleFormSubmit}
+          onCancel={() => setIsModalOpen(false)}
+          isLoading={isFormLoading}
+          onStepChange={setModalStep}
+        />
+      </Modal>
 
       {/* Main content */}
       <main className="flex flex-1 flex-col overflow-y-auto">
@@ -44,7 +87,7 @@ export default function Dashboard() {
             className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
           >
             <img src={pawIconPlus} alt="Paw Icon Add" className="size-10" />
-            {"Anadir paciente"}
+            {"Añadir paciente"}
           </button>
         </header>
 

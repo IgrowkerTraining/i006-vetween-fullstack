@@ -27,7 +27,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {label && (
-        <label className="text-sm font-medium text-slate-400 ml-1">
+        <label className="text-sm font-semibold text-[#0b1001] ml-1">
           {label}
         </label>
       )}
@@ -52,7 +52,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
                   ${
                     value === option.value
                       ? "border-indigo-500 bg-indigo-500"
-                      : "border-slate-600 bg-slate-900/50 group-hover:border-slate-500"
+                      : "border-gray-300 bg-white group-hover:border-indigo-400"
                   }
                 `}
               >
@@ -63,7 +63,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
                 )}
               </div>
             </div>
-            <span className="text-sm text-slate-300">{option.label}</span>
+            <span className="text-sm text-gray-700">{option.label}</span>
           </label>
         ))}
       </div>

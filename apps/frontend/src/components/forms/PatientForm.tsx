@@ -263,10 +263,10 @@ export const PatientForm: React.FC<PatientFormProps> = ({
 
       {/* Step 1: Patient Data */}
       {currentStep === 1 && (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Datos básicos */}
           <section className="space-y-3">
-            <h3 className="text-sm font-medium text-indigo-400 uppercase tracking-wider">
+            <h3 className="text-xl font-bold text-gray-900">
               Datos básicos
             </h3>
             <Input
@@ -300,7 +300,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
 
           {/* Datos biológicos */}
           <section className="space-y-3">
-            <h3 className="text-sm font-medium text-indigo-400 uppercase tracking-wider">
+            <h3 className="text-xl font-bold text-gray-900">
               Datos biológicos
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -325,17 +325,22 @@ export const PatientForm: React.FC<PatientFormProps> = ({
 
           {/* Características físicas */}
           <section className="space-y-3">
-            <h3 className="text-sm font-medium text-indigo-400 uppercase tracking-wider">
+            <h3 className="text-xl font-bold text-gray-900">
               Características físicas
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <Input
                 label="Peso *"
                 name="weight"
-                placeholder="Ej: 4.5 kg"
+                placeholder="Ej. 4,5"
                 value={patient.weight}
                 onChange={handlePatientChange}
                 error={errors.weight}
+                suffix={
+                  <span className="absolute right-0 top-0 h-full flex items-center px-3 bg-indigo-600 text-white text-sm font-bold rounded-r-lg pointer-events-none">
+                    kg
+                  </span>
+                }
               />
               <Input
                 label="Color *"
@@ -357,7 +362,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
 
           {/* Condiciones clínicas */}
           <section className="space-y-3">
-            <h3 className="text-sm font-medium text-indigo-400 uppercase tracking-wider">
+            <h3 className="text-xl font-bold text-gray-900 text-center">
               Condiciones clínicas
             </h3>
             <div className="grid grid-cols-2 gap-3 items-start">
@@ -383,20 +388,27 @@ export const PatientForm: React.FC<PatientFormProps> = ({
                   error={errors.microchip}
                 />
                 {patient.microchip === "yes" && (
-                  <Input
-                    name="microchipNumber"
-                    placeholder="Número de microchip"
-                    value={patient.microchipNumber}
-                    onChange={handlePatientChange}
-                    error={errors.microchipNumber}
-                  />
+                  <div className="space-y-2">
+                    <Input
+                      name="microchipNumber"
+                      placeholder="Número de microchip"
+                      value={patient.microchipNumber}
+                      onChange={handlePatientChange}
+                      error={errors.microchipNumber}
+                    />
+                    {patient.microchipNumber && (
+                      <div className="bg-indigo-100 text-indigo-800 font-semibold px-4 py-2.5 rounded-xl text-sm">
+                        Número: {patient.microchipNumber}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
           </section>
 
           {/* Actions Step 1 */}
-          <div className="flex justify-end pt-4 border-t border-slate-700">
+          <div className="flex justify-end pt-4">
             <Button type="button" variant="primary" onClick={handleNext}>
               Siguiente
             </Button>

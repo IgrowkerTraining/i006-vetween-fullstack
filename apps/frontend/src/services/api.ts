@@ -21,6 +21,23 @@ export interface RegisterRequest {
   telefono: string;
 }
 
+export interface CreatePatientRequest {
+  nombre: string;
+  especie: string;
+  edad: number;
+  color: string;
+  senia: string;
+  sexo: "Macho" | "Hembra";
+  raza: string;
+  peso: number;
+  esterilizado: boolean;
+  tiene_microchip: boolean;
+  num_microchip: string;
+  activo: boolean;
+  id_responsable: number;
+  id_clinica: number;
+}
+
 export const api = {
   async register(data: RegisterRequest): Promise<{ user: User; message: string }> {
     const response = await fetch(
@@ -54,6 +71,22 @@ export const api = {
     const result = await response.json();
     if (!response.ok) {
       throw new Error(result.error || "Login failed");
+    }
+    return result;
+  },
+
+  async createPatient(data: CreatePatientRequest): Promise<unknown> {
+    const response = await fetch(
+      `${API_ENDPOINTS.BASE}${API_ENDPOINTS.PACIENTES}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Error al crear el paciente");
     }
     return result;
   },

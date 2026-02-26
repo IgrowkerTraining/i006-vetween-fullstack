@@ -58,18 +58,18 @@ export const Modal: React.FC<ModalProps> = ({
         className={`
           relative w-full ${sizes[size]} flex flex-col
           max-h-[90vh]
-          bg-slate-800 border border-slate-700 rounded-xl shadow-2xl
+          bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden
           transform transition-all duration-200
           animate-in fade-in zoom-in-95
         `}
       >
         {/* Header */}
         {title && (
-          <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-700">
-            <h2 className="text-lg font-semibold text-slate-100">{title}</h2>
+          <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 bg-indigo-600 rounded-t-xl">
+            <h2 className="text-lg font-semibold text-white">{title}</h2>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors"
+              className="p-1 rounded-lg text-white/80 hover:text-white hover:bg-white/20 transition-colors"
             >
               <svg
                 className="w-5 h-5"
@@ -89,7 +89,7 @@ export const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Body - Scrolleable */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-50 rounded-b-xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-100 [&::-webkit-scrollbar-thumb]:bg-indigo-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-indigo-400">{children}</div>
       </div>
     </div>
   );

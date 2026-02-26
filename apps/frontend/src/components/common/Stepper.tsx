@@ -26,10 +26,10 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
                   font-semibold text-lg transition-all duration-300
                   ${
                     isActive
-                      ? "bg-indigo-600 text-white ring-4 ring-indigo-500/30"
+                      ? "bg-teal-400 text-white shadow-md"
                       : isCompleted
-                        ? "bg-green-600 text-white"
-                        : "bg-slate-700 text-slate-400"
+                        ? "bg-teal-500 text-white"
+                        : "bg-slate-200 text-slate-500"
                   }
                 `}
               >
@@ -53,7 +53,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
               </div>
               <span
                 className={`text-xs font-medium ${
-                  isActive ? "text-indigo-400" : "text-slate-500"
+                  isActive ? "text-gray-900 font-semibold" : "text-slate-400"
                 }`}
               >
                 {step.label}
@@ -65,7 +65,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
               <div
                 className={`
                   w-16 h-0.5 -mt-5 transition-all duration-300
-                  ${isCompleted ? "bg-green-600" : "bg-slate-700"}
+                  ${isCompleted ? "bg-teal-500" : "bg-slate-300"}
                 `}
               />
             )}
