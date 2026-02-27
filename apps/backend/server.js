@@ -2,6 +2,7 @@ const express = require("express");
 const { setupMiddleware } = require("./src/middleware");
 const apiRoutes = require("./src/routes");
 const config = require("./src/config");
+require("dotenv").config();
 
 const app = express();
 

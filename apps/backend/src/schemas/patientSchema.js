@@ -69,4 +69,9 @@ const patientSchema = Joi.object({
     }),
 });
 
-module.exports = { patientSchema };
+const updatePatientSchema = patientSchema.fork(
+  Object.keys(patientSchema.describe().keys),
+  (field) => field.optional()
+);
+
+module.exports = { patientSchema, updatePatientSchema };
