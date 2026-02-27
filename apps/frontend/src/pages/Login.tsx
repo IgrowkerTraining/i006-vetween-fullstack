@@ -24,7 +24,7 @@ const Login: React.FC = () => {
 
     try {
       const response = await api.login({ email, password });
-      login(response.user);
+      login(response.user, response.token);
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");

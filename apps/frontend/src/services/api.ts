@@ -1,4 +1,4 @@
-import { User } from "../types";
+import { User, Veterinarian, Clinic } from "../types";
 import { API_ENDPOINTS } from "../constants/routes";
 
 export interface LoginRequest {
@@ -19,6 +19,11 @@ export interface RegisterRequest {
   num_habilitacion: string;
   direccion: string;
   telefono: string;
+}
+
+export interface ChangePasswordRequest {
+  contraseña_actual: string;
+  contraseña_nueva: string;
 }
 
 export interface CreatePatientRequest {
@@ -100,5 +105,96 @@ export const api = {
     } catch {
       return false;
     }
+  },
+
+  async getVeterinarian(id: number, token: string): Promise<Veterinarian> {
+    const response = await fetch(
+      `${API_ENDPOINTS.BASE}/veterinario/${id}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Error al obtener datos del veterinario");
+    }
+    return result;
+  },
+
+  async getClinic(token: string): Promise<Clinic> {
+    const response = await fetch(
+      `${API_ENDPOINTS.BASE}/clinica`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Error al obtener datos de la clínica");
+    }
+    return result.data;
+  },
+
+  async changePassword(data: ChangePasswordRequest, token: string): Promise<{ message: string }> {
+    const response = await fetch(
+      `${API_ENDPOINTS.BASE}/auth/cambiar-contraseña`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Error al cambiar la contraseña");
+    }
+    return result;
+  },
+
+  async updateVeterinarian(id: number, data: Partial<Veterinarian>, token: string): Promise<Veterinarian> {
+    const response = await fetch(
+      `${API_ENDPOINTS.BASE}/veterinario/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Error al actualizar datos del veterinario");
+    }
+    return result;
+  },
+
+  async updateClinic(data: Partial<Clinic>, token: string): Promise<Clinic> {
+    const response = await fetch(
+      `${API_ENDPOINTS.BASE}/clinica`,
+      {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Error al actualizar datos de la clínica");
+    }
+    return result.data;
   },
 };
