@@ -1,5 +1,6 @@
 const supabase = require('../config/supabaseClient');
 const bcrypt = require('bcrypt');
+const { dir } = require('console');
 const jwt = require('jsonwebtoken');
 
 const registerUser = async (userData) => {
@@ -7,7 +8,7 @@ const registerUser = async (userData) => {
         const { data: existingUser } = await supabase
             .from('veterinario')
             .select('email, matricula')
-            .or(`email.eq.${userData.email}`)
+            .or(`email.eq.${userData.email},matricula.eq.${userData.matricula}`)
             .single();
 
         if (existingUser) {
@@ -22,7 +23,10 @@ const registerUser = async (userData) => {
         const nuevaClinica = {
             nombre: userData.nombre_consultorio,
             num_habilitacion: userData.num_habilitacion,
-            direccion: userData.direccion,
+            direccion_calle: userData.direccion_calle,
+            direccion_numero: userData.direccion_numero,
+            direccion_localidad: userData.direccion_localidad,
+            provincia: userData.provincia,
             telefono: userData.telefono
         };
 

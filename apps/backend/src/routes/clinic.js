@@ -6,7 +6,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { updateClinicSchema } = require('../schemas/clinicSchema');
 
 
-router.put('/', 
+router.patch('/', 
     protect,
     validateData(updateClinicSchema), 
     clinicController.update

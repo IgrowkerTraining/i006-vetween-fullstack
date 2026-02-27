@@ -1,9 +1,24 @@
 const Joi = require('joi');
 
 // Definimos ENUMS para validarlos con Joi
-const especialidadesValidas = ['Compania', 'Acuaticos'];
+const especialidadesValidas = [
+    'Clinica general', 
+    'Medicina preventiva', 
+    'Dermatologia', 
+    'Diagnostico', 
+    'Urgencias', 
+    'Otra'
+];
 
-const tiposAnimalesValidos = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
+const tiposAnimalesValidos = ['Caninos', 'Felinos', 'Aves', 'Peces', 'Roedores', 'Otro'];
+
+const provinciasValidas = [
+    'CABA', 'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 
+    'Cordoba', 'Corrientes', 'Entre Rios', 'Formosa', 'Jujuy', 
+    'La Pampa', 'La Rioja', 'Mendoza', 'Misiones', 'Neuquen', 
+    'Rio Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 
+    'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego', 'Tucuman'
+];
 
 // Esquema de validación para el register (registro)
 const registerSchema = Joi.object({
@@ -35,13 +50,20 @@ const registerSchema = Joi.object({
         'number.positive': 'La matrícula no puede ser negativa'
     }),
     
-    especialidad: Joi.string().valid(...especialidadesValidas).required().messages({
-        'any.only': 'Selecciona una especialidad válida'
+    especialidad: Joi.array().items(
+        Joi.string().valid(...especialidadesValidas)).min(1).required().messages({
+        'array.base': 'La especialidad debe ser una lista (array) válida',
+        'array.min': 'Debes seleccionar al menos una especialidad',
+        'any.only': 'Debes seleccionar una especialidad válida',
+        'any.required': 'La especialidad es obligatoria'
     }),
     
     tipos_animales: Joi.array().items(
         Joi.string().valid(...tiposAnimalesValidos)).min(1).required().messages({
-        'array.min': 'Debes seleccionar al menos un tipo de animal'
+        'array.base': 'Los tipos de animales debe ser una lista (array) válida',
+        'array.min': 'Debes seleccionar al menos un tipo de animal',
+        'any.only': 'Debes seleccionar un tipo de animal válido',
+        'any.required': 'Los tipos de animales son obligatorios'
     }),
 
     costo_consulta: Joi.number().precision(2).positive().required().messages({
@@ -62,11 +84,28 @@ const registerSchema = Joi.object({
         'any.required': 'El número de habilitación es requerido para registrar la clínica'
     }),
 
-    direccion: Joi.string().trim().min(6).max(150).required().messages({
-        'string.empty': 'La dirección no puede estar vacía',
-        'string.min': 'La dirección debe tener al menos 6 caracteres',
-        'string.max': 'La dirección no puede tener más de 150 caracteres'
+    direccion_calle: Joi.string().trim().min(2).max(150).required().messages({
+        'string.empty': 'La calle no puede estar vacía',
+        'string.min': 'La calle debe tener al menos 2 caracteres',
+        'string.max': 'La calle no puede tener más de 150 caracteres'
     }),
+
+    direccion_numero: Joi.string().trim().max(10).required().messages({
+        'string.empty': 'El número de dirección no puede estar vacío',
+        'string.max': 'El número no puede tener más de 10 caracteres'
+    }),
+
+    direccion_localidad: Joi.string().trim().min(2).max(100).required().messages({
+        'string.empty': 'La ciudad / localidad no puede estar vacía',
+        'string.min': 'La ciudad / localidad debe tener al menos 2 caracteres',
+        'string.max': 'La ciudad no puede tener más de 100 caracteres'
+    }),
+
+    provincia: Joi.string().valid(...provinciasValidas).required().messages({
+        'any.only': 'Debes seleccionar una provincia válida',
+        'any.required': 'La provincia es obligatoria'
+    }),
+
     telefono: Joi.string().trim().max(20).required().messages({
         'string.empty': 'El teléfono no puede estar vacío',
         'string.max': 'El teléfono no puede tener más de 20 caracteres'

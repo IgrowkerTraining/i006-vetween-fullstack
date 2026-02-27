@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 const sexosValidos = ['Macho', 'Hembra'];
 
-const especiesValidas = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
+const especiesValidas = ['Caninos', 'Felinos', 'Aves', 'Peces', 'Roedores', 'Otro'];
 
 const patientSchema = Joi.object({
     nombre: Joi.string().trim().min(2).max(50).required().messages({
@@ -24,6 +24,10 @@ const patientSchema = Joi.object({
         'string.empty': 'El color es obligatorio',
         'string.min': 'El color debe tener al menos 2 caracteres',
         'string.max': 'El color no puede tener más de 30 caracteres'
+    }),
+
+    senia: Joi.string().trim().max(255).allow(null, '').messages({
+        'string.max': 'Las señas/caracteristicas no puede tener más de 255 caracteres'
     }),
 
     sexo: Joi.string().valid(...sexosValidos).required().messages({
