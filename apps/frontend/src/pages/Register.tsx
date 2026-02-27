@@ -6,6 +6,7 @@ import { User } from "../types";
 import { getSecurityTip } from "../services/service";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
+import { storage } from "../utils/storage";
 import logo from "../assets/logo.svg";
 import onlylogo from "../assets/onlylogo.svg"
 
@@ -22,7 +23,10 @@ const Register: React.FC = () => {
     specialties: "",
     consultancy: "",
     habilitation: "",
-    address: "",
+    addressStreet: "",
+    addressNumber: "",
+    addressLocality: "",
+    province: "",
     phone: "",
     animalTypes: [] as string[],
     consultationCost: "",
@@ -34,23 +38,20 @@ const Register: React.FC = () => {
   const [animalTypesOpen, setAnimalTypesOpen] = useState(false);
   const animalTypesRef = useRef<HTMLDivElement>(null);
 
-  const [otherAnimalType, setOtherAnimalType] = useState("");
-  const [showOtherAnimalInput, setShowOtherAnimalInput] = useState(false);
-
   const ANIMAL_TYPES_OPTIONS = [
-    "Perros",
-    "Gatos",
-    "Conejos",
-    "Hámster",
-    "Otro",
+    "Caninos",
+    "Felinos",
+    "Peces",
+    "Otros",
   ];
 
   const SPECIALTIES_OPTIONS = [
-    "Compania",
-    "Produccion",
-    "Silvestres",
-    "Exoticos",
-    "Acuaticos",
+    "Clínica general",
+    "Medicina preventiva",
+    "Dermatología",
+    "Diagnóstico",
+    "Urgencias",
+    "Otra",
   ];
 
 
@@ -141,15 +142,35 @@ const Register: React.FC = () => {
         email: formData.email,
         password: formData.password,
         matricula: parseInt(formData.registration) || 0,
-        especialidad: formData.specialties,
+        especialidad: formData.specialties ? [formData.specialties] : [],
         tipos_animales: formData.animalTypes,
         costo_consulta: parseFloat(formData.consultationCost) || 0,
         nombre_consultorio: formData.consultancy,
         num_habilitacion: formData.habilitation,
-        direccion: formData.address,
+        direccion_calle: formData.addressStreet,
+        direccion_numero: formData.addressNumber,
+        direccion_localidad: formData.addressLocality,
+        provincia: formData.province,
         telefono: formData.phone,
       });
-      login(response.user);
+
+      let user = response.user;
+      let token = response.token;
+
+      if (!token) {
+        const loginResponse = await api.login({
+          email: formData.email,
+          password: formData.password,
+        });
+        user = loginResponse.user;
+        token = loginResponse.token;
+      }
+
+      if (token) {
+        storage.setToken(token);
+      }
+
+      login(user);
       navigate("/dashboard");
     } catch (err: any) {
       setServerError(err.message || "Registration failed");
@@ -432,45 +453,12 @@ const Register: React.FC = () => {
                             type="checkbox"
                             value={animal}
                             checked={formData.animalTypes.includes(animal)}
-                            onChange={() => {
-                              handleAnimalTypeChange(animal);
-                              if (animal === "Otro") {
-                                setShowOtherAnimalInput(!showOtherAnimalInput);
-                              }
-                            }}
+                            onChange={() => handleAnimalTypeChange(animal)}
                             className="w-4 h-4 accent-indigo-600 flex-shrink-0"
                           />
                           {animal}
                         </label>
                       ))}
-                      {showOtherAnimalInput && (
-                        <div className="px-2 py-1.5">
-                          <input
-                            type="text"
-                            placeholder="Especificar otro tipo..."
-                            value={otherAnimalType}
-                            onChange={(e) => {
-                              setOtherAnimalType(e.target.value);
-                              if (e.target.value && !formData.animalTypes.includes("Otro")) {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  animalTypes: [...prev.animalTypes, "Otro"],
-                                }));
-                              }
-                            }}
-                            onBlur={() => {
-                              if (otherAnimalType.trim() && !formData.animalTypes.includes(otherAnimalType.trim())) {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  animalTypes: [...prev.animalTypes.filter(a => a !== "Otro"), otherAnimalType.trim()],
-                                }));
-                              }
-                            }}
-                            className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                            autoFocus
-                          />
-                        </div>
-                      )}
                     </div>
                     {formData.animalTypes.length > 0 && (
                       <div className="border-t border-slate-100 px-3 py-2 flex justify-between items-center">
@@ -481,8 +469,6 @@ const Register: React.FC = () => {
                           type="button"
                           onClick={() => {
                             setFormData((prev) => ({ ...prev, animalTypes: [] }));
-                            setOtherAnimalType("");
-                            setShowOtherAnimalInput(false);
                           }}
                           className="text-xs text-red-400 hover:text-red-600 transition-colors"
                         >
@@ -602,12 +588,45 @@ const Register: React.FC = () => {
               </div>
               <div className="md:col-span-2">
                 <Input
-                  label="Dirección"
-                  name="address"
-                  placeholder="Dirección de la clínica"
+                  label="Calle"
+                  name="addressStreet"
+                  placeholder="Av. San Martín"
                   required
                   disabled={isLoading}
-                  value={formData.address}
+                  value={formData.addressStreet}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Número"
+                  name="addressNumber"
+                  placeholder="1234"
+                  required
+                  disabled={isLoading}
+                  value={formData.addressNumber}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Localidad"
+                  name="addressLocality"
+                  placeholder="Ciudad"
+                  required
+                  disabled={isLoading}
+                  value={formData.addressLocality}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Input
+                  label="Provincia"
+                  name="province"
+                  placeholder="Provincia"
+                  required
+                  disabled={isLoading}
+                  value={formData.province}
                   onChange={handleChange}
                 />
               </div>

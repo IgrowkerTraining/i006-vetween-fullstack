@@ -5,6 +5,7 @@ import { Button } from "../components/common/Button";
 import { User } from "../types";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
+import { storage } from "../utils/storage";
 import logo from "../assets/logo.svg";
 import onlylogo from "../assets/onlylogo.svg"
 
@@ -24,6 +25,7 @@ const Login: React.FC = () => {
 
     try {
       const response = await api.login({ email, password });
+      storage.setToken(response.token);
       login(response.user);
       navigate("/dashboard");
     } catch (err: any) {

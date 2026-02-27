@@ -63,19 +63,16 @@ const STEPS = [
 ];
 
 const SEX_OPTIONS = [
-  { value: "male", label: "Macho" },
-  { value: "female", label: "Hembra" },
+  { value: "Macho", label: "Macho" },
+  { value: "Hembra", label: "Hembra" },
 ];
 
 // TODO: Estas opciones vendrán del backend
 const SPECIES_OPTIONS = [
-  { value: "dog", label: "Perro" },
-  { value: "cat", label: "Gato" },
-  { value: "bird", label: "Ave" },
-  { value: "rabbit", label: "Conejo" },
-  { value: "hamster", label: "Hámster" },
-  { value: "reptile", label: "Reptil" },
-  { value: "other", label: "Otro" },
+  { value: "Caninos", label: "Caninos" },
+  { value: "Felinos", label: "Felinos" },
+  { value: "Peces", label: "Peces" },
+  { value: "Otros", label: "Otros" },
 ];
 
 const YES_NO_OPTIONS = [
@@ -85,17 +82,17 @@ const YES_NO_OPTIONS = [
 
 // TODO: Estas opciones vendrán del backend
 const PROVINCE_OPTIONS = [
-  { value: "buenos_aires", label: "Buenos Aires" },
-  { value: "cordoba", label: "Córdoba" },
-  { value: "santa_fe", label: "Santa Fe" },
-  { value: "mendoza", label: "Mendoza" },
-  { value: "tucuman", label: "Tucumán" },
+  { value: "Buenos Aires", label: "Buenos Aires" },
+  { value: "Córdoba", label: "Córdoba" },
+  { value: "Santa Fe", label: "Santa Fe" },
+  { value: "Mendoza", label: "Mendoza" },
+  { value: "Tucumán", label: "Tucumán" },
 ];
 
 const RELATIONSHIP_OPTIONS = [
-  { value: "owner", label: "Dueño" },
-  { value: "tutor", label: "Tutor" },
-  { value: "caretaker", label: "Cuidador" },
+  { value: "Dueño/a", label: "Dueño/a" },
+  { value: "Tutor/a", label: "Tutor/a" },
+  { value: "Cuidador/a", label: "Cuidador/a" },
 ];
 
 // Initial state
