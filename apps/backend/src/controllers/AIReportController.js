@@ -1,75 +1,45 @@
-const iaService = require("../services/AIReportService");
+const {
+    generateSummary,
+    getSummariesByPatientFromDB
+} = require("../services/AIReportService");
 
-const generarResumen = async (req, res) => {
+const createSummary = async (req, res) => {
     try {
-        const { id_paciente, datos_clinicos } = req.body;
-
-        if (!id_paciente || !datos_clinicos) {
-            return res.status(400).json({
-                success: false,
-                message:
-                "El paciente no posee información clínica suficiente para generar resumen",
-            });
-        }
-
-        const resumen = await iaService.generarResumen(
-            id_paciente,
-            datos_clinicos
-        );
-
-        return res.status(200).json(resumen);
-    } catch (error) {
-        if (error.message === "PATIENT_NOT_FOUND") {
-            return res.status(404).json({
-                success: false,
-                message: "Paciente no encontrado",
-            });
-        }
-
-        if (error.message === "IA_ERROR") {
-        return res.status(500).json({
-            success: false,
-            message: "Error al generar resumen con el servicio de IA",
+        const data = await generateSummary(req.body);
+        return res.status(201).json({
+        success: true,
+        message: "Resumen de IA generado y guardado correctamente",
+        data
         });
-}
 
+    } catch (error) {
         return res.status(500).json({
-            success: false,
-            message: "Error al generar resumen con el servicio de IA",
+        success: false,
+        message: error.message
         });
     }
 };
 
-const obtenerResumenesPorPaciente = async (req, res) => {
+const getSummariesByPatient = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const resumenes = await iaService.obtenerResumenesPorPaciente(id);
+        const data = await getSummariesByPatientFromDB(id);
 
-        return res.status(200).json(resumenes);
+        return res.status(200).json({
+        success: true,
+        data
+        });
+
     } catch (error) {
-        if (error.message === "PATIENT_NOT_FOUND") {
-            return res.status(404).json({
-                success: false,
-                message: "Paciente no encontrado",
-            });
-        }
-
-        if (error.message === "IA_ERROR") {
-            return res.status(500).json({
-                success: false,
-                message: "Error al generar resumen con el servicio de IA",
-            });
-        }
-
         return res.status(500).json({
-            success: false,
-            message: "Error al generar resumen con el servicio de IA",
+        success: false,
+        message: error.message
         });
     }
 };
 
 module.exports = {
-    generarResumen,
-    obtenerResumenesPorPaciente,
+    createSummary,
+    getSummariesByPatient
 };
