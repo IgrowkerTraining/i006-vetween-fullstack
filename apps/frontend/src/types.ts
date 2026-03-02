@@ -37,6 +37,7 @@ export interface User {
   // Datos del veterinario (del token/login)
   id_veterinario?: number;
   id_clinica?: number;
+  name?: string;
   nombre: string;
   apellido: string;
   email: string;

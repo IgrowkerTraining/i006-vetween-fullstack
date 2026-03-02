@@ -32,12 +32,11 @@ export default function Dashboard() {
     navigate(`${ROUTES.PATIENT}/${patientId}`);
   };
 
-  const userDisplayName =
+  const rawName =
     user?.name ||
-    (user as any)?.nombre ||
-    user?.username ||
     user?.email?.split("@")[0] ||
     "usuario";
+  const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
   const mapStateLabel = (value: unknown): string => {
     if (typeof value === "boolean") return value ? "Activo" : "Inactivo";
@@ -231,7 +230,14 @@ export default function Dashboard() {
                           {patient.id}
                         </button>
                       </td>
-                      <td className="px-6 py-3 font-medium">{patient.nombre}</td>
+                      <td className="px-6 py-3 font-medium">
+                        <button
+                          onClick={() => handlePatientClick(patient.id)}
+                          className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
+                        >
+                          {patient.nombre}
+                        </button>
+                      </td>
                       <td className="px-6 py-3">{patient.especie}</td>
                       <td className="px-6 py-3">{patient.responsable}</td>              
                       <td className="px-6 py-3">
