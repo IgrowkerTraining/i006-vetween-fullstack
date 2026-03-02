@@ -1,28 +1,36 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import pawIcon from "../assets/pawIcon.svg";
 import pawIconPlus from "../assets/pawIconPlus.svg";
-import Sidebar from "../components/layout/Sidebar";
 import { Modal } from "../components/common/Modal";
-import { PatientForm, PatientFormData } from "../components/forms/PatientForm";
+import MainLayout from "../components/layout/MainLayout";
+import PageHeader from "../components/common/PageHeader"
+import { PatientForm, PatientFormData } from "../components/patient/PatientForm";
 import { api, ResponsibleListItem } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
+import { ROUTES } from "../constants/routes";
 
 export interface Patient {
-  id: string
-  nombre: string
-  especie: string
-  responsable: string
-  
-  estado: string
+  id: string;
+  nombre: string;
+  especie: string;
+  responsable: string;
+
+  estado: string;
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isFormLoading, setIsFormLoading] = useState(false)
   const [modalStep, setModalStep] = useState(1)
   const [patientsError, setPatientsError] = useState<string | null>(null)
+
+  const handlePatientClick = (patientId: string) => {
+    navigate(`${ROUTES.PATIENT}/${patientId}`);
+  };
 
   const userDisplayName =
     user?.name ||
@@ -153,8 +161,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
+    <MainLayout>
 
       <Modal
         isOpen={isModalOpen}
@@ -171,20 +178,20 @@ export default function Dashboard() {
       </Modal>
 
       {/* Main content */}
-      <main className="flex flex-1 flex-col overflow-y-auto">
-        <header className="flex items-center justify-between border-b border-border bg-card px-8 py-5">
-          <div>
-            <p className="text-sm text-muted-foreground">Hola, {userDisplayName}</p>
-            <h1 className="text-2xl font-bold text-foreground">Pacientes</h1>
-          </div>
-          <button
-            onClick={handleAddPatient}
-            className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
-          >
-            <img src={pawIconPlus} alt="Paw Icon Add" className="size-10" />
-            {"Añadir paciente"}
-          </button>
-        </header>
+      <section className="flex flex-1 flex-col overflow-y-auto">
+        <PageHeader
+          subtitle={`Hola, ${userDisplayName}`}
+          title="Pacientes"
+          actions={
+            <button
+              onClick={handleAddPatient}
+              className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
+            >
+              <img src={pawIconPlus} alt="Paw Icon Add" className="size-10" />
+              {"Añadir paciente"}
+            </button>
+          }
+        />
 
         <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
           {patientsError && (
@@ -216,7 +223,14 @@ export default function Dashboard() {
                 <tbody>
                   {patients.map((patient) => (
                     <tr key={patient.id} className="text-black border-t border-border transition-colors hover:bg-muted/60">
-                      <td className="px-6 py-3 font-medium">{patient.id}</td>
+                      <td className="px-6 py-3 font-medium">
+                        <button
+                          onClick={() => handlePatientClick(patient.id)}
+                          className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
+                        >
+                          {patient.id}
+                        </button>
+                      </td>
                       <td className="px-6 py-3 font-medium">{patient.nombre}</td>
                       <td className="px-6 py-3">{patient.especie}</td>
                       <td className="px-6 py-3">{patient.responsable}</td>              
@@ -225,40 +239,41 @@ export default function Dashboard() {
                           patient.estado === "Activo"
                             ? "bg-emerald-100 text-emerald-700"
                             : "bg-red-100 text-red-700"
-                        }`}>
-                          {patient.estado}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3">
-                        <button className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo">
-                          Editar
-                        </button>
-                      </td>
-                      <td className="px-6 py-3">
-                        <button className="text-sm font-medium text-red-500 transition-colors hover:text-red-700">
-                          Eliminar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              )}
-            </table>
-
-            {patients.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16">
-                <img src={pawIcon} alt="paw icon" />
-                <h3 className="mt-4 text-lg font-semibold text-foreground">
-                  No hay pacientes registrados aun
-                </h3>
-                <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                  {"Agrega uno nuevo haciendo click en el boton superior."}
-                </p>
-              </div>
+                        }`}
+                      >
+                        {patient.estado}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3">
+                      <button className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo">
+                        Editar
+                      </button>
+                    </td>
+                    <td className="px-6 py-3">
+                      <button className="text-sm font-medium text-red-500 transition-colors hover:text-red-700">
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             )}
-          </div>
+          </table>
+
+          {patients.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <img src={pawIcon} alt="paw icon" />
+              <h3 className="mt-4 text-lg font-semibold text-foreground">
+                No hay pacientes registrados aun
+              </h3>
+              <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
+                {"Agrega uno nuevo haciendo click en el boton superior."}
+              </p>
+            </div>
+          )}
+        </div>
         </section>
-      </main>
-    </div>
-  )
+      </section>
+    </MainLayout>
+  );
 }

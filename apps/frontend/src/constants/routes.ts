@@ -2,12 +2,13 @@ export const ROUTES = {
   LOGIN: "/login",
   REGISTER: "/register",
   DASHBOARD: "/dashboard",
+  PATIENT: "/patient",
   HOME: "/",
   DEV: "/dev",
 } as const;
 
 export const API_ENDPOINTS = {
-  BASE: 'http://localhost:3000/api',
+  BASE: "http://localhost:3000/api",
   AUTH: {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",

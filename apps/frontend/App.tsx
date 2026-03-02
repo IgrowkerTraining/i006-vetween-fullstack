@@ -2,7 +2,7 @@ import React from "react";
 import { HashRouter } from "react-router-dom";
 import { AuthProvider } from "./src/context/AuthContext";
 import { Layout } from "./src/components/layout/Layout";
-import { LoadingSpinner } from "./src/components/layout/LoadingSpinner";
+import { LoadingSpinner } from "./src/components/common/LoadingSpinner";
 import { AppRoutes } from "./src/routes/AppRoutes";
 import { useAuth } from "./src/hooks/useAuth";
 

@@ -75,6 +75,50 @@ export interface PatientsListItem {
   estado?: boolean | string;
 }
 
+export interface PatientDetailResponse {
+  id_pacientes?: number | string;
+  id_paciente?: number | string;
+  id?: number | string;
+  nombre?: string;
+  nombre_paciente?: string;
+  especie?: string;
+  raza?: string;
+  edad?: number | string;
+  peso?: number | string;
+  sexo?: string;
+  color?: string;
+  senia?: string;
+  esterilizado?: boolean;
+  tiene_microchip?: boolean;
+  num_microchip?: string;
+  activo?: boolean | string;
+  estado?: boolean | string;
+  // responsable fields (may come flattened or nested)
+  id_responsables?: number | string;
+  nombre_responsable?: string;
+  apellido?: string;
+  email?: string;
+  telefono?: string;
+  direccion_calle?: string;
+  direccion_numero?: string;
+  direccion_localidad?: string;
+  provincia?: string;
+  relacion?: string;
+  // nested object as returned by the API
+  responsables?: {
+    id_responsables?: number | string;
+    nombre?: string;
+    apellido?: string;
+    email?: string;
+    telefono?: string;
+    direccion_calle?: string;
+    direccion_numero?: string;
+    direccion_localidad?: string;
+    provincia?: string;
+    relacion?: string;
+  };
+}
+
 export interface ResponsibleListItem {
   id_responsables: number;
   nombre: string;
@@ -187,6 +231,33 @@ export const api = {
     }
 
     return result;
+  },
+
+  async getPatientById(id: string): Promise<PatientDetailResponse> {
+    const response = await fetch(
+      `https://backend-bsmd.onrender.com/api/pacientes-responsables/pacientes/${id}`,
+      {
+        method: "GET",
+        headers: getRequestHeaders(true),
+      },
+    );
+
+    const result = await response.json();
+    console.log("[getPatientById] raw response:", result);
+
+    if (!response.ok) {
+      throw new Error(result?.error || result?.message || "Error al obtener el paciente");
+    }
+
+    // Desempaquetar si la respuesta viene envuelta
+    if (result?.data && typeof result.data === "object" && !Array.isArray(result.data)) {
+      return result.data as PatientDetailResponse;
+    }
+    if (result?.paciente && typeof result.paciente === "object") {
+      return result.paciente as PatientDetailResponse;
+    }
+
+    return result as PatientDetailResponse;
   },
 
   async checkHealth(): Promise<boolean> {

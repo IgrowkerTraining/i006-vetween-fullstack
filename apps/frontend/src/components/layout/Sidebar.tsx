@@ -21,12 +21,15 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="flex h-screen w-56 flex-col border-r border-border bg-card">
+    <aside className="flex h-screen w-56 flex-col border-r border-border bg-vetween-ice">
       <div className="flex items-center justify-center py-6">
         <img src={onlylogo} alt="vetween Logo" className="w-full" />
       </div>
 
-      <nav className="flex flex-1 flex-col px-3" aria-label="Navegacion principal">
+      <nav
+        className="flex flex-1 flex-col px-3"
+        aria-label="Navegacion principal"
+      >
         <ul className="flex flex-col gap-1">
           {navItems.map((item) => (
             <li key={item.id}>

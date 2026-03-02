@@ -19,6 +19,7 @@ module.exports = {
         "sidebar-foreground": "hsl(var(--sidebar-foreground))",
         "vetween-indigo": "#3A86C9",
         "vetween-teal": "#5BC0BE",
+        "vetween-ice": "#F1F9FF",
         "vetween-blue": "#3A86C9",
       },
     },
