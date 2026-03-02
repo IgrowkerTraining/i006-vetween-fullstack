@@ -1,9 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
+import { api } from "../services/api";
+import { storage } from "../utils/storage";
 
 const ANIMAL_TYPES_OPTIONS = [
   "Perros",
@@ -28,22 +30,57 @@ export default function ProfessionalProfile() {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [clinicName, setClinicName] = useState("Nombre de la clínica");
 
-  // Datos del usuario provenientes del auth (mock para prueba)
-  const userName = user?.name || "Usuario";
+  // Datos del usuario provenientes del auth (del login)
+  const userName = user?.nombre || "Usuario";
   const firstName = userName.split(" ")[0];
-  const fullName = user?.lastName ? `${userName} ${user.lastName}` : userName;
-  const consultancy = user?.consultancy || "Nombre de la clínica";
+  const fullName = user?.apellido ? `${userName} ${user.apellido}` : userName;
 
-  // Estado del formulario con datos del usuario
+  // Buscar nombre de la clínica desde la API
+  useEffect(() => {
+    const loadClinicName = async () => {
+      const token = storage.getToken();
+      if (token) {
+        try {
+          const clinicData = await api.getClinic(token);
+          setClinicName(clinicData.nombre || "Nombre de la clínica");
+        } catch (error) {
+          console.error("Error loading clinic name:", error);
+        }
+      }
+    };
+    loadClinicName();
+  }, [user]);
+
+  // Estado del formulario con datos del usuario (del login)
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    lastName: user?.lastName || "",
+    nombre: user?.nombre || "",
+    apellido: user?.apellido || "",
     email: user?.email || "",
-    registration: user?.registration || "",
-    specialties: user?.specialties || "",
-    animalTypes: user?.animalTypes || [] as string[],
+    matricula: user?.matricula?.toString() || "",
+    especialidad: user?.especialidad || "",
+    tipos_animales: user?.tipos_animales || [] as string[],
+    costo_consulta: user?.costo_consulta?.toString() || "",
   });
+
+  // Actualizar cuando el usuario cambie
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        nombre: user.nombre || "",
+        apellido: user.apellido || "",
+        email: user.email || "",
+        matricula: user.matricula?.toString() || "",
+        especialidad: user.especialidad || "",
+        tipos_animales: user.tipos_animales || [],
+        costo_consulta: user.costo_consulta?.toString() || "",
+      });
+    }
+  }, [user]);
 
   const [animalTypesOpen, setAnimalTypesOpen] = useState(false);
   const [specialtiesOpen, setSpecialtiesOpen] = useState(false);
@@ -86,29 +123,57 @@ export default function ProfessionalProfile() {
 
   const handleAnimalTypeChange = (value: string) => {
     setFormData((prev) => {
-      const already = prev.animalTypes.includes(value);
+      const already = prev.tipos_animales.includes(value);
       return {
         ...prev,
-        animalTypes: already
-          ? prev.animalTypes.filter((item) => item !== value)
-          : [...prev.animalTypes, value],
+        tipos_animales: already
+          ? prev.tipos_animales.filter((item) => item !== value)
+          : [...prev.tipos_animales, value],
       };
     });
   };
 
   const handleSpecialtyChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, specialties: value }));
+    setFormData((prev) => ({ ...prev, especialidad: value }));
     setSpecialtiesOpen(false);
   };
 
   const handleCancel = () => {
-    navigate(-1); // Regresa a la página anterior
+    navigate(-1);
   };
 
-  const handleSave = () => {
-    // Función de guardar - solo console log para demostración
-    console.log("Datos guardados:", formData);
-    alert("Cambios guardados correctamente (demo)");
+  const handleSave = async () => {
+    const token = storage.getToken();
+    const idVeterinario = user?.id_veterinario;
+
+    if (!token || !idVeterinario) {
+      setError("No hay sesión activa");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      // Preparar datos para actualizar
+      const updateData = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        email: formData.email,
+        matricula: parseInt(formData.matricula) || 0,
+        especialidad: formData.especialidad,
+        tipos_animales: formData.tipos_animales,
+        costo_consulta: parseFloat(formData.costo_consulta) || 0,
+      };
+
+      await api.updateVeterinarian(idVeterinario, updateData, token);
+      setSuccessMessage("Datos actualizados correctamente");
+    } catch (err: any) {
+      setError(err.message || "Error al guardar los cambios");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -154,12 +219,6 @@ export default function ProfessionalProfile() {
                         alt="Avatar"
                         className="h-full w-full object-cover"
                       />
-                    ) : user?.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt="Avatar"
-                        className="h-full w-full object-cover"
-                      />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-vetween-teal text-2xl font-bold text-white">
                         {firstName.charAt(0).toUpperCase()}
@@ -180,7 +239,7 @@ export default function ProfessionalProfile() {
                   <h2 className="text-xl font-semibold text-foreground">
                     Dr(a). {fullName}
                   </h2>
-                  <p className="text-muted-foreground">{consultancy}</p>
+                  <p className="text-muted-foreground">{clinicName}</p>
                 </div>
               </div>
             </section>
@@ -194,15 +253,29 @@ export default function ProfessionalProfile() {
                 </h3>
               </div>
 
+              {/* Error message */}
+              {error && (
+                <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              {/* Success message */}
+              {successMessage && (
+                <div className="mb-4 bg-green-500/10 border border-green-500/20 text-green-400 text-sm p-3 rounded-lg">
+                  {successMessage}
+                </div>
+              )}
+
               {/* Form */}
               <div className="grid grid-cols-1 gap-4">
                 {/* Nombre */}
                 <div>
                   <Input
                     label="Nombre"
-                    name="name"
+                    name="nombre"
                     placeholder="Nombre"
-                    value={formData.name}
+                    value={formData.nombre}
                     onChange={handleChange}
                   />
                 </div>
@@ -211,9 +284,9 @@ export default function ProfessionalProfile() {
                 <div>
                   <Input
                     label="Apellido"
-                    name="lastName"
+                    name="apellido"
                     placeholder="Apellido"
-                    value={formData.lastName}
+                    value={formData.apellido}
                     onChange={handleChange}
                   />
                 </div>
@@ -234,9 +307,21 @@ export default function ProfessionalProfile() {
                 <div>
                   <Input
                     label="Número de Matrícula"
-                    name="registration"
+                    name="matricula"
                     placeholder="Matrícula"
-                    value={formData.registration}
+                    value={formData.matricula}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Costo de Consulta */}
+                <div>
+                  <Input
+                    label="Costo de consulta"
+                    name="costo_consulta"
+                    type="number"
+                    placeholder="5000"
+                    value={formData.costo_consulta}
                     onChange={handleChange}
                   />
                 </div>
@@ -256,10 +341,10 @@ export default function ProfessionalProfile() {
                     onClick={() => setAnimalTypesOpen((prev) => !prev)}
                     className="w-full bg-background border border-input rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-vetween-teal/50 focus:border-vetween-teal transition-all duration-200 flex items-center justify-between"
                   >
-                    <span className={formData.animalTypes.length === 0 ? "text-muted-foreground" : "text-foreground truncate pr-2"}>
-                      {formData.animalTypes.length === 0
+                    <span className={formData.tipos_animales.length === 0 ? "text-muted-foreground" : "text-foreground truncate pr-2"}>
+                      {formData.tipos_animales.length === 0
                         ? "Seleccionar tipos de animales…"
-                        : formData.animalTypes.join(", ")}
+                        : formData.tipos_animales.join(", ")}
                     </span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -285,7 +370,7 @@ export default function ProfessionalProfile() {
                             <input
                               type="checkbox"
                               value={animal}
-                              checked={formData.animalTypes.includes(animal)}
+                              checked={formData.tipos_animales.includes(animal)}
                               onChange={() => handleAnimalTypeChange(animal)}
                               className="w-4 h-4 accent-vetween-teal flex-shrink-0"
                             />
@@ -293,14 +378,14 @@ export default function ProfessionalProfile() {
                           </label>
                         ))}
                       </div>
-                      {formData.animalTypes.length > 0 && (
+                      {formData.tipos_animales.length > 0 && (
                         <div className="border-t border-border px-3 py-2 flex justify-between items-center">
                           <span className="text-xs text-muted-foreground">
-                            {formData.animalTypes.length} seleccionado{formData.animalTypes.length !== 1 ? "s" : ""}
+                            {formData.tipos_animales.length} seleccionado{formData.tipos_animales.length !== 1 ? "s" : ""}
                           </span>
                           <button
                             type="button"
-                            onClick={() => setFormData((prev) => ({ ...prev, animalTypes: [] }))}
+                            onClick={() => setFormData((prev) => ({ ...prev, tipos_animales: [] }))}
                             className="text-xs text-red-500 hover:text-red-600 transition-colors"
                           >
                             Limpiar
@@ -326,8 +411,8 @@ export default function ProfessionalProfile() {
                     onClick={() => setSpecialtiesOpen((prev) => !prev)}
                     className="w-full bg-background border border-input rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-vetween-teal/50 focus:border-vetween-teal transition-all duration-200 flex items-center justify-between"
                   >
-                    <span className={formData.specialties === "" ? "text-muted-foreground" : "text-foreground truncate pr-2"}>
-                      {formData.specialties === "" ? "Seleccionar especialidad…" : formData.specialties}
+                    <span className={formData.especialidad === "" ? "text-muted-foreground" : "text-foreground truncate pr-2"}>
+                      {formData.especialidad === "" ? "Seleccionar especialidad…" : formData.especialidad}
                     </span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -351,9 +436,9 @@ export default function ProfessionalProfile() {
                           >
                             <input
                               type="radio"
-                              name="specialty"
+                              name="especialidad"
                               value={specialty}
-                              checked={formData.specialties === specialty}
+                              checked={formData.especialidad === specialty}
                               onChange={() => handleSpecialtyChange(specialty)}
                               className="w-4 h-4 accent-vetween-teal flex-shrink-0"
                             />
@@ -379,6 +464,7 @@ export default function ProfessionalProfile() {
                   type="button"
                   onClick={handleSave}
                   className="flex-1"
+                  isLoading={isLoading}
                 >
                   Guardar Cambios
                 </Button>

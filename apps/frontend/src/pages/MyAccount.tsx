@@ -1,7 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import { useAuth } from "../hooks/useAuth";
+import { api } from "../services/api";
+import { storage } from "../utils/storage";
 import stethoscopeIcon from "../assets/stethoscope.svg";
 import keyIcon from "../assets/key.svg";
 import lockIcon from "../assets/lock.svg";
@@ -49,10 +51,26 @@ export default function MyAccount() {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [clinicName, setClinicName] = useState("Nombre de la clínica");
 
-  const userName = user?.name || "Usuario";
+  const userName = user?.nombre || "Usuario";
   const firstName = userName.split(" ")[0];
-  const consultancy = user?.consultancy || "Nombre de la clínica";
+
+  // Buscar nombre de la clínica desde la API
+  useEffect(() => {
+    const loadClinicName = async () => {
+      const token = storage.getToken();
+      if (token) {
+        try {
+          const clinicData = await api.getClinic(token);
+          setClinicName(clinicData.nombre || "Nombre de la clínica");
+        } catch (error) {
+          console.error("Error loading clinic name:", error);
+        }
+      }
+    };
+    loadClinicName();
+  }, [user]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -95,12 +113,6 @@ export default function MyAccount() {
                     alt="Avatar"
                     className="h-full w-full object-cover"
                   />
-                ) : user?.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt="Avatar"
-                    className="h-full w-full object-cover"
-                  />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-vetween-teal text-2xl font-bold text-white">
                     {firstName.charAt(0).toUpperCase()}
@@ -121,7 +133,7 @@ export default function MyAccount() {
               <h2 className="text-xl font-semibold text-foreground">
                 Dr(a). {userName}
               </h2>
-              <p className="text-muted-foreground">{consultancy}</p>
+              <p className="text-muted-foreground">{clinicName}</p>
             </div>
           </div>
         </section>
@@ -138,11 +150,13 @@ export default function MyAccount() {
             icon={keyIcon}
             title="Clínica"
             description="Datos del lugar donde atendés"
+            onClick={() => navigate("/mi-cuenta/clinica")}
           />
           <MenuCard
             icon={lockIcon}
             title="Seguridad"
             description="Cambiar contraseña"
+            onClick={() => navigate("/mi-cuenta/seguridad")}
           />
         </section>
       </main>

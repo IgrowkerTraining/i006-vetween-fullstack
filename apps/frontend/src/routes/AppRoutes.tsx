@@ -7,6 +7,8 @@ import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import MyAccount from "../pages/MyAccount";
 import ProfessionalProfile from "../pages/ProfessionalProfile";
+import ClinicProfile from "../pages/ClinicProfile";
+import SecurityProfile from "../pages/SecurityProfile";
 import DevPlayground from "../pages/DevPlayground";
 import Patient from "../pages/Patient";
 
@@ -50,6 +52,22 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <ProfessionalProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mi-cuenta/clinica"
+        element={
+          <ProtectedRoute>
+            <ClinicProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mi-cuenta/seguridad"
+        element={
+          <ProtectedRoute>
+            <SecurityProfile />
           </ProtectedRoute>
         }
       />

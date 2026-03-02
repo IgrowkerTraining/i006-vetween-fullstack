@@ -4,8 +4,8 @@ import { User } from '../types';
 export const useAuth = () => {
   const { authState, login, logout, setLoading, setError } = useAuthContext();
 
-  const loginUser = (user: User) => {
-    login(user);
+  const loginUser = (user: User, token?: string) => {
+    login(user, token);
   };
 
   const logoutUser = () => {
