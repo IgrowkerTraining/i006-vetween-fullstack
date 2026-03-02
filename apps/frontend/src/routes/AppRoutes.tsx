@@ -5,6 +5,8 @@ import PublicRoute from "./PublicRoute";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
+import MyAccount from "../pages/MyAccount";
+import ProfessionalProfile from "../pages/ProfessionalProfile";
 import DevPlayground from "../pages/DevPlayground";
 import Patient from "../pages/Patient";
 
@@ -32,6 +34,22 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mi-cuenta"
+        element={
+          <ProtectedRoute>
+            <MyAccount />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/mi-cuenta/perfil-profesional"
+        element={
+          <ProtectedRoute>
+            <ProfessionalProfile />
           </ProtectedRoute>
         }
       />
