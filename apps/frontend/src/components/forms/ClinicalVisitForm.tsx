@@ -8,6 +8,7 @@ export interface ClinicalVisitFormData {
   reason: string;
   diagnosis: string;
   treatments: string;
+  observaciones: string;
   hasPreviousHistory: boolean;
   previousHistory: string;
 }
@@ -25,6 +26,7 @@ const initialFormData: ClinicalVisitFormData = {
   reason: "",
   diagnosis: "",
   treatments: "",
+  observaciones: "",
   hasPreviousHistory: false,
   previousHistory: "",
 };
@@ -108,6 +110,17 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
         onChange={handleChange}
       />
 
+      {/* Observaciones */}
+      <Input
+        as="textarea"
+        rows={3}
+        label="Observaciones"
+        name="observaciones"
+        placeholder="Observaciones adicionales..."
+        value={formData.observaciones}
+        onChange={handleChange}
+      />
+
       {/* Historial previo - Checkbox condicional */}
       <div className="space-y-3">
         <label className="flex items-center gap-3 cursor-pointer">
@@ -118,7 +131,7 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
             onChange={handleCheckboxChange}
             className="w-5 h-5 accent-indigo-600 rounded cursor-pointer"
           />
-          <span className="text-sm font-medium text-slate-200">
+          <span className="text-sm font-medium text-slate-700">
             Tengo historial previo
           </span>
         </label>

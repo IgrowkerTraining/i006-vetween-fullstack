@@ -179,10 +179,37 @@ const Patient: React.FC = () => {
   };
 
   const handleVisitSubmit = async (data: ClinicalVisitFormData) => {
+    const patientId =
+      patientData?.id_pacientes ??
+      patientData?.id_paciente ??
+      patientData?.id ??
+      id;
+
+    if (!patientId) {
+      console.error("No se encontró el ID del paciente");
+      return;
+    }
+
     setIsVisitFormLoading(true);
     try {
-      // TODO: llamar a api.createVisit(id, data) cuando el endpoint esté disponible
-      console.log("Registrar visita clínica:", data);
+      await api.createVisit({
+        fecha: data.date,
+        motivo_consulta: data.reason,
+        diagnostico: data.diagnosis,
+        tratamiento: data.treatments,
+        observaciones: data.observaciones,
+        estado: false,
+        historial_previo: data.hasPreviousHistory,
+        id_paciente: patientId,
+      });
+
+      const newVisita: VisitaClinica = {
+        id: String(Date.now()),
+        fechaVisita: data.date,
+        motivoConsulta: data.reason,
+        expandido: true,
+      };
+      setVisitas((prev) => [newVisita, ...prev]);
       setIsVisitModalOpen(false);
     } catch (err: any) {
       console.error("Error al registrar visita:", err.message);

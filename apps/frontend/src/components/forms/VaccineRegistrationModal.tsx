@@ -13,6 +13,7 @@ export interface VaccineFormData {
   nombre: string;
   tipoVacuna: string;
   fecha: string;
+  observaciones: string;
 }
 
 export const VaccineRegistrationModal: React.FC<VaccineRegistrationModalProps> = ({
@@ -24,6 +25,7 @@ export const VaccineRegistrationModal: React.FC<VaccineRegistrationModalProps> =
     nombre: "",
     tipoVacuna: "",
     fecha: "",
+    observaciones: "",
   });
 
   const [errors, setErrors] = useState<Partial<VaccineFormData>>({});
@@ -73,6 +75,7 @@ export const VaccineRegistrationModal: React.FC<VaccineRegistrationModalProps> =
         nombre: "",
         tipoVacuna: "",
         fecha: "",
+        observaciones: "",
       });
       
       // Cerrar el modal
@@ -86,6 +89,7 @@ export const VaccineRegistrationModal: React.FC<VaccineRegistrationModalProps> =
       nombre: "",
       tipoVacuna: "",
       fecha: "",
+      observaciones: "",
     });
     setErrors({});
     onClose();
@@ -99,13 +103,13 @@ export const VaccineRegistrationModal: React.FC<VaccineRegistrationModalProps> =
       size="md"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* Campo Nombre de Vacuna */}
+        {/* Campo Fecha */}
         <Input
-          label="Nombre"
-          placeholder="Ingrese el nombre de la vacuna"
-          value={formData.nombre}
-          onChange={handleChange("nombre")}
-          error={errors.nombre}
+          label="Fecha"
+          type="date"
+          value={formData.fecha}
+          onChange={handleChange("fecha")}
+          error={errors.fecha}
         />
 
         {/* Campo Tipo de Vacuna */}
@@ -117,14 +121,27 @@ export const VaccineRegistrationModal: React.FC<VaccineRegistrationModalProps> =
           error={errors.tipoVacuna}
         />
 
-        {/* Campo Fecha */}
+        {/* Campo Nombre de Vacuna */}
         <Input
-          label="Fecha"
-          type="date"
-          value={formData.fecha}
-          onChange={handleChange("fecha")}
-          error={errors.fecha}
+          label="Nombre"
+          placeholder="Ingrese el nombre de la vacuna"
+          value={formData.nombre}
+          onChange={handleChange("nombre")}
+          error={errors.nombre}
         />
+
+        {/* Campo Observaciones */}
+        <div className="flex flex-col gap-1.5 w-full">
+          <label className="block text-sm font-semibold text-[#0b1001] mb-1">Observaciones</label>
+          <textarea
+            name="observaciones"
+            placeholder="Ingrese observaciones adicionales sobre la vacuna"
+            value={formData.observaciones}
+            onChange={(e) => setFormData((prev) => ({ ...prev, observaciones: e.target.value }))}
+            rows={3}
+            className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-indigo-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 resize-none"
+          />
+        </div>
 
         {/* Botones de acción */}
         <div className="flex gap-3 pt-4 mt-2 border-t border-slate-700">

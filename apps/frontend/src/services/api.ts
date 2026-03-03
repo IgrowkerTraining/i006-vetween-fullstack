@@ -265,6 +265,30 @@ export const api = {
     return result as PatientDetailResponse;
   },
 
+  async createVisit(data: {
+    fecha: string;
+    motivo_consulta: string;
+    diagnostico: string;
+    tratamiento: string;
+    observaciones: string;
+    estado: boolean;
+    historial_previo: boolean;
+    id_paciente: number | string;
+  }): Promise<unknown> {
+    const response = await fetch("https://backend-bsmd.onrender.com/api/visitas", {
+      method: "POST",
+      headers: getRequestHeaders(true),
+      body: JSON.stringify(data),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        result?.error || result?.message || "Error al registrar la visita",
+      );
+    }
+    return result;
+  },
+
   async checkHealth(): Promise<boolean> {
     try {
       const response = await fetch(
