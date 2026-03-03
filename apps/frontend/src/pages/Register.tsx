@@ -9,6 +9,7 @@ import { useAuth } from "../hooks/useAuth";
 import { storage } from "../utils/storage";
 import logo from "../assets/logo.svg";
 import onlylogo from "../assets/onlylogo.svg"
+import argentinaFlag from "../assets/argentinaFlag.svg";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -37,6 +38,8 @@ const Register: React.FC = () => {
 
   const [animalTypesOpen, setAnimalTypesOpen] = useState(false);
   const animalTypesRef = useRef<HTMLDivElement>(null);
+  const [provinceOpen, setProvinceOpen] = useState(false);
+  const provinceRef = useRef<HTMLDivElement>(null);
 
   const ANIMAL_TYPES_OPTIONS = [
     "Caninos",
@@ -52,6 +55,33 @@ const Register: React.FC = () => {
     "Diagnóstico",
     "Urgencias",
     "Otra",
+  ];
+
+  const PROVINCE_OPTIONS = [
+    "CABA",
+    "Buenos Aires",
+    "Catamarca",
+    "Chaco",
+    "Chubut",
+    "Córdoba",
+    "Corrientes",
+    "Entre Ríos",
+    "Formosa",
+    "Jujuy",
+    "La Pampa",
+    "La Rioja",
+    "Mendoza",
+    "Misiones",
+    "Neuquén",
+    "Río Negro",
+    "Salta",
+    "San Juan",
+    "San Luis",
+    "Santa Cruz",
+    "Santa Fe",
+    "Santiago del Estero",
+    "Tierra del Fuego",
+    "Tucumán",
   ];
 
 
@@ -74,6 +104,11 @@ const Register: React.FC = () => {
           : [...prev.animalTypes, value],
       };
     });
+  };
+
+  const handleProvinceChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, province: value }));
+    setProvinceOpen(false);
   };
 
   useEffect(() => {
@@ -197,7 +232,7 @@ const Register: React.FC = () => {
               <h1 className="text-3xl font-bold text-[#0b1001] mb-6">
                 Crear cuenta
               </h1>
-              
+
               {/* Stepper */}
               <div className="flex items-center justify-center w-full mb-2">
                 {/* Step 1 */}
@@ -209,10 +244,10 @@ const Register: React.FC = () => {
                     Profesional
                   </span>
                 </div>
-                
+
                 {/* Line */}
                 <div className="flex-1 h-[2px] bg-slate-300 mx-4"></div>
-                
+
                 {/* Step 2 */}
                 <div className="flex flex-col items-center">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${step === 2 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
@@ -546,7 +581,7 @@ const Register: React.FC = () => {
                   min="0"
                 />
               </div>
-              
+
               <div className="md:col-span-2 mt-4">
                 <button type="submit" className="w-full px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-lg shadow-indigo-500/20 mb-5 bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
                   Siguiente
@@ -619,28 +654,71 @@ const Register: React.FC = () => {
                   onChange={handleChange}
                 />
               </div>
-              <div className="md:col-span-2">
-                <Input
-                  label="Provincia"
-                  name="province"
-                  placeholder="Provincia"
-                  required
-                  disabled={isLoading}
-                  value={formData.province}
-                  onChange={handleChange}
-                />
+              <div className="md:col-span-2 mt-4" ref={provinceRef}>
+                <label className="block text-sm font-semibold text-[#0b1001] mb-1">
+                  Provincia
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Seleccioná una provincia
+                </p>
+
+                {/* Trigger input */}
+                <button
+                  type="button"
+                  onClick={() => setProvinceOpen((prev) => !prev)}
+                  className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className={formData.province === "" ? "text-slate-300" : "text-indigo-800 truncate pr-2"}>
+                    {formData.province === "" ? "Seleccionar provincia…" : formData.province}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${provinceOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {provinceOpen && (
+                  <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden">
+                    <div className="p-2 grid grid-cols-1 gap-1">
+                      {PROVINCE_OPTIONS.map((province) => (
+                        <label
+                          key={province}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
+                        >
+                          <input
+                            type="radio"
+                            name="province"
+                            value={province}
+                            checked={formData.province === province}
+                            onChange={() => handleProvinceChange(province)}
+                            className="w-4 h-4 accent-indigo-600 flex-shrink-0"
+                          />
+                          {province}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="md:col-span-2">
-                <Input
-                  label="Número de teléfono"
-                  name="phone"
-                  type="tel"
-                  placeholder="(011)999-9999"
-                  required
-                  disabled={isLoading}
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
+                <div className="grid grid-cols-1 gap-2">
+                  <Input
+                    label="Número de teléfono"
+                    name="phone"
+                    type="tel"
+                    placeholder="54 9 11 12345678"
+                    required
+                    disabled={isLoading}
+                    value={formData.phone}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
 
               <div className="md:col-span-2 mt-4">
