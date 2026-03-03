@@ -156,7 +156,7 @@ export const api = {
     data: LoginRequest,
   ): Promise<{ user: User; token: string; message: string }> {
     const response = await fetch(
-      `${API_ENDPOINTS.BASE}${API_ENDPOINTS.AUTH.LOGIN}`,
+      "https://backend-bsmd.onrender.com/api/auth/login",
       {
         method: "POST",
         headers: getRequestHeaders(),

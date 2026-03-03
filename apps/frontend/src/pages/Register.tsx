@@ -38,6 +38,9 @@ const Register: React.FC = () => {
   const [animalTypesOpen, setAnimalTypesOpen] = useState(false);
   const animalTypesRef = useRef<HTMLDivElement>(null);
 
+  const [provinceOpen, setProvinceOpen] = useState(false);
+  const provinceRef = useRef<HTMLDivElement>(null);
+
   const ANIMAL_TYPES_OPTIONS = [
     "Caninos",
     "Felinos",
@@ -45,8 +48,35 @@ const Register: React.FC = () => {
     "Otros",
   ];
 
+  const PROVINCE_OPTIONS = [
+    "CABA",
+    "Buenos Aires",
+    "Catamarca",
+    "Chaco",
+    "Chubut",
+    "Cordoba",
+    "Corrientes",
+    "Entre Rios",
+    "Formosa",
+    "Jujuy",
+    "La Pampa",
+    "La Rioja",
+    "Mendoza",
+    "Misiones",
+    "Neuquen",
+    "Rio Negro",
+    "Salta",
+    "San Juan",
+    "San Luis",
+    "Santa Cruz",
+    "Santa Fe",
+    "Santiago del Estero",
+    "Tierra del Fuego",
+    "Tucuman",
+  ];
+
   const SPECIALTIES_OPTIONS = [
-    "Clínica general",
+    "Clinica general",
     "Medicina preventiva",
     "Dermatología",
     "Diagnóstico",
@@ -62,6 +92,11 @@ const Register: React.FC = () => {
   const handleSpecialtyChange = (value: string) => {
     setFormData((prev) => ({ ...prev, specialties: value }));
     setSpecialtiesOpen(false);
+  };
+
+  const handleProvinceChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, province: value }));
+    setProvinceOpen(false);
   };
 
   const handleAnimalTypeChange = (value: string) => {
@@ -83,6 +118,9 @@ const Register: React.FC = () => {
       }
       if (animalTypesRef.current && !animalTypesRef.current.contains(e.target as Node)) {
         setAnimalTypesOpen(false);
+      }
+      if (provinceRef.current && !provinceRef.current.contains(e.target as Node)) {
+        setProvinceOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -619,16 +657,51 @@ const Register: React.FC = () => {
                   onChange={handleChange}
                 />
               </div>
-              <div className="md:col-span-2">
-                <Input
-                  label="Provincia"
-                  name="province"
-                  placeholder="Provincia"
-                  required
-                  disabled={isLoading}
-                  value={formData.province}
-                  onChange={handleChange}
-                />
+              <div className="md:col-span-2" ref={provinceRef}>
+                <label className="block text-sm font-semibold text-[#0b1001] mb-1">
+                  Provincia
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setProvinceOpen((prev) => !prev)}
+                  className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                >
+                  <span className={formData.province === "" ? "text-slate-300" : "text-indigo-800 truncate pr-2"}>
+                    {formData.province === "" ? "Seleccionar provincia…" : formData.province}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${provinceOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                  </svg>
+                </button>
+                {provinceOpen && (
+                  <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden max-h-48 overflow-y-auto">
+                    <div className="p-2 grid grid-cols-1 gap-1">
+                      {PROVINCE_OPTIONS.map((prov) => (
+                        <label
+                          key={prov}
+                          className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
+                        >
+                          <input
+                            type="radio"
+                            name="province"
+                            value={prov}
+                            checked={formData.province === prov}
+                            onChange={() => handleProvinceChange(prov)}
+                            className="w-4 h-4 accent-indigo-600 flex-shrink-0"
+                          />
+                          {prov}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="md:col-span-2">
                 <Input
