@@ -24,6 +24,7 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
+      storage.clear();
       const response = await api.login({ email, password });
       storage.setToken(response.token);
       login(response.user);

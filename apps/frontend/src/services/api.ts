@@ -155,20 +155,32 @@ export const api = {
   async login(
     data: LoginRequest,
   ): Promise<{ user: User; token: string; message: string }> {
+    const headers = getRequestHeaders();
+    console.log("[login] Request headers:", headers);
+    console.log("[login] Request body:", JSON.stringify(data));
+
     const response = await fetch(
       "https://backend-bsmd.onrender.com/api/auth/login",
       {
         method: "POST",
-        headers: getRequestHeaders(),
+        headers,
         body: JSON.stringify(data),
       },
     );
 
     const result = await response.json();
+    console.log("[login] Response status:", response.status);
+    console.log("[login] Response body:", result);
     if (!response.ok) {
-      throw new Error(result.error || "Login failed");
+      throw new Error(result.error || result.message || "Login failed");
     }
-    return result;
+    // The API wraps the payload inside `data`
+    const payload = result.data ?? result;
+    return {
+      token: payload.token ?? result.token,
+      user: payload.user ?? result.user,
+      message: result.message,
+    };
   },
 
   async createPatient(data: CreatePatientRequest): Promise<unknown> {
