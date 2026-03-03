@@ -265,6 +265,28 @@ export const api = {
     return result as PatientDetailResponse;
   },
 
+  async createVaccine(data: {
+    tipo: string;
+    nombre_cientifico: string;
+    fecha_aplicacion: string;
+    observacion: string;
+    estado: boolean;
+    id_paciente: number | string;
+  }): Promise<unknown> {
+    const response = await fetch("https://backend-bsmd.onrender.com/api/vacunas", {
+      method: "POST",
+      headers: getRequestHeaders(true),
+      body: JSON.stringify(data),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        result?.error || result?.message || "Error al registrar la vacuna",
+      );
+    }
+    return result;
+  },
+
   async createVisit(data: {
     fecha: string;
     motivo_consulta: string;

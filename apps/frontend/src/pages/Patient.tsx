@@ -219,9 +219,36 @@ const Patient: React.FC = () => {
   };
 
   const handleVaccineSave = async (data: VaccineFormData) => {
+    const patientId =
+      patientData?.id_pacientes ??
+      patientData?.id_paciente ??
+      patientData?.id ??
+      id;
+
+    if (!patientId) {
+      console.error("No se encontró el ID del paciente");
+      return;
+    }
+
     try {
-      // TODO: llamar a api.createVaccine(id, data) cuando el endpoint esté disponible
-      console.log("Registrar vacuna:", data);
+      await api.createVaccine({
+        tipo: data.tipoVacuna,
+        nombre_cientifico: data.nombre,
+        fecha_aplicacion: data.fecha,
+        observacion: data.observaciones,
+        estado: false,
+        id_paciente: patientId,
+      });
+
+      const newVacuna: Vacuna = {
+        id: String(Date.now()),
+        fechaAplicacion: data.fecha,
+        nombreCientifico: data.nombre,
+        tipoVacuna: data.tipoVacuna,
+        observacion: data.observaciones,
+        expandido: true,
+      };
+      setVacunas((prev) => [newVacuna, ...prev]);
       setIsVaccineModalOpen(false);
     } catch (err: any) {
       console.error("Error al registrar vacuna:", err.message);
