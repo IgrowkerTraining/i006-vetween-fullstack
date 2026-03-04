@@ -38,7 +38,15 @@ function Timeline<T extends TimelineItem>({
             {/* Contenido del item */}
             {item.expandido ? (
               <div className="flex-1 rounded-lg border border-border bg-white p-4 shadow-sm">
-                {renderExpandedContent(item)}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">{renderExpandedContent(item)}</div>
+                  <button
+                    onClick={() => onExpandir?.(item.id)}
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-lg font-medium text-foreground hover:bg-gray-100 flex-shrink-0 ml-2"
+                  >
+                    −
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="flex flex-1 items-center justify-between rounded-lg border border-border bg-white px-4 py-3 shadow-sm">

@@ -21,21 +21,15 @@ interface VisitaClinicaTimelineProps {
   onExpandir?: (id: string) => void;
 }
 
-// Datos mockup para el detalle de la visita
-const getMockDetalleVisita = (visita: VisitaClinica): DetalleVisita => ({
+// Mapear datos reales de visita al formato DetalleVisita
+const getDetalleVisita = (visita: VisitaClinica): DetalleVisita => ({
   id: visita.id,
-  estado: visita.estado || "Corregido",
+  estado: visita.estado || "Original",
   fecha: visita.fechaVisita,
-  motivoConsulta:
-    visita.motivoConsulta || "Obesidad y posible ingestión de objeto extraño",
-  diagnostico:
-    visita.diagnostico || "Obesidad y cuerpo extraño ingerido (trapo)",
-  tratamiento:
-    visita.tratamiento ||
-    "Medicación para facilitar evacuación, control dietario",
-  observaciones:
-    visita.observaciones ||
-    "Paciente alerta y reactivo. Condición corporal elevada (sobrepeso). Mucosas rosadas y húmedas. Auscultación cardiopulmonar dentro de parámetros normales. Abdomen blando, no doloroso a palpación, con leve distensión. Tránsito intestinal presente. Oídos limpios, sin signos de otitis. Temperatura dentro de valores fisiológicos. Se refuerza antecedente de ingesta recurrente de cuerpos extraños.",
+  motivoConsulta: visita.motivoConsulta || "-",
+  diagnostico: visita.diagnostico || "-",
+  tratamiento: visita.tratamiento || "-",
+  observaciones: visita.observaciones || "-",
 });
 
 const VisitaClinicaTimeline: React.FC<VisitaClinicaTimelineProps> = ({
@@ -50,7 +44,7 @@ const VisitaClinicaTimeline: React.FC<VisitaClinicaTimelineProps> = ({
   );
 
   const handleVerDetalle = (visita: VisitaClinica) => {
-    const detalleVisita = getMockDetalleVisita(visita);
+    const detalleVisita = getDetalleVisita(visita);
     setSelectedVisita(detalleVisita);
     setModalOpen(true);
     onVerDetalle?.(visita.id);

@@ -277,6 +277,58 @@ export const api = {
     return result as PatientDetailResponse;
   },
 
+  async getVisitasByPatientId(id: string): Promise<{
+    id_visitas: number;
+    fecha: string;
+    motivo_consulta: string;
+    diagnostico: string;
+    tratamiento: string;
+    observaciones: string;
+    estado: boolean;
+    historial_previo: boolean;
+    id_paciente: number;
+  }[]> {
+    const response = await fetch(
+      `https://backend-bsmd.onrender.com/api/pacientes/${id}/visitas`,
+      {
+        method: "GET",
+        headers: getRequestHeaders(true),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result?.error || result?.message || "Error al obtener el historial de visitas");
+    }
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result?.data)) return result.data;
+    return [];
+  },
+
+  async getVacunasByPatientId(id: string): Promise<{
+    id_vacunas: number;
+    tipo: string;
+    nombre_cientifico: string;
+    fecha_aplicacion: string;
+    observacion: string;
+    estado: boolean;
+    id_paciente: number;
+  }[]> {
+    const response = await fetch(
+      `https://backend-bsmd.onrender.com/api/pacientes/${id}/vacunas`,
+      {
+        method: "GET",
+        headers: getRequestHeaders(true),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result?.error || result?.message || "Error al obtener el historial de vacunas");
+    }
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result?.data)) return result.data;
+    return [];
+  },
+
   async createVaccine(data: {
     tipo: string;
     nombre_cientifico: string;

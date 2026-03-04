@@ -15,8 +15,9 @@ import { Modal } from "../components/common/Modal";
 import { ClinicalVisitForm, ClinicalVisitFormData } from "../components/forms/ClinicalVisitForm";
 import { VaccineRegistrationModal, VaccineFormData } from "../components/forms/VaccineRegistrationModal";
 
-// Mock de antecedentes clínicos previos
-const mockAntecedentesPrevios = {
+// Mock de antecedentes clínicos previos (pendiente de conectar a API)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _mockAntecedentesPrevios = {
   fecha: "18/02/2026",
   descripcion:
     "Paciente con diagnóstico previo de dermatitis alérgica.\nTratamiento previo con corticoides.",
@@ -81,8 +82,32 @@ const Patient: React.FC = () => {
     const fetchPatient = async () => {
       try {
         setIsLoading(true);
-        const data = await api.getPatientById(id);
+        const [data, visitasData, vacunasData] = await Promise.all([
+          api.getPatientById(id),
+          api.getVisitasByPatientId(id),
+          api.getVacunasByPatientId(id),
+        ]);
         setPatientData(data);
+        const mappedVisitas: VisitaClinica[] = visitasData.map((v, index) => ({
+          id: String(v.id_visitas),
+          fechaVisita: v.fecha,
+          motivoConsulta: v.motivo_consulta,
+          diagnostico: v.diagnostico,
+          tratamiento: v.tratamiento,
+          observaciones: v.observaciones,
+          estado: v.estado ? "Corregido" : "Original",
+          expandido: index === 0,
+        }));
+        setVisitas(mappedVisitas);
+        const mappedVacunas: Vacuna[] = vacunasData.map((v, index) => ({
+          id: String(v.id_vacunas),
+          fechaAplicacion: v.fecha_aplicacion,
+          nombreCientifico: v.nombre_cientifico,
+          tipoVacuna: v.tipo,
+          observacion: v.observacion,
+          expandido: index === 0,
+        }));
+        setVacunas(mappedVacunas);
       } catch (err: any) {
         setFetchError(err?.message || "No se pudo cargar el paciente.");
       } finally {
@@ -304,7 +329,6 @@ const Patient: React.FC = () => {
       content: (
         <HistorialClinico
           visitas={visitas}
-          antecedentesPrevios={mockAntecedentesPrevios}
           onCorregirRegistro={handleCorregirRegistro}
           onVerDetalle={handleVerDetalle}
           onExpandir={handleExpandir}
