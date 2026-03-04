@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { sortArray } from "../utils/sort";
 import pawIcon from "../assets/pawIcon.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
+import { SearchBar } from "../components/common/SearchBar";
 import { api, ResponsibleListItem } from "../services/api";
 import { ROUTES } from "../constants/routes";
 
@@ -34,9 +36,10 @@ const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
 
 export default function ClinicalSummary() {
   const navigate = useNavigate();
-  const [patients, setPatients] = useState<PatientSummaryRow[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loadError, setLoadError] = useState<string | null>(null);
+const [patients, setPatients] = useState<PatientSummaryRow[]>([]);
+const [searchQuery, setSearchQuery] = useState("");
+const [loadError, setLoadError] = useState<string | null>(null);
+const [sortConfig, setSortConfig] = useState<{ key: keyof PatientSummaryRow; direction: "asc" | "desc" } | null>(null);
 
   const loadData = async () => {
     try {
@@ -87,18 +90,30 @@ export default function ClinicalSummary() {
     loadData();
   }, []);
 
-  const filteredPatients = patients.filter((p) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      p.nombre.toLowerCase().includes(q) ||
-      p.responsable.toLowerCase().includes(q) ||
-      p.id.toLowerCase().includes(q)
-    );
-  });
+const filteredPatients = patients.filter((p) => {
+  const q = searchQuery.toLowerCase();
+  return (
+    p.nombre.toLowerCase().includes(q) ||
+    p.responsable.toLowerCase().includes(q) ||
+    p.id.toLowerCase().includes(q)
+  );
+});
 
-  const handleViewSummary = (patientId: string) => {
-    navigate(`${ROUTES.PATIENT}/${patientId}`);
-  };
+const sortedPatients = sortConfig
+  ? sortArray(filteredPatients, sortConfig.key, sortConfig.direction)
+  : filteredPatients;
+
+const handleViewSummary = (patientId: string) => {
+  navigate(`${ROUTES.PATIENT}/${patientId}`);
+};
+
+const handleSort = (key: keyof PatientSummaryRow) => {
+  let direction: "asc" | "desc" = "asc";
+  if (sortConfig?.key === key) {
+    direction = sortConfig.direction === "asc" ? "desc" : "asc";
+  }
+  setSortConfig({ key, direction });
+};
 
   return (
     <MainLayout>
@@ -113,28 +128,52 @@ export default function ClinicalSummary() {
           )}
 
           <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Buscar paciente..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
-            />
+            <SearchBar onSearch={setSearchQuery} placeholder="Buscar paciente..." />
           </div>
 
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-indigo-600 text-accent-foreground">
-                  <th className="px-6 py-3 font-semibold">ID</th>
-                  <th className="px-6 py-3 font-semibold">Nombre</th>
-                  <th className="px-6 py-3 font-semibold">Responsable</th>
+<th
+  className="px-6 py-3 font-semibold cursor-pointer"
+  onClick={() => handleSort("id")}
+>
+  ID
+  {sortConfig?.key === "id" && (
+    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+      {sortConfig.direction === "asc" ? "↑" : "↓"}
+    </span>
+  )}
+</th>
+<th
+  className="px-6 py-3 font-semibold cursor-pointer"
+  onClick={() => handleSort("nombre")}
+>
+  Nombre
+  {sortConfig?.key === "nombre" && (
+    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+      {sortConfig.direction === "asc" ? "↑" : "↓"}
+    </span>
+  )}
+</th>
+<th
+  className="px-6 py-3 font-semibold cursor-pointer"
+  onClick={() => handleSort("responsable")}
+>
+  Responsable
+  {sortConfig?.key === "responsable" && (
+    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+      {sortConfig.direction === "asc" ? "↑" : "↓"}
+    </span>
+  )}
+</th>
                   <th className="px-6 py-3 font-semibold">Ver resumen</th>
                 </tr>
               </thead>
-              {filteredPatients.length > 0 && (
-                <tbody>
-                  {filteredPatients.map((patient) => (
+{sortedPatients.length > 0 && (
+  <tbody>
+    {sortedPatients.map((patient) => (
                     <tr
                       key={patient.id}
                       className="border-t border-border text-black transition-colors hover:bg-muted/60"

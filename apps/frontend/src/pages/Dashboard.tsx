@@ -5,8 +5,10 @@ import pawIconPlus from "../assets/pawIconPlus.svg";
 import { Modal } from "../components/common/Modal";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader"
+import { SearchBar } from "../components/common/SearchBar";
 import { PatientForm, PatientFormData } from "../components/patient/PatientForm";
 import { api, ResponsibleListItem } from "../services/api";
+import { sortArray } from "../utils/sort";
 import { useAuth } from "../hooks/useAuth";
 import { ROUTES } from "../constants/routes";
 
@@ -23,10 +25,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([])
+  const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isFormLoading, setIsFormLoading] = useState(false)
   const [modalStep, setModalStep] = useState(1)
   const [patientsError, setPatientsError] = useState<string | null>(null)
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Patient; direction: "asc" | "desc" } | null>(null);
 
   const handlePatientClick = (patientId: string) => {
     navigate(`${ROUTES.PATIENT}/${patientId}`);
@@ -119,6 +123,27 @@ export default function Dashboard() {
     loadPatients();
   }, [])
 
+  const filteredPatients = patients.filter((p) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      p.nombre.toLowerCase().includes(q) ||
+      p.responsable.toLowerCase().includes(q) ||
+      p.id.toLowerCase().includes(q)
+    );
+  });
+
+  const sortedPatients = sortConfig
+    ? sortArray(filteredPatients, sortConfig.key, sortConfig.direction)
+    : filteredPatients;
+
+  const handleSort = (key: keyof Patient) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig?.key === key) {
+      direction = sortConfig.direction === "asc" ? "desc" : "asc";
+    }
+    setSortConfig({ key, direction });
+  };
+
   const handleAddPatient = () => setIsModalOpen(true)
 
   const handleFormSubmit = async (data: PatientFormData) => {
@@ -199,28 +224,45 @@ export default function Dashboard() {
             </div>
           )}
           <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Buscar paciente..."
-              className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
-            />
+            <SearchBar onSearch={setSearchQuery} placeholder="Buscar paciente..." />
           </div>
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-indigo-600 text-accent-foreground">
-                  <th className="px-6 py-3 font-semibold">ID</th>
-                  <th className="px-6 py-3 font-semibold">Nombre</th>
+                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("id")}>
+                    ID
+                    {sortConfig?.key === "id" && (
+                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
+                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("nombre")}>
+                    Nombre
+                    {sortConfig?.key === "nombre" && (
+                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
                   <th className="px-6 py-3 font-semibold">Especie</th>
-                  <th className="px-6 py-3 font-semibold">Responsable</th>
+                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("responsable")}>
+                    Responsable
+                    {sortConfig?.key === "responsable" && (
+                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
                   <th className="px-6 py-3 font-semibold">Estado</th>
                   <th className="px-6 py-3 font-semibold">Editar</th>
                   <th className="px-6 py-3 font-semibold">Eliminar</th>
                 </tr>
               </thead>
-              {patients.length > 0 && (
+              {sortedPatients.length > 0 && (
                 <tbody>
-                  {patients.map((patient) => (
+                  {sortedPatients.map((patient) => (
                     <tr key={patient.id} className="text-black border-t border-border transition-colors hover:bg-muted/60">
                       <td className="px-6 py-3 font-medium">
                         <button
@@ -266,7 +308,7 @@ export default function Dashboard() {
             )}
           </table>
 
-          {patients.length === 0 && (
+          {filteredPatients.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16">
               <img src={pawIcon} alt="paw icon" />
               <h3 className="mt-4 text-lg font-semibold text-foreground">
