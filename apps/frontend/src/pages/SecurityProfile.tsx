@@ -85,11 +85,13 @@ export default function SecurityProfile() {
       try {
         setIsLoading(true);
         setSuccessMessage(null);
-        
+
+        const idVeterinario = user?.id_veterinario;
+
         await api.changePassword({
           contraseña_actual: formData.contraseña_actual,
           contraseña_nueva: formData.contraseña_nueva,
-        }, token);
+        }, token, idVeterinario);
 
         setSuccessMessage("Contraseña cambiada correctamente");
         // Limpiar formulario

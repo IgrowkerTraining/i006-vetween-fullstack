@@ -52,6 +52,7 @@ export default function ClinicProfile() {
     provincia: "",
     telefono: "",
   });
+  const [originalFormData, setOriginalFormData] = useState<any>(null);
 
   // Cargar datos de la clínica desde la API
   useEffect(() => {
@@ -61,17 +62,19 @@ export default function ClinicProfile() {
       if (token) {
         try {
           setIsLoading(true);
-          const clinicData = await api.getClinic(token);
-          setClinicName(clinicData.nombre || "Nombre de la clínica");
-          setFormData({
-            nombre: clinicData.nombre || "",
-            num_habilitacion: clinicData.num_habilitacion || "",
-            direccion_calle: clinicData.direccion_calle || "",
-            direccion_numero: clinicData.direccion_numero || "",
-            direccion_localidad: clinicData.direccion_localidad || "",
-            provincia: clinicData.provincia || "",
-            telefono: clinicData.telefono || "",
-          });
+      const clinicData = await api.getClinic(token);
+      setClinicName(clinicData.nombre || "Nombre de la clínica");
+      const initial = {
+        nombre: clinicData.nombre || "",
+        num_habilitacion: clinicData.num_habilitacion || "",
+        direccion_calle: clinicData.direccion_calle || "",
+        direccion_numero: clinicData.direccion_numero || "",
+        direccion_localidad: clinicData.direccion_localidad || "",
+        provincia: clinicData.provincia || "",
+        telefono: clinicData.telefono || "",
+      };
+      setFormData(initial);
+      setOriginalFormData(initial);
         } catch (error) {
           console.error("Error loading clinic data:", error);
         } finally {
@@ -119,19 +122,30 @@ export default function ClinicProfile() {
     try {
       setIsLoading(true);
 
-      // Preparar datos para actualizar
-      const updateData = {
-        nombre: formData.nombre,
-        num_habilitacion: formData.num_habilitacion,
-        direccion_calle: formData.direccion_calle,
-        direccion_numero: formData.direccion_numero,
-        direccion_localidad: formData.direccion_localidad,
-        provincia: formData.provincia,
-        telefono: formData.telefono,
-      };
+      if (!originalFormData) {
+        alert("No hay datos originales para comparar");
+        return;
+      }
+
+      // Preparar solo campos modificados
+      const updateData: Partial<typeof formData> = {};
+      (Object.keys(formData) as (keyof typeof formData)[]).forEach((key) => {
+        const cur = formData[key];
+        const orig = originalFormData[key];
+        const changed = Array.isArray(cur) ? JSON.stringify(cur) !== JSON.stringify(orig) : cur !== orig;
+        if (changed) {
+          updateData[key] = cur;
+        }
+      });
+
+      if (Object.keys(updateData).length === 0) {
+        alert("No hay cambios para guardar");
+        return;
+      }
 
       await api.updateClinic(updateData, token);
       alert("Datos de la clínica actualizados correctamente");
+      setOriginalFormData({ ...formData });
     } catch (error: any) {
       alert(error.message || "Error al guardar los cambios");
     } finally {

@@ -66,11 +66,12 @@ export default function ProfessionalProfile() {
     tipos_animales: user?.tipos_animales || [] as string[],
     costo_consulta: user?.costo_consulta?.toString() || "",
   });
+  const [originalFormData, setOriginalFormData] = useState<any>(null);
 
   // Actualizar cuando el usuario cambie
   useEffect(() => {
     if (user) {
-      setFormData({
+      const initial = {
         nombre: user.nombre || "",
         apellido: user.apellido || "",
         email: user.email || "",
@@ -78,7 +79,9 @@ export default function ProfessionalProfile() {
         especialidad: user.especialidad || "",
         tipos_animales: user.tipos_animales || [],
         costo_consulta: user.costo_consulta?.toString() || "",
-      });
+      };
+      setFormData(initial);
+      setOriginalFormData(initial);
     }
   }, [user]);
 
@@ -156,19 +159,40 @@ export default function ProfessionalProfile() {
       setError(null);
       setSuccessMessage(null);
 
-      // Preparar datos para actualizar
-      const updateData = {
-        nombre: formData.nombre,
-        apellido: formData.apellido,
-        email: formData.email,
-        matricula: parseInt(formData.matricula) || 0,
-        especialidad: formData.especialidad,
-        tipos_animales: formData.tipos_animales,
-        costo_consulta: parseFloat(formData.costo_consulta) || 0,
-      };
+      if (!originalFormData) {
+        setError("No hay datos originales para comparar");
+        setIsLoading(false);
+        return;
+      }
+
+      // Preparar solo campos modificados
+      const updateData: any = {};
+      (Object.keys(formData) as (keyof typeof formData)[]).forEach((key) => {
+        const cur = formData[key];
+        const orig = originalFormData[key];
+        const changed = Array.isArray(cur) ? JSON.stringify(cur) !== JSON.stringify(orig) : cur !== orig;
+        if (changed) {
+          if (key === "matricula") {
+            const num = parseInt(cur as string) || 0;
+            updateData[key] = num;
+          } else if (key === "costo_consulta") {
+            const num = parseFloat(cur as string) || 0;
+            updateData[key] = num;
+          } else {
+            updateData[key] = cur;
+          }
+        }
+      });
+
+      if (Object.keys(updateData).length === 0) {
+        setSuccessMessage("No hay cambios para guardar");
+        setIsLoading(false);
+        return;
+      }
 
       await api.updateVeterinarian(idVeterinario, updateData, token);
       setSuccessMessage("Datos actualizados correctamente");
+      setOriginalFormData({ ...formData });
     } catch (err: any) {
       setError(err.message || "Error al guardar los cambios");
     } finally {

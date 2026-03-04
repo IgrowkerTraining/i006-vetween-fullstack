@@ -310,60 +310,89 @@ export const api = {
     return result.data;
   },
 
-  async changePassword(data: ChangePasswordRequest, token: string): Promise<{ message: string }> {
-    const response = await fetch(
-      `${API_ENDPOINTS.BASE}/auth/cambiar-contraseña`,
-      {
-        method: "POST",
+  async changePassword(data: ChangePasswordRequest, token: string, idVeterinario?: number): Promise<{ message: string }> {
+    // Try the main endpoint first, if it returns 404/405 try fallback endpoints (prepared for future backend)
+    const tryRequest = async (url: string, method = "POST") => {
+      const res = await fetch(url, {
+        method,
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      },
-    );
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || "Error al cambiar la contraseña");
+      });
+      const result = await res.json().catch(() => ({}));
+      return { res, result };
+    };
+
+    // Primary endpoint
+    let attempt = await tryRequest(`${API_ENDPOINTS.BASE}/auth/cambiar-contraseña`, "POST");
+    if (attempt.res.ok) return attempt.result;
+
+    // Fallbacks: if server doesn't expose the primary route yet, try veterinarian-scoped endpoint (if id provided)
+    if (attempt.res.status === 404 || attempt.res.status === 405) {
+      if (idVeterinario) {
+        attempt = await tryRequest(`${API_ENDPOINTS.BASE}/veterinario/${idVeterinario}/cambiar-contraseña`, "POST");
+        if (attempt.res.ok) return attempt.result;
+      }
+
+      // Last resort: try PUT on auth endpoint (some backends expect PUT)
+      attempt = await tryRequest(`${API_ENDPOINTS.BASE}/auth/cambiar-contraseña`, "PUT");
+      if (attempt.res.ok) return attempt.result;
     }
-    return result;
+
+    throw new Error(attempt.result?.error || attempt.result?.message || "Error al cambiar la contraseña");
   },
 
   async updateVeterinarian(id: number, data: Partial<Veterinarian>, token: string): Promise<Veterinarian> {
-    const response = await fetch(
-      `${API_ENDPOINTS.BASE}/veterinario/${id}`,
-      {
-        method: "PUT",
+    // Prefer PATCH for partial updates; fallback to PUT if server doesn't support PATCH yet.
+    const tryRequest = async (method: string) => {
+      const res = await fetch(`${API_ENDPOINTS.BASE}/veterinario/${id}`, {
+        method,
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      },
-    );
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || "Error al actualizar datos del veterinario");
+      });
+      const result = await res.json().catch(() => ({}));
+      return { res, result };
+    };
+
+    let attempt = await tryRequest("PATCH");
+    if (attempt.res.ok) return attempt.result;
+
+    if (attempt.res.status === 404 || attempt.res.status === 405) {
+      attempt = await tryRequest("PUT");
+      if (attempt.res.ok) return attempt.result;
     }
-    return result;
+
+    throw new Error(attempt.result?.error || attempt.result?.message || "Error al actualizar datos del veterinario");
   },
 
   async updateClinic(data: Partial<Clinic>, token: string): Promise<Clinic> {
-    const response = await fetch(
-      `${API_ENDPOINTS.BASE}/clinica`,
-      {
-        method: "PUT",
+    // Prefer PATCH for partial updates; fallback to PUT if server doesn't support PATCH yet.
+    const tryRequest = async (method: string) => {
+      const res = await fetch(`${API_ENDPOINTS.BASE}/clinica`, {
+        method,
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      },
-    );
-    const result = await response.json();
-    if (!response.ok) {
-      throw new Error(result.error || "Error al actualizar datos de la clínica");
+      });
+      const result = await res.json().catch(() => ({}));
+      return { res, result };
+    };
+
+    let attempt = await tryRequest("PATCH");
+    if (attempt.res.ok) return attempt.result.data || attempt.result;
+
+    if (attempt.res.status === 404 || attempt.res.status === 405) {
+      attempt = await tryRequest("PUT");
+      if (attempt.res.ok) return attempt.result.data || attempt.result;
     }
-    return result.data;
+
+    throw new Error(attempt.result?.error || attempt.result?.message || "Error al actualizar datos de la clínica");
   },
 };
