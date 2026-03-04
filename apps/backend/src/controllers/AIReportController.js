@@ -1,41 +1,41 @@
-const {
-    generateSummary,
-    getSummariesByPatientFromDB
-} = require("../services/AIReportService");
+const aiReportService = require("../services/AIReportService");
+const ResponseHelper = require("../utils/responseHelper");
 
 const createSummary = async (req, res) => {
     try {
-        const data = await generateSummary(req.body);
-        return res.status(201).json({
-        success: true,
-        message: "Resumen de IA generado y guardado correctamente",
-        data
-        });
+        const id_clinica = req.user.id_clinica; 
+
+        const data = await aiReportService.generateSummary(req.body, id_clinica);
+        
+        return ResponseHelper.created(res, data, "Resumen de IA generado y guardado correctamente");
 
     } catch (error) {
-        return res.status(500).json({
-        success: false,
-        message: error.message
-        });
+        if (error.message.includes("Request failed with status code 422")) {
+            return ResponseHelper.unprocessableEntity(res, "La IA no pudo procesar la solicitud. Verifique los datos enviados y vuelva a intentarlo.");
+        }
+        
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 const getSummariesByPatient = async (req, res) => {
     try {
-        const { id } = req.params;
+        const id_paciente = parseInt(req.params.id);
+        const id_clinica = req.user.id_clinica;
 
-        const data = await getSummariesByPatientFromDB(id);
+        const data = await aiReportService.getSummariesByPatientFromDB(id_paciente, id_clinica);
 
-        return res.status(200).json({
-        success: true,
-        data
-        });
+        return ResponseHelper.success(res, data, "Resúmenes obtenidos correctamente");
 
     } catch (error) {
-        return res.status(500).json({
-        success: false,
-        message: error.message
-        });
+        if (error.message.includes("Paciente no encontrado")) {
+            return ResponseHelper.notFound(res, "Paciente no encontrado");
+        }
+        if (error.message.includes("Acceso denegado: El paciente no pertenece a su clínica")) {
+            return ResponseHelper.forbidden(res, "Acceso denegado. El paciente no pertenece a su clínica");
+        }
+
+        return ResponseHelper.error(res, error.message);
     }
 };
 

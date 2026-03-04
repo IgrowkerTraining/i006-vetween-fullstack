@@ -2,10 +2,15 @@ const Joi = require('joi');
 
 // ENUMS
 const especialidadesValidas = [
-    'Compania', 'Acuaticos'
-];
+    'Clinica general', 
+    'Medicina preventiva', 
+    'Dermatologia', 
+    'Diagnostico', 
+    'Urgencias', 
+    'Otra'
+]
 
-const tiposAnimalesValidos = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
+const tiposAnimalesValidos = ['Caninos', 'Felinos', 'Aves', 'Peces', 'Roedores', 'Otro'];
 
 const updateVeterinarianSchema = Joi.object({
     nombre: Joi.string().trim().min(2).max(50).messages({
@@ -22,13 +27,16 @@ const updateVeterinarianSchema = Joi.object({
         'string.max': 'El apellido no puede tener más de 100 caracteres'
     }),
     
-    especialidad: Joi.string().valid(...especialidadesValidas).messages({
-        'any.only': 'Selecciona una especialidad válida'
+    especialidad: Joi.array().items(
+        Joi.string().valid(...especialidadesValidas)).min(1).required().messages({
+        'array.base': 'La especialidad debe ser una lista (array) válida',
+        'array.min': 'Debes seleccionar al menos una especialidad',
+        'any.only': 'Debes seleccionar una especialidad válida',
+        'any.required': 'La especialidad es obligatoria'
     }),
     
     tipos_animales: Joi.array().items(
-        Joi.string().valid(...tiposAnimalesValidos)
-    ).min(1).messages({
+        Joi.string().valid(...tiposAnimalesValidos)).min(1).messages({
         'array.base': 'Tipos de animales debe ser un arreglo (lista)',
         'array.min': 'Seleccionar al menos un tipo de animal',
         'any.only': 'Uno o más tipos de animales ingresados no son válidos'

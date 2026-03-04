@@ -10,7 +10,7 @@ router.get('/',
     veterinarianController.getVeterinarian
 );
 
-router.put('/', 
+router.patch('/', 
     protect, 
     validateData(updateVeterinarianSchema), 
     veterinarianController.updateVeterinarian

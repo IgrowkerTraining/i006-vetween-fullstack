@@ -21,9 +21,12 @@ class ResponseHelper {
     });
   }
 
-  // 204 No Content - Para DELETE
-  static noContent(res) {
-    return res.status(204).send();
+  // 200 deleted (204 noContent) - Para DELETE (No usamos 204 porque queremos enviar un mensaje de confirmación y mantener consistencia en la estructura de respuesta)
+  static deleted(res, message = 'Recurso eliminado exitosamente') {
+    return res.status(200).json({
+      success: true,
+      message,
+    });
   }
 
   // ------------------------------------------------------------------
@@ -74,6 +77,14 @@ class ResponseHelper {
   // 409 Conflict - Ya existe un recurso con el mismo identificador 
   static conflict(res, message = 'Conflicto con un recurso existente') {
     return res.status(409).json({
+      success: false,
+      message,
+    });
+  }
+
+  // 422 Unprocessable Entity - La sintaxis es correcta pero no se puede procesar
+  static unprocessableEntity(res, message = 'Entidad no procesable') {
+    return res.status(422).json({
       success: false,
       message,
     });

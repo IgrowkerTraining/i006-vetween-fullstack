@@ -1,19 +1,18 @@
 const express = require("express");
 const router = express.Router();
-
-const {
-    createSummary,
-    getSummariesByPatient
-} = require("../controllers/AIReportController");
-
+const aiReportController = require("../controllers/AIReportController");
 const validateData = require("../middleware/validateData");
 const { protect } = require("../middleware/authMiddleware");
 const { generarResumenSchema } = require("../schemas/AIReportSchema");
 
 router.use(protect);
 
-router.post("/ia/generar-resumen", validateData(generarResumenSchema), createSummary);
+router.post("/generar-resumen", 
+    validateData(generarResumenSchema), 
+    aiReportController.createSummary
+);
 
-router.get("/pacientes/:id/ia", getSummariesByPatient);
+router.get("/pacientes/:id/ia", 
+    aiReportController.getSummariesByPatient);
 
 module.exports = router;

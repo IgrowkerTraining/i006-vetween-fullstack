@@ -6,18 +6,13 @@ const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-const {
-    getAll,
-    getById,
-    create,
-    update
-} = require("../controllers/responsiblesController");
+const responsiblesController = require("../controllers/responsiblesController.js");
 
 router.use(protect);
 
-router.get("/", getAll);
-router.get("/:id", getById);
-router.post("/", validateData(responsibleSchema), create);
-router.put("/:id", validateData(updateResponsibleSchema), update);
+router.get("/", responsiblesController.getAll);
+router.get("/:id", responsiblesController.getById);
+router.post("/", validateData(responsibleSchema), responsiblesController.create);
+router.patch("/:id", validateData(updateResponsibleSchema), responsiblesController.update);
 
 module.exports = router;
