@@ -23,9 +23,6 @@ const getById = async (req, res) => {
 
         return ResponseHelper.success(res, patient, "Paciente obtenido correctamente");
     } catch (error) {
-        if (error.message.includes("ACCESO_DENEGADO")) {
-            return ResponseHelper.forbidden(res, "Acceso denegado: El paciente no pertenece a su clínica");
-        }
         if (error.message.includes("PACIENTE_NO_ENCONTRADO")) {
             return ResponseHelper.notFound(res, "Paciente no encontrado");
         }
@@ -42,6 +39,9 @@ const create = async (req, res) => {
 
         return ResponseHelper.created(res, newPatient, "Paciente creado correctamente");
     } catch (error) {
+        if (error.message.includes("PACIENTE_DUPLICADO")) {
+            return ResponseHelper.badRequest(res, "El responsable ya tiene un paciente registrado con las mismas características (nombre, especie, edad).");
+        }
         if (error.message.includes("ID_RESPONSABLE_NO_EXISTE") || error.message.includes("ID_CLINICA_NO_EXISTE")) {
             return ResponseHelper.notFound(res, "El responsable o la clínica indicada no existen");
         }
@@ -62,9 +62,6 @@ const update = async (req, res) => {
 
         return ResponseHelper.success(res, updatedPatient, "Paciente actualizado correctamente");
     } catch (error) {
-        if (error.message.includes("ACCESO_DENEGADO")) {
-            return ResponseHelper.forbidden(res, "Acceso denegado: El paciente no pertenece a su clínica");
-        }
         if (error.message.includes("MICROCHIP_DUPLICADO")) {
             return ResponseHelper.badRequest(res, "El número de microchip ingresado ya se encuentra registrado en otro paciente.");
         }
@@ -75,7 +72,7 @@ const update = async (req, res) => {
             return ResponseHelper.badRequest(res, "No se puede activar un paciente sin visitas registradas");
         }
         if (error.message.includes("LIMITE_ALCANZADO")) {
-            return ResponseHelper.badRequest(res, "No se pueden registrar más de 3 pacientes activos por clínica");
+            return ResponseHelper.badRequest(res, "No se pueden registrar más de 50 pacientes activos por clínica");
         }
 
         return ResponseHelper.error(res, error.message);
@@ -92,9 +89,6 @@ const remove = async (req, res) => {
 
         return ResponseHelper.deleted(res, "Paciente eliminado correctamente");
     } catch (error) {
-        if (error.message.includes("ACCESO_DENEGADO")) {
-            return ResponseHelper.forbidden(res, "Acceso denegado: El paciente no pertenece a su clínica");
-        }
         if (error.message.includes("PACIENTE_NO_ENCONTRADO")) {
             return ResponseHelper.notFound(res, "Paciente no encontrado");
         }

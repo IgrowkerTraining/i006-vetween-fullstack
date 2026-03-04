@@ -1,10 +1,11 @@
 const supabase = require("../config/supabaseClient");
 
 // Obtener todos
-const getAll = async () => {
+const getAll = async (id_clinica) => {
     const { data, error } = await supabase
         .from('responsables')
-        .select('*');
+        .select('*')
+        .eq('id_clinica', id_clinica);
 
     if (error) throw error;
 
@@ -12,54 +13,27 @@ const getAll = async () => {
 };
 
 // Obtener por ID
-const getById = async (id) => {
+const getById = async (id, id_clinica) => {
     const { data, error } = await supabase
         .from('responsables')
         .select('*')
         .eq('id_responsables', id)
+        .eq('id_clinica', id_clinica)
         .maybeSingle();
 
-    if (error) throw error;
-
     if (!data) {
-        throw new Error("Responsable no encontrado");
+        throw new Error("RESPONSABLE_NO_ENCONTRADO");
     }
+
+    if (error) throw error;
 
     return data;
 };
 
 // Crear responsable
-const create = async (body) => {
-    const { nombre, apellido, email, telefono, direccion, relacion } = body;
-
-    if (
-        nombre === undefined ||
-        apellido === undefined ||
-        email === undefined ||
-        telefono === undefined ||
-        direccion === undefined ||
-        relacion === undefined
-    ) {
-        throw new Error("Faltan campos requeridos");
-    }
-
-    //Validacion de formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(email)) {
-        throw new Error("Email inválido");
-    }
-
-    //Verificar que el email no este duplicado
-    const { data: existingEmail } = await supabase
-    .from('responsables')
-    .select('id_responsables')
-    .eq('email', email)
-    .maybeSingle();
-
-    if (existingEmail) {
-        throw new Error("El email ya está registrado");
-    }
+const create = async (body, id_clinica) => {
+    const { nombre, apellido, email, telefono, direccion_calle, 
+        direccion_numero, direccion_localidad, provincia, relacion } = body;
 
     const { data, error } = await supabase
         .from('responsables')
@@ -68,40 +42,48 @@ const create = async (body) => {
             apellido,
             email,
             telefono,
-            direccion,
-            relacion
+            direccion_calle,
+            direccion_numero,
+            direccion_localidad,
+            provincia,
+            relacion,
+            id_clinica
         }])
         .select()
         .maybeSingle();
 
-    if (error) throw error;
+    // Si hay error en la DB (ej: email duplicado que tiene restricción UNIQUE)
+    if (error) {
+        if (error.code === '23505' && error.message.includes('email')) {
+            throw new Error("EMAIL_DUPLICADO");
+        }
+        throw error;
+    }
 
     return data;
 };
 
 // Actualizar responsable
-const update = async (id, body) => {
-
-    const { data: existing, error: existError } = await supabase
-        .from('responsables')
-        .select('id_responsables')
-        .eq('id_responsables', id)
-        .maybeSingle();
-
-    if (existError) throw existError;
-
-    if (!existing) {
-        throw new Error("Responsable no encontrado");
-    }
+const update = async (id, body, id_clinica) => {
 
     const { data, error } = await supabase
         .from('responsables')
         .update(body)
         .eq('id_responsables', id)
+        .eq('id_clinica', id_clinica)
         .select()
         .maybeSingle();
 
-    if (error) throw error;
+    if (!data) {
+        throw new Error("RESPONSABLE_NO_ENCONTRADO");
+    }
+
+    if (error) {
+        if (error.code === '23505' && error.message.includes('email')) {
+            throw new Error("EMAIL_DUPLICADO");
+        }
+        throw error;
+    }
 
     return data;
 };

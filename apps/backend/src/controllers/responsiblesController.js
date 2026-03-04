@@ -1,12 +1,15 @@
 const responsablesService = require("../services/responsiblesService");
+const ResponseHelper = require("../utils/responseHelper");
 
 // Obtener todos
 const getAll = async (req, res) => {
     try {
-        const responsibles = await responsablesService.getAll();
-        res.json({ success: true, data: responsibles });
+        const id_clinica = req.user.id_clinica;
+        const responsibles = await responsablesService.getAll(id_clinica);
+        
+        return ResponseHelper.success(res, responsibles, "Responsables obtenidos correctamente");
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        return ResponseHelper.error(res, error.message);
     }
 };
 
@@ -14,21 +17,30 @@ const getAll = async (req, res) => {
 const getById = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-        const responsible = await responsablesService.getById(id);
+        const id_clinica = req.user.id_clinica;
+        const responsible = await responsablesService.getById(id, id_clinica);
 
-        res.json({ success: true, data: responsible });
+        return ResponseHelper.success(res, responsible, "Responsable obtenido correctamente");
     } catch (error) {
-        res.status(404).json({ message: error.message });
+        if (error.message?.includes("RESPONSABLE_NO_ENCONTRADO")) {
+            return ResponseHelper.notFound(res, "Responsable no encontrado");
+        }
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 // Crear
 const create = async (req, res) => {
     try {
-        const result = await responsablesService.create(req.body);
-        res.status(201).json({ success: true, data: result });
+        const id_clinica = req.user.id_clinica;
+        const result = await responsablesService.create(req.body, id_clinica);
+        
+        return ResponseHelper.created(res, result, "Responsable creado correctamente");
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        if (error.message?.includes("EMAIL_DUPLICADO")) {
+            return ResponseHelper.badRequest(res, "El email ingresado ya se encuentra registrado.");
+        }
+        return ResponseHelper.error(res, error.message);
     }
 };
 
@@ -36,11 +48,18 @@ const create = async (req, res) => {
 const update = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-        const updated = await responsablesService.update(id, req.body);
+        const id_clinica = req.user.id_clinica;
+        const updated = await responsablesService.update(id, req.body, id_clinica);
 
-        res.json({ success: true, data: updated });
+        return ResponseHelper.success(res, updated, "Responsable actualizado correctamente");
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        if (error.message?.includes("RESPONSABLE_NO_ENCONTRADO")) {
+            return ResponseHelper.notFound(res, "Responsable no encontrado");
+        }
+        if (error.message?.includes("EMAIL_DUPLICADO")) {
+            return ResponseHelper.badRequest(res, "El email ingresado ya se encuentra registrado.");
+        }
+        return ResponseHelper.error(res, error.message);
     }
 };
 

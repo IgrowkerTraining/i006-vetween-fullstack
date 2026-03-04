@@ -79,6 +79,11 @@ const updateResponsibleSchema = Joi.object({
         'string.max': 'El teléfono no puede tener más de 20 caracteres'
     }),
 
+    email: Joi.string().trim().lowercase().email().required().messages({
+        'string.email': 'Debes ingresar un formato de email válido',
+        'string.empty': 'El email es obligatorio'
+    }),
+
     direccion_calle: Joi.string().trim().min(2).max(150).messages({
         'string.empty': 'La calle no puede estar vacía',
         'string.min': 'La calle debe tener al menos 2 caracteres',

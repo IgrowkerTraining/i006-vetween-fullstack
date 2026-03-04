@@ -1,26 +1,5 @@
 const supabase = require('../config/supabaseClient');
 
-// Función auxiliar para validar que el paciente pertenece a la clínica
-const validarPacienteClinica = async (id_paciente, id_clinica) => {
-    const { data: paciente, error } = await supabase
-        .from('pacientes')
-        .select('id_clinica')
-        .eq('id_pacientes', id_paciente)
-        .maybeSingle();
-
-    if (error) throw error;
-    
-    if (!paciente) {
-        throw new Error("PACIENTE_NO_ENCONTRADO");
-    }
-    
-    if (paciente.id_clinica !== id_clinica) {
-        throw new Error("ACCESO_DENEGADO");
-    }
-
-    return paciente;
-};
-
 // Obtener todos los pacientes de la clinica
 const getAllPatients = async (id_clinica) => {
     const { data, error } = await supabase
@@ -37,15 +16,18 @@ const getAllPatients = async (id_clinica) => {
 // Obtener paciente por ID
 const getPatientById = async (id, id_clinica) => {
 
-    await validarPacienteClinica(id, id_clinica);
-
     const { data, error } = await supabase
     .from('pacientes')
     .select('*')
     .eq('id_pacientes', id)
+    .eq('id_clinica', id_clinica)
     .maybeSingle();
 
     if(error) throw error;
+
+    if (!data) {
+        throw new Error("PACIENTE_NO_ENCONTRADO");
+    }
 
     return data;
 };
@@ -57,6 +39,24 @@ const createPatient = async (patientData, id_clinica) => {
         peso, esterilizado, tiene_microchip, num_microchip, 
         id_responsable
     } = patientData;
+
+    // Verificar si el responsable ya tiene un paciente igual
+    const { data: duplicados, error: searchError } = await supabase
+        .from('pacientes')
+        .select('id_pacientes')
+        .eq('id_clinica', id_clinica)
+        .eq('id_responsable', id_responsable)
+        .eq('especie', especie)
+        .eq('edad', edad)
+        .ilike('nombre', nombre) // ignora mayúsculas/minúsculas
+        .limit(1);
+
+    if (searchError) throw searchError;
+
+    // Si el array de duplicados tiene al menos un elemento, rechazamos la creación
+    if (duplicados && duplicados.length > 0) {
+        throw new Error("PACIENTE_DUPLICADO");
+    }
 
     // Inserción directa. JOI ya valido la estructura y tipos
     const { data, error } = await supabase
@@ -105,7 +105,8 @@ const createPatient = async (patientData, id_clinica) => {
 // Actualizar paciente
 const updatePatient = async (id, updateData, id_clinica) => {
 
-    const paciente = await validarPacienteClinica(id, id_clinica);
+    // Validar que el paciente exista y pertenezca a la clínica
+    const paciente = await getPatientById(id, id_clinica);
 
     if(updateData.activo === true && paciente.activo === false){
 
@@ -130,7 +131,7 @@ const updatePatient = async (id, updateData, id_clinica) => {
 
         if(countError) throw countError;
 
-        if(activeCount >= 3){
+        if(activeCount >= 50){
             throw new Error("LIMITE_ALCANZADO");
         }
     }
@@ -139,6 +140,7 @@ const updatePatient = async (id, updateData, id_clinica) => {
     .from('pacientes')
     .update(updateData)
     .eq('id_pacientes', id)
+    .eq('id_clinica', id_clinica)
     .select()
     .maybeSingle();
 
@@ -157,7 +159,8 @@ const updatePatient = async (id, updateData, id_clinica) => {
 //Eliminar paciente
 const deletePatient = async (id, id_clinica) => {
 
-    await validarPacienteClinica(id, id_clinica);
+    // Validar que el paciente exista y pertenezca a la clínica
+    await getPatientById(id, id_clinica);
 
     //Verificar si tiene visitas registradas
     const { count, error: visitError } = await supabase
@@ -175,6 +178,7 @@ const deletePatient = async (id, id_clinica) => {
     .from('pacientes')
     .delete()
     .eq('id_pacientes', id)
+    .eq('id_clinica', id_clinica);
 
     if(error) throw error;
 
