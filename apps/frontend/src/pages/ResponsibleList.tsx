@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { api, ResponsibleListItem } from "../services/api";
+import { useAuth } from "../hooks/useAuth";
 import { ROUTES } from "../constants/routes";
 
 interface MascotaRef {
@@ -41,6 +42,9 @@ const extractPatientsArray = (payload: unknown): any[] => {
 
 export default function ResponsibleList() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
+  const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
   const [responsables, setResponsables] = useState<ResponsableRow[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -109,7 +113,7 @@ export default function ResponsibleList() {
   return (
     <MainLayout>
       <section className="flex flex-1 flex-col overflow-y-auto">
-        <PageHeader subtitle="Hola" title="Responsables" />
+        <PageHeader subtitle={`Hola, ${userDisplayName}`} title="Responsables" />
 
         <section className="flex-1 px-8 py-6" aria-label="Lista de responsables">
           {loadError && (

@@ -4,6 +4,7 @@ import pawIcon from "../assets/pawIcon.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { api, ResponsibleListItem } from "../services/api";
+import { useAuth } from "../hooks/useAuth";
 import { ROUTES } from "../constants/routes";
 
 interface PatientSummaryRow {
@@ -34,6 +35,9 @@ const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
 
 export default function ClinicalSummary() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
+  const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
   const [patients, setPatients] = useState<PatientSummaryRow[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -103,7 +107,7 @@ export default function ClinicalSummary() {
   return (
     <MainLayout>
       <section className="flex flex-1 flex-col overflow-y-auto">
-        <PageHeader subtitle="Clínica" title="Resumen clínico" />
+        <PageHeader subtitle={`Hola, ${userDisplayName}`} title="Resumen clínico" />
 
         <section className="flex-1 px-8 py-6" aria-label="Resúmenes clínicos">
           {loadError && (
