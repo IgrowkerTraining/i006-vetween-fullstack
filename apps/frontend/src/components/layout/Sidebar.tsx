@@ -51,10 +51,10 @@ const Sidebar: React.FC = () => {
             <li key={item.id}>
               <button
                 onClick={() => handleNavClick(item)}
-                className={`flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                   activeNav === item.id
-                    ? "bg-indigo-600 text-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-muted"
+                    ? "bg-indigo-600 text-accent-foreground shadow-sm"
+                    : "text-sidebar-foreground hover:bg-indigo-100 hover:text-indigo-700 hover:translate-x-1"
                 }`}
               >
                 {item.label}
@@ -67,7 +67,7 @@ const Sidebar: React.FC = () => {
       <div className="border-t border-border px-3 py-3">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-muted"
+          className="flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground transition-all duration-200 hover:bg-red-100 hover:text-red-600 hover:translate-x-1"
         >
           Cerrar sesión
         </button>
