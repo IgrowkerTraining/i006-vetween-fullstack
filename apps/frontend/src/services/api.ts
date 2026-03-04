@@ -479,4 +479,44 @@ export const api = {
     }
     return result.data;
   },
+
+  async generateClinicalSummary(payload: {
+    id_paciente: number | string;
+    datos_clinicos: {
+      paciente: Record<string, unknown>;
+      visitas: Record<string, unknown>[];
+      vacunas: Record<string, unknown>[];
+    };
+  }): Promise<{ resumen?: string; summary?: string; data?: unknown }> {
+    const response = await fetch(
+      "https://ivetween-ai.onrender.com/api/v1/informes/resumenia",
+      {
+        method: "POST",
+        headers: getRequestHeaders(true),
+        body: JSON.stringify(payload),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || result.message || "Error al generar resumen clínico");
+    }
+    return result;
+  },
+
+  async getClinicalSummaryByPatientId(id: string | number): Promise<any[]> {
+    const response = await fetch(
+      `https://ivetween-ai.onrender.com/api/v1/informes/resumenia/${id}`,
+      {
+        method: "GET",
+        headers: getRequestHeaders(true),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || result.message || "Error al obtener resumen clínico");
+    }
+    if (Array.isArray(result)) return result;
+    if (result.data && Array.isArray(result.data)) return result.data;
+    return [];
+  },
 };

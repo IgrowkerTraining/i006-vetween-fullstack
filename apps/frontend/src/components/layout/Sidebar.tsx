@@ -19,7 +19,7 @@ const Sidebar: React.FC = () => {
   const getActiveNav = () => {
     const currentPath = location.pathname;
     if (currentPath === "/mi-cuenta" || currentPath.startsWith("/mi-cuenta/")) return "mi-cuenta";
-    if (currentPath === "/clinical-summary") return "resumen";
+    if (currentPath === "/clinical-summary" || currentPath.startsWith("/clinical-summary/")) return "resumen";
     if (currentPath === "/responsables") return "historial";
     return "pacientes";
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import PatientButton from "../components/patient/PatientButton";
@@ -11,6 +11,7 @@ import HistorialVacunas from "../components/patient/HistorialVacunas";
 import { VisitaClinica } from "../components/patient/VisitaClinicaTimeline";
 import { Vacuna } from "../components/patient/VacunaTimeline";
 import { api, PatientDetailResponse } from "../services/api";
+import { ROUTES } from "../constants/routes";
 import { Modal } from "../components/common/Modal";
 import { ClinicalVisitForm, ClinicalVisitFormData } from "../components/forms/ClinicalVisitForm";
 import { VaccineRegistrationModal, VaccineFormData } from "../components/forms/VaccineRegistrationModal";
@@ -68,6 +69,7 @@ const mockVacunasIniciales: Vacuna[] = [
 
 const Patient: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [patientData, setPatientData] = useState<PatientDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -76,6 +78,9 @@ const Patient: React.FC = () => {
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
   const [isVisitFormLoading, setIsVisitFormLoading] = useState(false);
   const [isVaccineModalOpen, setIsVaccineModalOpen] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summarySuccess, setSummarySuccess] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -243,6 +248,62 @@ const Patient: React.FC = () => {
     }
   };
 
+  const handleGenerateSummary = async () => {
+    if (!patientData || !paciente) return;
+    const patientId =
+      patientData.id_pacientes ??
+      patientData.id_paciente ??
+      patientData.id ??
+      id;
+
+    setIsGeneratingSummary(true);
+    setSummaryError(null);
+    try {
+      await api.generateClinicalSummary({
+        id_paciente: patientId,
+        datos_clinicos: {
+          paciente: {
+            nombre: paciente.nombre,
+            especie: paciente.especie,
+            edad: patientData.edad,
+            sexo: paciente.sexo,
+            raza: paciente.raza,
+            color: paciente.color,
+            senia: paciente.senia,
+            peso: patientData.peso,
+            esterilizado: paciente.esterilizado,
+            tiene_microchip: paciente.tieneMicrochip,
+            num_microchip: paciente.microchip || undefined,
+          },
+          visitas: visitas.map((v) => ({
+            fecha: v.fechaVisita,
+            motivo_consulta: v.motivoConsulta,
+            diagnostico: v.diagnostico,
+            tratamiento: v.tratamiento,
+            observaciones: v.observaciones,
+            historial_previo: false,
+          })),
+          vacunas: vacunas.map((v) => ({
+            tipo: v.tipoVacuna,
+            nombre_cientifico: v.nombreCientifico,
+            fecha_aplicacion: v.fechaAplicacion,
+            observacion: v.observacion,
+          })),
+        },
+      });
+      setSummarySuccess(true);
+      setSummaryError(null);
+      setTimeout(() => {
+        navigate(`${ROUTES.CLINICAL_SUMMARY_DETAIL}/${patientId}`);
+      }, 1500);
+    } catch (err: any) {
+      console.error("Error al generar resumen clínico:", err.message);
+      setSummaryError(err?.message || "No se pudo generar el resumen clínico.");
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
   const handleVaccineSave = async (data: VaccineFormData) => {
     const patientId =
       patientData?.id_pacientes ??
@@ -405,9 +466,19 @@ const Patient: React.FC = () => {
         </div>
 
         {/* Generate Clinical Summary Button */}
-        <div className="mt-6 flex justify-end">
-          <button className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700">
-            Generar resumen clínico
+        <div className="mt-6 flex flex-col items-end gap-2">
+          {summarySuccess && (
+            <p className="text-xs font-medium text-emerald-600">Generación de resumen clínico exitoso. Redirigiendo...</p>
+          )}
+          {summaryError && (
+            <p className="text-xs text-red-600">{summaryError}</p>
+          )}
+          <button
+            onClick={handleGenerateSummary}
+            disabled={isGeneratingSummary}
+            className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
+          >
+            {isGeneratingSummary ? "Generando resumen..." : "Generar resumen clínico"}
           </button>
         </div>
       </section>

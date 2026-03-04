@@ -33,7 +33,7 @@ const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
   return [];
 };
 
-export default function ClinicalSummary() {
+export default function ClinicalSummaryList() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
@@ -101,7 +101,7 @@ export default function ClinicalSummary() {
   });
 
   const handleViewSummary = (patientId: string) => {
-    navigate(`${ROUTES.PATIENT}/${patientId}`);
+    navigate(`${ROUTES.CLINICAL_SUMMARY_DETAIL}/${patientId}`);
   };
 
   return (

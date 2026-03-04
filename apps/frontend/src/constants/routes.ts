@@ -4,6 +4,7 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   PATIENT: "/patient",
   CLINICAL_SUMMARY: "/clinical-summary",
+  CLINICAL_SUMMARY_DETAIL: "/clinical-summary/detail",
   RESPONSABLES: "/responsables",
   HOME: "/",
   DEV: "/dev",
