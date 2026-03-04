@@ -12,6 +12,7 @@ import SecurityProfile from "../pages/SecurityProfile";
 import DevPlayground from "../pages/DevPlayground";
 import Patient from "../pages/Patient";
 import ClinicalSummary from "../pages/ClinicalSummary";
+import ResponsibleList from "../pages/ResponsibleList";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -77,6 +78,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <ClinicalSummary />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/responsables"
+        element={
+          <ProtectedRoute>
+            <ResponsibleList />
           </ProtectedRoute>
         }
       />

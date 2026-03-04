@@ -135,6 +135,9 @@ export interface ResponsibleListItem {
   direccion_numero: string;
   direccion_localidad: string;
   provincia: string;
+  mascota?: string;
+  nombre_paciente?: string;
+  nombre_mascota?: string;
 }
 
 export const api = {

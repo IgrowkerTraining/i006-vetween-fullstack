@@ -4,6 +4,7 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   PATIENT: "/patient",
   CLINICAL_SUMMARY: "/clinical-summary",
+  RESPONSABLES: "/responsables",
   HOME: "/",
   DEV: "/dev",
 } as const;
