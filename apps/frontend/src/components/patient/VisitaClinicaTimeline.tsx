@@ -41,10 +41,18 @@ const VisitaClinicaTimeline: React.FC<VisitaClinicaTimelineProps> = ({
             {/* Contenido de la visita */}
             {visita.expandido ? (
               <div className="flex-1 rounded-lg border border-border bg-white p-4 shadow-sm">
-                <p className="mb-1 text-sm text-foreground">
-                  <span className="font-semibold">Fecha de visita:</span>{" "}
-                  {visita.fechaVisita}
-                </p>
+                <div className="flex items-start justify-between mb-1">
+                  <p className="text-sm text-foreground">
+                    <span className="font-semibold">Fecha de visita:</span>{" "}
+                    {visita.fechaVisita}
+                  </p>
+                  <button
+                    onClick={() => onExpandir?.(visita.id)}
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-lg font-medium text-foreground hover:bg-gray-100 flex-shrink-0 ml-2"
+                  >
+                    −
+                  </button>
+                </div>
                 {visita.fechaCorregido && (
                   <p className="mb-1 text-sm text-foreground">
                     <span className="font-semibold">Registro corregido:</span>{" "}
