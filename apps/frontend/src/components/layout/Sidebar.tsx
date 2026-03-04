@@ -5,8 +5,8 @@ import onlylogo from "../../assets/onlylogo.svg";
 
 const navItems = [
   { label: "Pacientes", id: "pacientes", path: "/dashboard" },
-  { label: "Historial clínico", id: "historial", path: "/dashboard" },
-  { label: "Resumen clínico", id: "resumen", path: "/dashboard" },
+  { label: "Resumen clínico", id: "resumen", path: "/clinical-summary" },
+  { label: "Responsables", id: "historial", path: "/dashboard" },
   { label: "Mi Cuenta", id: "mi-cuenta", path: "/mi-cuenta" },
 ];
 
@@ -19,6 +19,7 @@ const Sidebar: React.FC = () => {
   const getActiveNav = () => {
     const currentPath = location.pathname;
     if (currentPath === "/mi-cuenta" || currentPath.startsWith("/mi-cuenta/")) return "mi-cuenta";
+    if (currentPath === "/clinical-summary") return "resumen";
     return "pacientes";
   };
   

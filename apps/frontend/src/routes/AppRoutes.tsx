@@ -11,6 +11,7 @@ import ClinicProfile from "../pages/ClinicProfile";
 import SecurityProfile from "../pages/SecurityProfile";
 import DevPlayground from "../pages/DevPlayground";
 import Patient from "../pages/Patient";
+import ClinicalSummary from "../pages/ClinicalSummary";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -68,6 +69,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <SecurityProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/clinical-summary"
+        element={
+          <ProtectedRoute>
+            <ClinicalSummary />
           </ProtectedRoute>
         }
       />

@@ -3,6 +3,7 @@ export const ROUTES = {
   REGISTER: "/register",
   DASHBOARD: "/dashboard",
   PATIENT: "/patient",
+  CLINICAL_SUMMARY: "/clinical-summary",
   HOME: "/",
   DEV: "/dev",
 } as const;
