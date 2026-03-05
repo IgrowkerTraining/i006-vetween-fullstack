@@ -32,7 +32,7 @@ const PatientButton: React.FC<PatientButtonProps> = ({
         await api.createPatient({
           nombre: data.patient.name,
           especie: data.patient.species,
-          edad: parseFloat(data.patient.age) || 0,
+          edad: parseInt(data.patient.age, 10),
           color: data.patient.color,
           senia: data.patient.characteristic,
           sexo: data.patient.sex as "Macho" | "Hembra",

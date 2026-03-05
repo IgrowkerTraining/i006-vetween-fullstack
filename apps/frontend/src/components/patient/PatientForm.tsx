@@ -193,7 +193,14 @@ export const PatientForm: React.FC<PatientFormProps> = ({
     if (!patient.species) newErrors.species = "La especie es requerida";
     if (!patient.breed.trim()) newErrors.breed = "La raza es requerida";
     // Datos biológicos
-    if (!patient.age.trim()) newErrors.age = "La edad es requerida";
+    if (!patient.age.trim()) {
+      newErrors.age = "La edad es requerida";
+    } else if (
+      !/^\d+$/.test(patient.age.trim()) ||
+      parseInt(patient.age.trim(), 10) <= 0
+    ) {
+      newErrors.age = "La edad debe ser un número entero positivo";
+    }
     if (!patient.sex) newErrors.sex = "El sexo es requerido";
     // Características físicas
     if (!patient.weight.trim()) newErrors.weight = "El peso es requerido";
@@ -263,9 +270,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
         <div className="space-y-6">
           {/* Datos básicos */}
           <section className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-900">
-              Datos básicos
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900">Datos básicos</h3>
             <Input
               label="Nombre *"
               name="name"
