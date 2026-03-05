@@ -14,5 +14,6 @@ router.get("/", responsiblesController.getAll);
 router.get("/:id", responsiblesController.getById);
 router.post("/", validateData(responsibleSchema), responsiblesController.create);
 router.patch("/:id", validateData(updateResponsibleSchema), responsiblesController.update);
+router.delete("/:id", responsiblesController.remove);
 
 module.exports = router;

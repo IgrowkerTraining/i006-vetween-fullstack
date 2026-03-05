@@ -63,9 +63,31 @@ const update = async (req, res) => {
     }
 };
 
+// Eliminar un responsable por ID
+const remove = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const id_clinica = req.user.id_clinica;
+        
+        const deletedResponsible = await responsablesService.deleteResponsible(id, id_clinica);
+
+        return ResponseHelper.deleted(res, "Responsable eliminado correctamente");
+    } catch (error) {
+        if (error.message.includes("RESPONSABLE_NO_ENCONTRADO")) {
+            return ResponseHelper.notFound(res, "Responsable no encontrado");
+        }
+        if (error.message.includes("NO_SE_PUEDE_ELIMINAR")) {
+            return ResponseHelper.badRequest(res, "No se puede eliminar un responsable con pacientes asociados");
+        }
+
+        return ResponseHelper.error(res, error.message);
+    }
+};
+
 module.exports = {
     getAll,
     getById,
     create,
-    update
+    update,
+    remove
 };

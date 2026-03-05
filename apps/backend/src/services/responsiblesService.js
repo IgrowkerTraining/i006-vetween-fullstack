@@ -1,3 +1,4 @@
+const { get } = require("http");
 const supabase = require("../config/supabaseClient");
 
 // Obtener todos
@@ -88,9 +89,39 @@ const update = async (id, body, id_clinica) => {
     return data;
 };
 
+// Eliminar responsable
+const deleteResponsible = async (id, id_clinica) => {
+
+    // Verificar que el responsable exista y pertenezca a la clínica
+    await getById(id, id_clinica); 
+
+    // Verificar si tiene pacientes asociados a el, si tiene, no se puede eliminar
+    const { count, error: patientError } = await supabase
+    .from('pacientes')
+    .select('*', { count: 'exact', head: true})
+    .eq('id_responsable', id);
+
+    if(patientError) throw patientError;
+
+    if(count > 0){
+        throw new Error("NO_SE_PUEDE_ELIMINAR");
+    }
+
+    const { error } = await supabase
+        .from('responsables')
+        .delete()
+        .eq('id_responsables', id)
+        .eq('id_clinica', id_clinica);
+
+    if (error) throw error;
+
+    return {success: true, message: "Responsable eliminado correctamente"};
+};
+
 module.exports = {
     getAll,
     getById,
     create,
-    update
+    update,
+    deleteResponsible
 };
