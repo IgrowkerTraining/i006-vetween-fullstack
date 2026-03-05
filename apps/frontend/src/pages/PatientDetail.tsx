@@ -182,6 +182,68 @@ const PatientDetail: React.FC = () => {
       }
     : null;
 
+  const editInitialData: PatientFormData | undefined = patientData
+    ? {
+        patient: {
+          name: patientData.nombre ?? patientData.nombre_paciente ?? "",
+          species: patientData.especie ?? "",
+          breed: patientData.raza ?? "",
+          age: patientData.edad != null ? String(patientData.edad) : "",
+          sex: patientData.sexo ?? "",
+          weight: patientData.peso != null ? String(patientData.peso) : "",
+          color: patientData.color ?? "",
+          characteristic: patientData.senia ?? "",
+          sterilized:
+            patientData.esterilizado === true
+              ? "yes"
+              : patientData.esterilizado === false
+                ? "no"
+                : "",
+          microchip:
+            patientData.tiene_microchip === true
+              ? "yes"
+              : patientData.tiene_microchip === false
+                ? "no"
+                : "",
+          microchipNumber: patientData.num_microchip ?? "",
+        },
+        responsible: {
+          firstName:
+            responsableData?.nombre ?? patientData.responsables?.nombre ?? "",
+          lastName:
+            responsableData?.apellido ??
+            patientData.responsables?.apellido ??
+            "",
+          email:
+            responsableData?.email ?? patientData.responsables?.email ?? "",
+          street:
+            responsableData?.direccion_calle ??
+            patientData.responsables?.direccion_calle ??
+            "",
+          number:
+            responsableData?.direccion_numero ??
+            patientData.responsables?.direccion_numero ??
+            "",
+          locality:
+            responsableData?.direccion_localidad ??
+            patientData.responsables?.direccion_localidad ??
+            "",
+          province:
+            responsableData?.provincia ??
+            patientData.responsables?.provincia ??
+            "",
+          phone:
+            responsableData?.telefono ??
+            patientData.responsables?.telefono ??
+            "",
+          relationship:
+            responsableData?.relacion ??
+            patientData.responsables?.relacion ??
+            "",
+        },
+      }
+    : undefined;
+
   const handleExpandir = (id: string) => {
     setVisitas((prev) =>
       prev.map((v) => ({
@@ -296,11 +358,60 @@ const PatientDetail: React.FC = () => {
     }
   };
 
-  const handleEditSubmit = async (_data: PatientFormData) => {
+  const handleEditSubmit = async (data: PatientFormData) => {
+    if (!patientData) return;
+
+    const patientId =
+      patientData.id_pacientes ??
+      patientData.id_paciente ??
+      patientData.id ??
+      id;
+    const responsableId =
+      patientData.id_responsable ?? patientData.responsables?.id_responsable;
+
     setIsEditFormLoading(true);
     setEditApiError(null);
     try {
-      // TODO: Implementar edición de paciente + responsable via API
+      await api.updatePatient(patientId!, {
+        nombre: data.patient.name,
+        especie: data.patient.species,
+        raza: data.patient.breed,
+        edad: parseInt(data.patient.age, 10),
+        sexo: data.patient.sex as "Macho" | "Hembra",
+        peso: parseFloat(data.patient.weight.replace(",", ".")),
+        color: data.patient.color,
+        ...(data.patient.characteristic
+          ? { senia: data.patient.characteristic }
+          : {}),
+        esterilizado: data.patient.sterilized === "yes",
+        tiene_microchip: data.patient.microchip === "yes",
+        ...(data.patient.microchip === "yes"
+          ? { num_microchip: data.patient.microchipNumber }
+          : {}),
+      });
+
+      if (responsableId) {
+        await api.updateResponsable(responsableId, {
+          nombre: data.responsible.firstName,
+          apellido: data.responsible.lastName,
+          email: data.responsible.email,
+          telefono: data.responsible.phone,
+          relacion: data.responsible.relationship,
+          direccion_calle: data.responsible.street,
+          direccion_numero: data.responsible.number,
+          direccion_localidad: data.responsible.locality,
+          provincia: data.responsible.province,
+        });
+      }
+
+      // Re-fetch desde la BD para mostrar datos confirmados
+      const updatedPatient = await api.getPatientById(String(patientId));
+      setPatientData(updatedPatient);
+      if (responsableId) {
+        const updatedResponsable = await api.getResponsableById(responsableId);
+        setResponsableData(updatedResponsable);
+      }
+
       setIsEditModalOpen(false);
     } catch (err: any) {
       setEditApiError(err?.message || "Ocurrió un error inesperado.");
@@ -447,6 +558,7 @@ const PatientDetail: React.FC = () => {
             setEditApiError(null);
           }}
           isLoading={isEditFormLoading}
+          initialData={editInitialData}
         />
       </Modal>
 
