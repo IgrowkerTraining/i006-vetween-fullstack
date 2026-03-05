@@ -1,46 +1,101 @@
 const responsablesService = require("../services/responsiblesService");
+const ResponseHelper = require("../utils/responseHelper");
 
 // Obtener todos
 const getAll = async (req, res) => {
     try {
-        const responsibles = await responsablesService.getAll();
-        res.json({ success: true, message: "Datos de los responsables obtenidos exitosamente", data: responsibles });
+        const id_clinica = req.user.id_clinica;
+        const responsibles = await responsablesService.getAll(id_clinica);
+        
+        return ResponseHelper.success(res, responsibles, "Responsables obtenidos correctamente");
     } catch (error) {
-        res.status(500).json({ success: false, message: "Error interno del servidor", errors: error.message });
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 // Obtener por ID
 const getById = async (req, res) => {
-    const id = parseInt(req.params.id);
-    try {
-        const responsible = await responsablesService.getById(id);
 
-        res.json({ success: true, message: `Datos del responsable con ID ${id} obtenidos exitosamente`, data: responsible });
+    if (isNaN(id)) {
+        return ResponseHelper.badRequest(res, "ID inválido");
+    }
+
+    try {
+        const id = parseInt(req.params.id);
+        const id_clinica = req.user.id_clinica;
+        const responsible = await responsablesService.getById(id, id_clinica);
+
+        return ResponseHelper.success(res, responsible, "Responsable obtenido correctamente");
     } catch (error) {
-        res.status(404).json({ success: false, message: `Error al obtener el responsable con ID ${id}`, errors: error.message });
+        if (error.message?.includes("RESPONSABLE_NO_ENCONTRADO")) {
+            return ResponseHelper.notFound(res, "Responsable no encontrado");
+        }
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 // Crear
 const create = async (req, res) => {
     try {
-        const result = await responsablesService.create(req.body);
-        res.status(201).json({ success: true, message: "Responsable creado exitosamente", data: result });
+        const id_clinica = req.user.id_clinica;
+        const result = await responsablesService.create(req.body, id_clinica);
+        
+        return ResponseHelper.created(res, result, "Responsable creado correctamente");
     } catch (error) {
-        res.status(400).json({ success: false, message: "Error al crear el responsable", errors: error.message });
+        if (error.message?.includes("EMAIL_DUPLICADO")) {
+            return ResponseHelper.badRequest(res, "El email ingresado ya se encuentra registrado.");
+        }
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 // Actualizar
 const update = async (req, res) => {
-    const id = parseInt(req.params.id);
-    try {
-        const updated = await responsablesService.update(id, req.body);
 
-        res.json({ success: true, message: `Responsable con ID ${id} actualizado exitosamente`, data: updated });
+    if (isNaN(id)) {
+        return ResponseHelper.badRequest(res, "ID inválido");
+    }
+
+    try {
+        const id = parseInt(req.params.id);
+        const id_clinica = req.user.id_clinica;
+        const updated = await responsablesService.update(id, req.body, id_clinica);
+
+        return ResponseHelper.success(res, updated, "Responsable actualizado correctamente");
     } catch (error) {
-        res.status(400).json({ success: false, message: `Error al actualizar el responsable con ID ${id}`, errors: error.message });
+        if (error.message?.includes("RESPONSABLE_NO_ENCONTRADO")) {
+            return ResponseHelper.notFound(res, "Responsable no encontrado");
+        }
+        if (error.message?.includes("EMAIL_DUPLICADO")) {
+            return ResponseHelper.badRequest(res, "El email ingresado ya se encuentra registrado.");
+        }
+        return ResponseHelper.error(res, error.message);
+    }
+};
+
+// Eliminar un responsable por ID
+const remove = async (req, res) => {
+
+    if (isNaN(id)) {
+        return ResponseHelper.badRequest(res, "ID inválido");
+    }
+
+    try {
+        const id = parseInt(req.params.id);
+        const id_clinica = req.user.id_clinica;
+        
+        const deletedResponsible = await responsablesService.deleteResponsible(id, id_clinica);
+
+        return ResponseHelper.deleted(res, "Responsable eliminado correctamente");
+    } catch (error) {
+        if (error.message?.includes("RESPONSABLE_NO_ENCONTRADO")) {
+            return ResponseHelper.notFound(res, "Responsable no encontrado");
+        }
+        if (error.message.includes("NO_SE_PUEDE_ELIMINAR")) {
+            return ResponseHelper.badRequest(res, "No se puede eliminar un responsable con pacientes asociados");
+        }
+
+        return ResponseHelper.error(res, error.message);
     }
 };
 
@@ -48,5 +103,6 @@ module.exports = {
     getAll,
     getById,
     create,
-    update
+    update,
+    remove
 };

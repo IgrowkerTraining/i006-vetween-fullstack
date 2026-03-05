@@ -1,20 +1,21 @@
 const supabase = require('../config/supabaseClient');
-const { update } = require('../controllers/patientsController');
 
-//Obtener todos los pacientes
+// Obtener todos los pacientes de la clinica
 const getAllPatients = async (id_clinica) => {
     const { data, error } = await supabase
     .from('pacientes')
     .select('*')
-    .eq('id_clinica', id_clinica);
+    .eq('id_clinica', id_clinica)
+    .order("fecha", { ascending: false });
 
     if(error) throw error;
 
     return data;
 };
 
-//Obtener paciente por ID
+// Obtener paciente por ID
 const getPatientById = async (id, id_clinica) => {
+
     const { data, error } = await supabase
     .from('pacientes')
     .select('*')
@@ -24,120 +25,90 @@ const getPatientById = async (id, id_clinica) => {
 
     if(error) throw error;
 
-    return data;
-};
-
-//Crear paciente
-const createPatient = async (patientData) => {
-    const {
-        nombre, 
-        especie, 
-        edad, 
-        color, 
-        senia, 
-        sexo, 
-        raza, 
-        peso, 
-        esterilizado, 
-        tiene_microchip, 
-        num_microchip, 
-        id_responsable,
-        id_clinica
-    } = patientData;
-
-    //Validacion de campos requeridos
-    if(
-        nombre === undefined || 
-        especie === undefined || 
-        edad === undefined ||
-        color === undefined ||
-        senia === undefined || 
-        sexo === undefined || 
-        raza === undefined || 
-        peso === undefined || 
-        esterilizado === undefined || 
-        tiene_microchip === undefined || 
-        id_responsable === undefined ||
-        id_clinica === undefined
-    ) {
-        throw new Error("Faltan campos requeridos")
-    }
-
-    //Validacion de microchip
-    if(tiene_microchip === true && !num_microchip){
-        throw new Error("Debe especificar el número de microchip");
-    }
-
-    //Validar que exista el responsable
-    const { data: responsable, error: responsableError } = await supabase
-    .from('responsables')
-    .select('id_responsables')
-    .eq('id_responsables', id_responsable)
-    .maybeSingle();
-
-    if(responsableError) throw responsableError;
-
-    if(!responsable){
-        throw new Error ("El responsable no existe")
-    }
-
-    //Validar que exista la clinica
-    const { data: clinica, error: clinicaError } = await supabase
-    .from('clinica')
-    .select('id_clinica')
-    .eq('id_clinica', id_clinica)
-    .maybeSingle();
-
-    if(!clinica){
-        throw new Error("La clinica no existe")
-    }
-
-    const { data, error } = await supabase
-    .from('pacientes')
-    .insert([{
-        nombre,
-        especie,
-        edad,
-        color,
-        senia,
-        sexo,
-        raza,
-        peso,
-        esterilizado,
-        tiene_microchip,
-        num_microchip: num_microchip || null,        
-        activo: false,
-        id_responsable,
-        id_clinica
-    }])
-    .select()
-    .maybeSingle();
-
-    if(error) throw error;
-
-    return data;
-};
-
-//Actualizar paciente
-const updatePatient = async (id, updateData, id_clinica) => {
-
-    //Verificar que exista el paciente
-    const { data: patient, error: patientError } = await supabase
-    .from('pacientes')
-    .select('id_pacientes, activo, id_clinica')
-    .eq('id_pacientes', id)
-    .maybeSingle();
-
-    if (patientError || !patient) {
+    if (!data) {
         throw new Error("PACIENTE_NO_ENCONTRADO");
     }
 
-    // Validar clínica con el token
-    if (patient.id_clinica !== id_clinica) {
-        throw new Error("ACCESO_DENEGADO");
+    return data;
+};
+
+// Crear paciente
+const createPatient = async (patientData, id_clinica) => {
+    const {
+        nombre, especie, edad, color, senia, sexo, raza, 
+        peso, esterilizado, tiene_microchip, num_microchip, 
+        id_responsable
+    } = patientData;
+
+    // Verificar si el responsable ya tiene un paciente igual
+    const { data: duplicados, error: searchError } = await supabase
+        .from('pacientes')
+        .select('id_pacientes')
+        .eq('id_clinica', id_clinica)
+        .eq('id_responsable', id_responsable)
+        .eq('especie', especie)
+        .eq('edad', edad)
+        .ilike('nombre', nombre) // ignora mayúsculas/minúsculas
+        .limit(1);
+
+    if (searchError) throw searchError;
+
+    // Si el array de duplicados tiene al menos un elemento, rechazamos la creación
+    if (duplicados && duplicados.length > 0) {
+        throw new Error("PACIENTE_DUPLICADO");
     }
 
-    if(updateData.activo === true && patient.activo === false){
+    // Inserción directa. JOI ya valido la estructura y tipos
+    const { data, error } = await supabase
+        .from('pacientes')
+        .insert([{
+            nombre,
+            especie,
+            edad,
+            color,
+            senia,
+            sexo,
+            raza,
+            peso,
+            esterilizado,
+            tiene_microchip,
+            num_microchip: num_microchip || null,        
+            activo: false,
+            id_responsable,
+            id_clinica
+        }])
+        .select()
+        .maybeSingle();
+
+    // Manejo de errores de base de datos
+    if (error) {
+        // Código 23505 en PostgreSQL es "unique_violation"
+        if (error.code === '23505' && error.message.includes('num_microchip')) {
+            throw new Error("MICROCHIP_DUPLICADO");
+        }
+
+        // El código 23503 en PostgreSQL es "foreign_key_violation"
+        if (error.code === '23503') {
+            if (error.message.includes('id_responsable')) {
+                throw new Error("ID_RESPONSABLE_NO_EXISTE");
+            }
+            if (error.message.includes('id_clinica')) {
+                throw new Error("ID_CLINICA_NO_EXISTE");
+            }
+        }
+        throw error;
+    }
+
+    return data;
+};
+
+// Actualizar paciente
+const updatePatient = async (id, updateData, id_clinica) => {
+
+    // Validar que el paciente exista y pertenezca a la clínica
+    const paciente = await getPatientById(id, id_clinica);
+
+    if(updateData.activo === true && paciente.activo === false){
 
         //Verificar que tenga visitas
         const { count: visitCount, error: visitError } = await supabase
@@ -148,20 +119,21 @@ const updatePatient = async (id, updateData, id_clinica) => {
         if(visitError) throw visitError;
 
         if(visitCount === 0){
-            throw new Error("NO_SE_PUEDE_ACTIVAR_SIN_VISITAS");
+
+            throw new Error("NO_SE_PUEDE_ACTIVAR");
         }
 
-        //Verificar limite de pacientes activos
+        //Verificar limite de pacientes activos por clinica
         const { count: activeCount, error: countError } = await supabase
         .from('pacientes')
         .select('*', { count: 'exact', head: true})
-        .eq('id_clinica', id_clinica)
-        .eq('activo', true);
+        .eq('activo', true)
+        .eq('id_clinica', id_clinica);
 
         if(countError) throw countError;
 
-        if(activeCount >= 3){
-            throw new Error("LIMITE_PACIENTES_ACTIVOS")
+        if(activeCount >= 50){
+            throw new Error("LIMITE_ALCANZADO");
         }
     }
 
@@ -169,32 +141,26 @@ const updatePatient = async (id, updateData, id_clinica) => {
     .from('pacientes')
     .update(updateData)
     .eq('id_pacientes', id)
+    .eq('id_clinica', id_clinica)
     .select()
     .maybeSingle();
 
-    if(error) throw error;
+
+    if(error) {
+        // Código 23505 en PostgreSQL es "unique_violation"
+        if (error.code === '23505' && error.message.includes('num_microchip')) {
+            throw new Error("MICROCHIP_DUPLICADO");
+        }
+        throw error;
+    }
 
     return data;
 };
 
 //Eliminar paciente
 const deletePatient = async (id, id_clinica) => {
-
-    //Verificar que el paciente exista
-    const { data: paciente, error: pacienteError } = await supabase
-    .from('pacientes')
-    .select('id_pacientes, id_clinica')
-    .eq('id_pacientes', id)
-    .maybeSingle();
-
-    if (pacienteError || !paciente) {
-        throw new Error("PACIENTE_NO_ENCONTRADO");
-    }
-
-    // Validar clínica
-    if (paciente.id_clinica !== id_clinica) {
-        throw new Error("ACCESO_DENEGADO");
-    }
+    // Validar que el paciente exista y pertenezca a la clínica
+    await getPatientById(id, id_clinica);
 
     //Verificar si tiene visitas registradas
     const { count, error: visitError } = await supabase
@@ -205,13 +171,14 @@ const deletePatient = async (id, id_clinica) => {
     if(visitError) throw visitError;
 
     if(count > 0){
-        throw new Error("NO_SE_PUEDE_ELIMINAR_CON_VISITAS")
+        throw new Error("NO_SE_PUEDE_ELIMINAR");
     }
 
     const { error } = await supabase
     .from('pacientes')
     .delete()
     .eq('id_pacientes', id)
+    .eq('id_clinica', id_clinica);
 
     if(error) throw error;
 

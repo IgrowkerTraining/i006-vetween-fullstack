@@ -13,8 +13,10 @@ router.use(protect);
 router.get("/", patientsController.getAll);
 router.get("/:id", patientsController.getById);
 router.post("/", validateData(patientSchema),patientsController.create);
-router.put("/:id", validateData(updatePatientSchema), patientsController.update);
+router.patch("/:id", validateData(updatePatientSchema), patientsController.update);
 router.delete("/:id", patientsController.remove);
+
+//Rutas para visitas y vacunas de un paciente
 router.get("/:id/visitas", visitController.getPatientVisits);
 router.get("/:id/vacunas", vaccineController.getPatientVaccines);
 
