@@ -31,7 +31,7 @@ const validarLimitePacientesActivos = async (id_clinica) => {
 
     if (error) throw error;
 
-    if (count >= 10) {
+    if (count >= 50) {
         throw new Error("LIMITE_PACIENTES_ACTIVOS");
     }
 };
