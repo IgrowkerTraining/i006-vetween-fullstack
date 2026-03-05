@@ -369,6 +369,22 @@ export const api = {
     return result;
   },
 
+  async deleteResponsable(id: string | number): Promise<void> {
+    const response = await fetch(
+      `https://backend-vetween.onrender.com/api/responsables/${id}`,
+      {
+        method: "DELETE",
+        headers: getRequestHeaders(true),
+      },
+    );
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(
+        result?.error || result?.message || "Error al eliminar el responsable",
+      );
+    }
+  },
+
   async getResponsables(): Promise<
     | ResponsibleListItem[]
     | { data?: ResponsibleListItem[]; responsables?: ResponsibleListItem[] }

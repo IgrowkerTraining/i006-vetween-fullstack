@@ -14,6 +14,7 @@ import Patient from "../pages/Patient";
 import ClinicalSummaryList from "../pages/ClinicalSummaryList";
 import ClinicalSummaryDetail from "../pages/ClinicalSummaryDetail";
 import ResponsibleList from "../pages/ResponsibleList";
+import RegisterPatient from "../pages/RegisterPatient";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -95,6 +96,14 @@ export const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <ResponsibleList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/register-patient"
+        element={
+          <ProtectedRoute>
+            <RegisterPatient />
           </ProtectedRoute>
         }
       />

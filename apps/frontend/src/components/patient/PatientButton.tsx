@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Modal } from "../common/Modal";
 import { PatientForm, PatientFormData, PatientFormMode } from "./PatientForm";
-import { api } from "../../services/api";
+import { ROUTES } from "../../constants/routes";
 import pawIconPlus from "../../assets/pawIconPlus.svg";
 
 interface PatientButtonProps {
@@ -18,54 +19,43 @@ const PatientButton: React.FC<PatientButtonProps> = ({
   initialData,
   onSuccess,
 }) => {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFormLoading, setIsFormLoading] = useState(false);
-  const [modalStep, setModalStep] = useState(1);
+  const [apiError, setApiError] = useState<string | null>(null);
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  // Modo create: navega a la página dedicada
+  const handleOpenModal = () => {
+    if (mode === "create") {
+      navigate(ROUTES.REGISTER_PATIENT);
+      return;
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setApiError(null);
+  };
 
   const handleFormSubmit = async (data: PatientFormData) => {
     setIsFormLoading(true);
     try {
-      if (mode === "create") {
-        await api.createPatient({
-          nombre: data.patient.name,
-          especie: data.patient.species,
-          edad: parseInt(data.patient.age, 10),
-          color: data.patient.color,
-          senia: data.patient.characteristic,
-          sexo: data.patient.sex as "Macho" | "Hembra",
-          raza: data.patient.breed,
-          peso: parseFloat(data.patient.weight),
-          esterilizado: data.patient.sterilized === "yes",
-          tiene_microchip: data.patient.microchip === "yes",
-          num_microchip:
-            data.patient.microchip === "yes"
-              ? data.patient.microchipNumber
-              : undefined,
-          activo: true,
-          id_responsable: 0,
-        });
-      } else {
-        // TODO: Implementar api.updatePatient cuando esté disponible
-        console.log("Editando paciente:", data);
-      }
+      // TODO: Implementar edición de paciente + responsable
+      console.log("Editando paciente:", data);
       handleCloseModal();
       onSuccess?.();
     } catch (err: any) {
-      console.error(
-        `Error al ${mode === "create" ? "crear" : "editar"} paciente:`,
-        err.message,
-      );
+      const msg =
+        err?.message || "Ocurrió un error inesperado. Intentá de nuevo.";
+      console.error("Error al editar paciente:", msg);
+      setApiError(msg);
     } finally {
       setIsFormLoading(false);
     }
   };
 
   const buttonLabel = mode === "create" ? "Añadir paciente" : "Editar paciente";
-  const modalTitle =
-    mode === "create" ? "Registrar paciente" : "Editar paciente";
 
   return (
     <>
@@ -77,20 +67,27 @@ const PatientButton: React.FC<PatientButtonProps> = ({
         {buttonLabel}
       </button>
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title={modalTitle}
-        size="lg"
-      >
-        <PatientForm
-          onSubmit={handleFormSubmit}
-          onCancel={handleCloseModal}
-          isLoading={isFormLoading}
-          onStepChange={setModalStep}
-          initialData={initialData}
-        />
-      </Modal>
+      {/* Modal solo aplica al modo edición */}
+      {mode === "edit" && (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          title="Editar paciente"
+          size="lg"
+        >
+          {apiError && (
+            <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              {apiError}
+            </div>
+          )}
+          <PatientForm
+            onSubmit={handleFormSubmit}
+            onCancel={handleCloseModal}
+            isLoading={isFormLoading}
+            initialData={initialData}
+          />
+        </Modal>
+      )}
     </>
   );
 };

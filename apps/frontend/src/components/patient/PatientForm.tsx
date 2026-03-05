@@ -59,8 +59,8 @@ interface PatientFormProps {
 
 // Constants
 const STEPS = [
-  { number: 1, label: "Paciente" },
-  { number: 2, label: "Responsable" },
+  { number: 1, label: "Responsable" },
+  { number: 2, label: "Paciente" },
 ];
 
 const SEX_OPTIONS = [
@@ -173,7 +173,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
   };
 
   // Validation
-  const validateStep1 = (): boolean => {
+  const validatePatient = (): boolean => {
     const newErrors: Partial<PatientData> = {};
 
     // Datos básicos
@@ -191,11 +191,12 @@ export const PatientForm: React.FC<PatientFormProps> = ({
     }
     if (!patient.sex) newErrors.sex = "El sexo es requerido";
     // Características físicas
+    const weightNormalized = patient.weight.trim().replace(",", ".");
     if (!patient.weight.trim()) {
       newErrors.weight = "El peso es requerido";
     } else if (
-      isNaN(parseFloat(patient.weight)) ||
-      parseFloat(patient.weight) <= 0
+      isNaN(parseFloat(weightNormalized)) ||
+      parseFloat(weightNormalized) <= 0
     ) {
       newErrors.weight = "El peso debe ser un número positivo";
     }
@@ -211,7 +212,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep2 = (): boolean => {
+  const validateResponsible = (): boolean => {
     const newErrors: Partial<ResponsibleData> = {};
 
     // Datos personales
@@ -237,7 +238,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
 
   // Navigation
   const handleNext = () => {
-    if (validateStep1()) {
+    if (validateResponsible()) {
       setCurrentStep(2);
       onStepChange?.(2);
     }
@@ -250,7 +251,7 @@ export const PatientForm: React.FC<PatientFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateStep2()) {
+    if (validatePatient()) {
       onSubmit({ patient, responsible });
     }
   };
@@ -260,161 +261,8 @@ export const PatientForm: React.FC<PatientFormProps> = ({
       {/* Stepper */}
       <Stepper steps={STEPS} currentStep={currentStep} />
 
-      {/* Step 1: Patient Data */}
+      {/* Step 1: Responsible Data */}
       {currentStep === 1 && (
-        <div className="space-y-6">
-          {/* Datos básicos */}
-          <section className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-900">Datos básicos</h3>
-            <Input
-              label="Nombre *"
-              name="name"
-              placeholder="Nombre del paciente"
-              value={patient.name}
-              onChange={handlePatientChange}
-              error={errors.name}
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <Select
-                label="Especie *"
-                name="species"
-                options={SPECIES_OPTIONS}
-                value={patient.species}
-                onChange={handlePatientChange}
-                placeholder="Seleccionar especie"
-                error={errors.species}
-              />
-              <Input
-                label="Raza *"
-                name="breed"
-                placeholder="Raza del paciente"
-                value={patient.breed}
-                onChange={handlePatientChange}
-                error={errors.breed}
-              />
-            </div>
-          </section>
-
-          {/* Datos biológicos */}
-          <section className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-900">
-              Datos biológicos
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Edad *"
-                name="age"
-                placeholder="Ej: 3 años"
-                value={patient.age}
-                onChange={handlePatientChange}
-                error={errors.age}
-              />
-              <RadioGroup
-                label="Sexo *"
-                name="sex"
-                options={SEX_OPTIONS}
-                value={patient.sex}
-                onChange={(value) => handlePatientRadioChange("sex", value)}
-                error={errors.sex}
-              />
-            </div>
-          </section>
-
-          {/* Características físicas */}
-          <section className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-900">
-              Características físicas
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label="Peso *"
-                name="weight"
-                placeholder="Ej. 4,5"
-                value={patient.weight}
-                onChange={handlePatientChange}
-                error={errors.weight}
-                suffix={
-                  <span className="absolute right-0 top-0 h-full flex items-center px-3 bg-indigo-600 text-white text-sm font-bold rounded-r-lg pointer-events-none">
-                    kg
-                  </span>
-                }
-              />
-              <Input
-                label="Color *"
-                name="color"
-                placeholder="Color del pelaje"
-                value={patient.color}
-                onChange={handlePatientChange}
-                error={errors.color}
-              />
-            </div>
-            <Input
-              label="Seña / Característica"
-              name="characteristic"
-              placeholder="Características distintivas"
-              value={patient.characteristic}
-              onChange={handlePatientChange}
-            />
-          </section>
-
-          {/* Condiciones clínicas */}
-          <section className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-900 text-center">
-              Condiciones clínicas
-            </h3>
-            <div className="grid grid-cols-2 gap-3 items-start">
-              <RadioGroup
-                label="Esterilizado *"
-                name="sterilized"
-                options={YES_NO_OPTIONS}
-                value={patient.sterilized}
-                onChange={(value) =>
-                  handlePatientRadioChange("sterilized", value)
-                }
-                error={errors.sterilized}
-              />
-              <div className="space-y-2">
-                <RadioGroup
-                  label="Microchip *"
-                  name="microchip"
-                  options={YES_NO_OPTIONS}
-                  value={patient.microchip}
-                  onChange={(value) =>
-                    handlePatientRadioChange("microchip", value)
-                  }
-                  error={errors.microchip}
-                />
-                {patient.microchip === "yes" && (
-                  <div className="space-y-2">
-                    <Input
-                      name="microchipNumber"
-                      placeholder="Número de microchip"
-                      value={patient.microchipNumber}
-                      onChange={handlePatientChange}
-                      error={errors.microchipNumber}
-                    />
-                    {patient.microchipNumber && (
-                      <div className="bg-indigo-100 text-indigo-800 font-semibold px-4 py-2.5 rounded-xl text-sm">
-                        Número: {patient.microchipNumber}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* Actions Step 1 */}
-          <div className="flex justify-end pt-4">
-            <Button type="button" variant="primary" onClick={handleNext}>
-              Siguiente
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 2: Responsible Data */}
-      {currentStep === 2 && (
         <div className="space-y-5">
           <section className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -509,6 +357,159 @@ export const PatientForm: React.FC<PatientFormProps> = ({
               placeholder="Seleccionar relación"
               error={errors.relationship}
             />
+          </section>
+
+          {/* Actions Step 1 */}
+          <div className="flex justify-end pt-4">
+            <Button type="button" variant="primary" onClick={handleNext}>
+              Siguiente
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Patient Data */}
+      {currentStep === 2 && (
+        <div className="space-y-6">
+          {/* Datos básicos */}
+          <section className="space-y-3">
+            <h3 className="text-xl font-bold text-gray-900">Datos básicos</h3>
+            <Input
+              label="Nombre *"
+              name="name"
+              placeholder="Nombre del paciente"
+              value={patient.name}
+              onChange={handlePatientChange}
+              error={errors.name}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Select
+                label="Especie *"
+                name="species"
+                options={SPECIES_OPTIONS}
+                value={patient.species}
+                onChange={handlePatientChange}
+                placeholder="Seleccionar especie"
+                error={errors.species}
+              />
+              <Input
+                label="Raza *"
+                name="breed"
+                placeholder="Raza del paciente"
+                value={patient.breed}
+                onChange={handlePatientChange}
+                error={errors.breed}
+              />
+            </div>
+          </section>
+
+          {/* Datos biológicos */}
+          <section className="space-y-3">
+            <h3 className="text-xl font-bold text-gray-900">
+              Datos biológicos
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Edad *"
+                name="age"
+                placeholder="Ej: 3"
+                value={patient.age}
+                onChange={handlePatientChange}
+                error={errors.age}
+              />
+              <RadioGroup
+                label="Sexo *"
+                name="sex"
+                options={SEX_OPTIONS}
+                value={patient.sex}
+                onChange={(value) => handlePatientRadioChange("sex", value)}
+                error={errors.sex}
+              />
+            </div>
+          </section>
+
+          {/* Características físicas */}
+          <section className="space-y-3">
+            <h3 className="text-xl font-bold text-gray-900">
+              Características físicas
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              <Input
+                label="Peso *"
+                name="weight"
+                placeholder="Ej. 4.5"
+                value={patient.weight}
+                onChange={handlePatientChange}
+                error={errors.weight}
+                suffix={
+                  <span className="absolute right-0 top-0 h-full flex items-center px-3 bg-indigo-600 text-white text-sm font-bold rounded-r-lg pointer-events-none">
+                    kg
+                  </span>
+                }
+              />
+              <Input
+                label="Color *"
+                name="color"
+                placeholder="Color del pelaje"
+                value={patient.color}
+                onChange={handlePatientChange}
+                error={errors.color}
+              />
+            </div>
+            <Input
+              label="Seña / Característica"
+              name="characteristic"
+              placeholder="Características distintivas"
+              value={patient.characteristic}
+              onChange={handlePatientChange}
+            />
+          </section>
+
+          {/* Condiciones clínicas */}
+          <section className="space-y-3">
+            <h3 className="text-xl font-bold text-gray-900 text-center">
+              Condiciones clínicas
+            </h3>
+            <div className="grid grid-cols-2 gap-3 items-start">
+              <RadioGroup
+                label="Esterilizado *"
+                name="sterilized"
+                options={YES_NO_OPTIONS}
+                value={patient.sterilized}
+                onChange={(value) =>
+                  handlePatientRadioChange("sterilized", value)
+                }
+                error={errors.sterilized}
+              />
+              <div className="space-y-2">
+                <RadioGroup
+                  label="Microchip *"
+                  name="microchip"
+                  options={YES_NO_OPTIONS}
+                  value={patient.microchip}
+                  onChange={(value) =>
+                    handlePatientRadioChange("microchip", value)
+                  }
+                  error={errors.microchip}
+                />
+                {patient.microchip === "yes" && (
+                  <div className="space-y-2">
+                    <Input
+                      name="microchipNumber"
+                      placeholder="Número de microchip"
+                      value={patient.microchipNumber}
+                      onChange={handlePatientChange}
+                      error={errors.microchipNumber}
+                    />
+                    {patient.microchipNumber && (
+                      <div className="bg-indigo-100 text-indigo-800 font-semibold px-4 py-2.5 rounded-xl text-sm">
+                        Número: {patient.microchipNumber}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </section>
 
           {/* Actions Step 2 */}

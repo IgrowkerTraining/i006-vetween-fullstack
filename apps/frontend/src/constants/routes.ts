@@ -3,6 +3,7 @@ export const ROUTES = {
   REGISTER: "/register",
   DASHBOARD: "/dashboard",
   PATIENT: "/patient",
+  REGISTER_PATIENT: "/register-patient",
   CLINICAL_SUMMARY: "/clinical-summary",
   CLINICAL_SUMMARY_DETAIL: "/clinical-summary/detail",
   RESPONSABLES: "/responsables",
