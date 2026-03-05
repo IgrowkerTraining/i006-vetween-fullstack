@@ -4,6 +4,7 @@ import { Button } from "../common/Button";
 import { RadioGroup } from "../common/RadioGroup";
 import { Select } from "../common/Select";
 import { Stepper } from "../common/Stepper";
+import { ESPECIES, PROVINCIAS } from "../../constants/enums";
 
 // Types
 interface PatientData {
@@ -67,27 +68,14 @@ const SEX_OPTIONS = [
   { value: "Hembra", label: "Hembra" },
 ];
 
-// TODO: Estas opciones vendrán del backend
-const SPECIES_OPTIONS = [
-  { value: "Caninos", label: "Caninos" },
-  { value: "Felinos", label: "Felinos" },
-  { value: "Peces", label: "Peces" },
-  { value: "Otros", label: "Otros" },
-];
+const SPECIES_OPTIONS = ESPECIES;
 
 const YES_NO_OPTIONS = [
   { value: "yes", label: "Sí" },
   { value: "no", label: "No" },
 ];
 
-// TODO: Estas opciones vendrán del backend
-const PROVINCE_OPTIONS = [
-  { value: "Buenos Aires", label: "Buenos Aires" },
-  { value: "Córdoba", label: "Córdoba" },
-  { value: "Santa Fe", label: "Santa Fe" },
-  { value: "Mendoza", label: "Mendoza" },
-  { value: "Tucumán", label: "Tucumán" },
-];
+const PROVINCE_OPTIONS = PROVINCIAS;
 
 const RELATIONSHIP_OPTIONS = [
   { value: "Dueño/a", label: "Dueño/a" },
@@ -203,7 +191,14 @@ export const PatientForm: React.FC<PatientFormProps> = ({
     }
     if (!patient.sex) newErrors.sex = "El sexo es requerido";
     // Características físicas
-    if (!patient.weight.trim()) newErrors.weight = "El peso es requerido";
+    if (!patient.weight.trim()) {
+      newErrors.weight = "El peso es requerido";
+    } else if (
+      isNaN(parseFloat(patient.weight)) ||
+      parseFloat(patient.weight) <= 0
+    ) {
+      newErrors.weight = "El peso debe ser un número positivo";
+    }
     if (!patient.color.trim()) newErrors.color = "El color es requerido";
     // Condiciones clínicas
     if (!patient.sterilized) newErrors.sterilized = "Este campo es requerido";

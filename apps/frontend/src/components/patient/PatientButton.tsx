@@ -37,10 +37,13 @@ const PatientButton: React.FC<PatientButtonProps> = ({
           senia: data.patient.characteristic,
           sexo: data.patient.sex as "Macho" | "Hembra",
           raza: data.patient.breed,
-          peso: parseFloat(data.patient.weight) || 0,
+          peso: parseFloat(data.patient.weight),
           esterilizado: data.patient.sterilized === "yes",
           tiene_microchip: data.patient.microchip === "yes",
-          num_microchip: data.patient.microchipNumber,
+          num_microchip:
+            data.patient.microchip === "yes"
+              ? data.patient.microchipNumber
+              : undefined,
           activo: true,
           id_responsable: 0,
         });

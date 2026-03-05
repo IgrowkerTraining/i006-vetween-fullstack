@@ -24,8 +24,10 @@ const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
   if (Array.isArray(payload)) return payload as ResponsibleListItem[];
   if (payload && typeof payload === "object") {
     const asRecord = payload as Record<string, unknown>;
-    if (Array.isArray(asRecord.data)) return asRecord.data as ResponsibleListItem[];
-    if (Array.isArray(asRecord.responsables)) return asRecord.responsables as ResponsibleListItem[];
+    if (Array.isArray(asRecord.data))
+      return asRecord.data as ResponsibleListItem[];
+    if (Array.isArray(asRecord.responsables))
+      return asRecord.responsables as ResponsibleListItem[];
   }
   return [];
 };
@@ -63,7 +65,7 @@ export default function ResponsibleList() {
       const mascotasByResponsable = new Map<string, MascotaRef[]>();
       patients.forEach((p: any) => {
         const responsableId = String(
-          p.id_responsable ?? p.id_responsables ?? p.responsable_id ?? ""
+          p.id_responsable ?? p.id_responsables ?? p.responsable_id ?? "",
         );
         if (!responsableId) return;
         const petId = String(p.id_pacientes ?? p.id_paciente ?? p.id ?? "");
@@ -71,11 +73,13 @@ export default function ResponsibleList() {
         if (!mascotasByResponsable.has(responsableId)) {
           mascotasByResponsable.set(responsableId, []);
         }
-        mascotasByResponsable.get(responsableId)!.push({ id: petId, nombre: petName });
+        mascotasByResponsable
+          .get(responsableId)!
+          .push({ id: petId, nombre: petName });
       });
 
       const mapped: ResponsableRow[] = rows.map((item) => {
-        const rid = String(item.id_responsables ?? "");
+        const rid = String(item.id_responsable ?? "");
         const mascotas = mascotasByResponsable.get(rid) ?? [];
         return {
           id: rid || "-",
@@ -113,9 +117,15 @@ export default function ResponsibleList() {
   return (
     <MainLayout>
       <section className="flex flex-1 flex-col overflow-y-auto">
-        <PageHeader subtitle={`Hola, ${userDisplayName}`} title="Responsables" />
+        <PageHeader
+          subtitle={`Hola, ${userDisplayName}`}
+          title="Responsables"
+        />
 
-        <section className="flex-1 px-8 py-6" aria-label="Lista de responsables">
+        <section
+          className="flex-1 px-8 py-6"
+          aria-label="Lista de responsables"
+        >
           {loadError && (
             <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
               {loadError}
@@ -163,7 +173,9 @@ export default function ResponsibleList() {
                               <React.Fragment key={m.id}>
                                 {i > 0 && <span className="mr-1">,</span>}
                                 <button
-                                  onClick={() => navigate(`${ROUTES.PATIENT}/${m.id}`)}
+                                  onClick={() =>
+                                    navigate(`${ROUTES.PATIENT}/${m.id}`)
+                                  }
                                   className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
                                 >
                                   {m.nombre}

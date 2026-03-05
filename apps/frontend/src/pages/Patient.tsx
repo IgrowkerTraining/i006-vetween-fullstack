@@ -10,11 +10,21 @@ import HistorialClinico from "../components/patient/HistorialClinico";
 import HistorialVacunas from "../components/patient/HistorialVacunas";
 import { VisitaClinica } from "../components/patient/VisitaClinicaTimeline";
 import { Vacuna } from "../components/patient/VacunaTimeline";
-import { api, PatientDetailResponse, ResponsableDetailResponse } from "../services/api";
+import {
+  api,
+  PatientDetailResponse,
+  ResponsableDetailResponse,
+} from "../services/api";
 import { ROUTES } from "../constants/routes";
 import { Modal } from "../components/common/Modal";
-import { ClinicalVisitForm, ClinicalVisitFormData } from "../components/forms/ClinicalVisitForm";
-import { VaccineRegistrationModal, VaccineFormData } from "../components/forms/VaccineRegistrationModal";
+import {
+  ClinicalVisitForm,
+  ClinicalVisitFormData,
+} from "../components/forms/ClinicalVisitForm";
+import {
+  VaccineRegistrationModal,
+  VaccineFormData,
+} from "../components/forms/VaccineRegistrationModal";
 
 // Mock de antecedentes clínicos previos (pendiente de conectar a API)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,8 +80,11 @@ const mockVacunasIniciales: Vacuna[] = [
 const Patient: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [patientData, setPatientData] = useState<PatientDetailResponse | null>(null);
-  const [responsableData, setResponsableData] = useState<ResponsableDetailResponse | null>(null);
+  const [patientData, setPatientData] = useState<PatientDetailResponse | null>(
+    null,
+  );
+  const [responsableData, setResponsableData] =
+    useState<ResponsableDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [visitas, setVisitas] = useState<VisitaClinica[]>([]);
@@ -94,7 +107,7 @@ const Patient: React.FC = () => {
           api.getVacunasByPatientId(id),
         ]);
         setPatientData(data);
-        const responsableId = data.id_responsable ?? data.id_responsables;
+        const responsableId = data.id_responsable ?? data.id_responsable;
         if (responsableId) {
           try {
             const respData = await api.getResponsableById(responsableId);
@@ -151,7 +164,9 @@ const Patient: React.FC = () => {
   const formatPeso = (value: unknown): string => {
     if (!value && value !== 0) return "-";
     const num = Number(value);
-    return isNaN(num) ? String(value) : `${num.toFixed(1).replace(".", ",")} kg`;
+    return isNaN(num)
+      ? String(value)
+      : `${num.toFixed(1).replace(".", ",")} kg`;
   };
 
   const buildDireccion = (d: PatientDetailResponse): string => {
@@ -160,7 +175,9 @@ const Patient: React.FC = () => {
     const numero = r?.direccion_numero ?? d.direccion_numero ?? "";
     const localidad = r?.direccion_localidad ?? d.direccion_localidad ?? "";
     const provincia = r?.provincia ?? d.provincia ?? "";
-    return [calle, numero, localidad, provincia].filter(Boolean).join(", ") || "-";
+    return (
+      [calle, numero, localidad, provincia].filter(Boolean).join(", ") || "-"
+    );
   };
 
   const paciente = patientData
@@ -183,12 +200,32 @@ const Patient: React.FC = () => {
 
   const responsable = patientData
     ? {
-        nombre: responsableData?.nombre ?? patientData.responsables?.nombre ?? patientData.nombre_responsable ?? "-",
-        apellido: responsableData?.apellido ?? patientData.responsables?.apellido ?? patientData.apellido ?? "-",
-        email: responsableData?.email ?? patientData.responsables?.email ?? patientData.email ?? "-",
-        telefono: responsableData?.telefono ?? patientData.responsables?.telefono ?? patientData.telefono ?? "-",
+        nombre:
+          responsableData?.nombre ??
+          patientData.responsables?.nombre ??
+          patientData.nombre_responsable ??
+          "-",
+        apellido:
+          responsableData?.apellido ??
+          patientData.responsables?.apellido ??
+          patientData.apellido ??
+          "-",
+        email:
+          responsableData?.email ??
+          patientData.responsables?.email ??
+          patientData.email ??
+          "-",
+        telefono:
+          responsableData?.telefono ??
+          patientData.responsables?.telefono ??
+          patientData.telefono ??
+          "-",
         direccion: buildDireccion(patientData),
-        relacion: responsableData?.relacion ?? patientData.responsables?.relacion ?? patientData.relacion ?? "-",
+        relacion:
+          responsableData?.relacion ??
+          patientData.responsables?.relacion ??
+          patientData.relacion ??
+          "-",
       }
     : null;
 
@@ -365,7 +402,9 @@ const Patient: React.FC = () => {
     return (
       <MainLayout>
         <div className="flex flex-1 items-center justify-center py-24">
-          <p className="text-sm text-red-600">{fetchError ?? "No se encontró el paciente."}</p>
+          <p className="text-sm text-red-600">
+            {fetchError ?? "No se encontró el paciente."}
+          </p>
         </div>
       </MainLayout>
     );
@@ -459,12 +498,14 @@ const Patient: React.FC = () => {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setIsVisitModalOpen(true)}
-              className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700">
+              className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+            >
               Registrar visita clínica
             </button>
             <button
               onClick={() => setIsVaccineModalOpen(true)}
-              className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700">
+              className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+            >
               Registrar vacuna
             </button>
           </div>
@@ -478,7 +519,9 @@ const Patient: React.FC = () => {
         {/* Generate Clinical Summary Button */}
         <div className="mt-6 flex flex-col items-end gap-2">
           {summarySuccess && (
-            <p className="text-xs font-medium text-emerald-600">Generación de resumen clínico exitoso. Redirigiendo...</p>
+            <p className="text-xs font-medium text-emerald-600">
+              Generación de resumen clínico exitoso. Redirigiendo...
+            </p>
           )}
           {summaryError && (
             <p className="text-xs text-red-600">{summaryError}</p>
@@ -488,7 +531,9 @@ const Patient: React.FC = () => {
             disabled={isGeneratingSummary}
             className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
-            {isGeneratingSummary ? "Generando resumen..." : "Generar resumen clínico"}
+            {isGeneratingSummary
+              ? "Generando resumen..."
+              : "Generar resumen clínico"}
           </button>
         </div>
       </section>
