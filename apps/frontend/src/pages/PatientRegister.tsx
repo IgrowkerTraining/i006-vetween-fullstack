@@ -240,246 +240,255 @@ const PatientRegister: React.FC = () => {
       <section className="flex flex-1 flex-col overflow-y-auto">
         <PageHeader title={pageTitle} />
 
-        <div className="flex-1 px-8 py-6 max-w-2xl">
-          {/* Error de API */}
-          {apiError && (
-            <div className="mb-5 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-              {apiError}
-            </div>
-          )}
-
-          {/* ── STAGE: RESPONSABLE ──────────────────────────────────────── */}
-          {stage === "responsable" && (
-            <div className="flex flex-col">
-              {/* Pestañas */}
-              <div className="flex gap-1">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      setResponsableTab(tab.id);
-                      setSelectedResponsable(null);
-                      setSearchQuery("");
-                      setApiError(null);
-                    }}
-                    className={`rounded-t-lg px-6 py-2.5 text-sm transition-colors ${
-                      responsableTab === tab.id
-                        ? "bg-vetween-ice text-vetween-teal font-semibold border-t border-x border-border -mb-px z-10"
-                        : "bg-vetween-teal text-foreground font-medium hover:bg-vetween-teal/85"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+        <div className="flex flex-1 justify-center px-8 py-6">
+          <div className="w-full max-w-2xl">
+            {/* Error de API */}
+            {apiError && (
+              <div className="mb-5 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                {apiError}
               </div>
+            )}
 
-              {/* Contenido de pestañas */}
-              <div className="bg-vetween-ice rounded-b-lg rounded-tr-lg border border-border p-6 space-y-6">
-                {/* ── Pestaña: nuevo ── */}
-                {responsableTab === "nuevo" && (
-                  <>
-                    <ResponsibleFormFields
-                      data={responsible}
-                      errors={responsibleErrors}
-                      onChange={handleResponsibleChange}
-                    />
-                    <div className="flex justify-between pt-4 border-t border-slate-700">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancelarResponsable}
-                        disabled={isSubmitting}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="primary"
-                        isLoading={isSubmitting}
-                        onClick={handleSiguienteNuevo}
-                      >
-                        Siguiente
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-                {/* ── Pestaña: existente ── */}
-                {responsableTab === "existente" && (
-                  <div className="space-y-4">
-                    {/* Buscador */}
-                    <input
-                      type="text"
-                      placeholder="Buscar por nombre, apellido o email…"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
+            {/* ── STAGE: RESPONSABLE ──────────────────────────────────────── */}
+            {stage === "responsable" && (
+              <div className="flex flex-col">
+                {/* Pestañas */}
+                <div className="flex gap-1">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setResponsableTab(tab.id);
                         setSelectedResponsable(null);
+                        setSearchQuery("");
+                        setApiError(null);
                       }}
-                      className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
-                    />
+                      className={`rounded-t-lg px-6 py-2.5 text-sm transition-colors ${
+                        responsableTab === tab.id
+                          ? "bg-vetween-ice text-vetween-teal font-semibold border-t border-x border-border -mb-px z-10"
+                          : "bg-vetween-teal text-foreground font-medium hover:bg-vetween-teal/85"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
 
-                    {loadingResponsables && (
-                      <p className="text-sm text-muted-foreground">
-                        Cargando responsables…
-                      </p>
-                    )}
+                {/* Contenido de pestañas */}
+                <div className="bg-vetween-ice rounded-b-lg rounded-tr-lg border border-border p-6 space-y-6">
+                  {/* ── Pestaña: nuevo ── */}
+                  {responsableTab === "nuevo" && (
+                    <>
+                      <ResponsibleFormFields
+                        data={responsible}
+                        errors={responsibleErrors}
+                        onChange={handleResponsibleChange}
+                      />
+                      <div className="flex gap-3 pt-4 border-t border-slate-700">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={handleCancelarResponsable}
+                          disabled={isSubmitting}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          className="flex-1"
+                          isLoading={isSubmitting}
+                          onClick={handleSiguienteNuevo}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </>
+                  )}
 
-                    {!loadingResponsables &&
-                      searchQuery.trim() &&
-                      filteredResponsables.length === 0 && (
+                  {/* ── Pestaña: existente ── */}
+                  {responsableTab === "existente" && (
+                    <div className="space-y-4">
+                      {/* Buscador */}
+                      <input
+                        type="text"
+                        placeholder="Buscar por nombre, apellido o email…"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setSelectedResponsable(null);
+                        }}
+                        className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
+                      />
+
+                      {loadingResponsables && (
                         <p className="text-sm text-muted-foreground">
-                          No se encontraron resultados.
+                          Cargando responsables…
                         </p>
                       )}
 
-                    {/* Lista de resultados */}
-                    {filteredResponsables.length > 0 &&
-                      !selectedResponsable && (
-                        <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
-                          {filteredResponsables.map((r) => (
-                            <li key={r.id_responsable}>
-                              <button
-                                className="w-full text-left px-4 py-3 text-sm hover:bg-muted/60 transition-colors"
-                                onClick={() => handleSeleccionarExistente(r)}
-                              >
-                                <span className="font-semibold text-foreground">
-                                  {r.nombre} {r.apellido}
-                                </span>
-                                <span className="ml-2 text-muted-foreground">
-                                  {r.email}
-                                </span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
+                      {!loadingResponsables &&
+                        searchQuery.trim() &&
+                        filteredResponsables.length === 0 && (
+                          <p className="text-sm text-muted-foreground">
+                            No se encontraron resultados.
+                          </p>
+                        )}
+
+                      {/* Lista de resultados */}
+                      {filteredResponsables.length > 0 &&
+                        !selectedResponsable && (
+                          <ul className="divide-y divide-border rounded-lg border border-border overflow-hidden">
+                            {filteredResponsables.map((r) => (
+                              <li key={r.id_responsable}>
+                                <button
+                                  className="w-full text-left px-4 py-3 text-sm hover:bg-muted/60 transition-colors"
+                                  onClick={() => handleSeleccionarExistente(r)}
+                                >
+                                  <span className="font-semibold text-foreground">
+                                    {r.nombre} {r.apellido}
+                                  </span>
+                                  <span className="ml-2 text-muted-foreground">
+                                    {r.email}
+                                  </span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                      {/* Ficha del responsable seleccionado */}
+                      {selectedResponsable && (
+                        <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-semibold text-foreground text-base">
+                              {selectedResponsable.nombre}{" "}
+                              {selectedResponsable.apellido}
+                            </h3>
+                            <button
+                              className="text-xs text-muted-foreground hover:text-foreground underline"
+                              onClick={() => setSelectedResponsable(null)}
+                            >
+                              Cambiar
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                            <span>
+                              <span className="font-medium text-foreground">
+                                Email:
+                              </span>{" "}
+                              <span className="text-muted-foreground">
+                                {selectedResponsable.email}
+                              </span>
+                            </span>
+                            <span>
+                              <span className="font-medium text-foreground">
+                                Teléfono:
+                              </span>{" "}
+                              <span className="text-muted-foreground">
+                                {selectedResponsable.telefono}
+                              </span>
+                            </span>
+                            <span>
+                              <span className="font-medium text-foreground">
+                                Relación:
+                              </span>{" "}
+                              <span className="text-muted-foreground">
+                                {selectedResponsable.relacion}
+                              </span>
+                            </span>
+                            <span>
+                              <span className="font-medium text-foreground">
+                                Provincia:
+                              </span>{" "}
+                              <span className="text-muted-foreground">
+                                {selectedResponsable.provincia}
+                              </span>
+                            </span>
+                            <span className="col-span-2">
+                              <span className="font-medium text-foreground">
+                                Dirección:
+                              </span>{" "}
+                              <span className="text-muted-foreground">
+                                {selectedResponsable.direccion_calle}{" "}
+                                {selectedResponsable.direccion_numero},{" "}
+                                {selectedResponsable.direccion_localidad}
+                              </span>
+                            </span>
+                          </div>
+                          <div className="flex gap-3 pt-3 border-t border-slate-700">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="flex-1"
+                              onClick={handleCancelarResponsable}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="primary"
+                              className="flex-1"
+                              onClick={handleAnadirPacienteExistente}
+                            >
+                              Añadir paciente
+                            </Button>
+                          </div>
+                        </div>
                       )}
 
-                    {/* Ficha del responsable seleccionado */}
-                    {selectedResponsable && (
-                      <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-semibold text-foreground text-base">
-                            {selectedResponsable.nombre}{" "}
-                            {selectedResponsable.apellido}
-                          </h3>
-                          <button
-                            className="text-xs text-muted-foreground hover:text-foreground underline"
-                            onClick={() => setSelectedResponsable(null)}
-                          >
-                            Cambiar
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                          <span>
-                            <span className="font-medium text-foreground">
-                              Email:
-                            </span>{" "}
-                            <span className="text-muted-foreground">
-                              {selectedResponsable.email}
-                            </span>
-                          </span>
-                          <span>
-                            <span className="font-medium text-foreground">
-                              Teléfono:
-                            </span>{" "}
-                            <span className="text-muted-foreground">
-                              {selectedResponsable.telefono}
-                            </span>
-                          </span>
-                          <span>
-                            <span className="font-medium text-foreground">
-                              Relación:
-                            </span>{" "}
-                            <span className="text-muted-foreground">
-                              {selectedResponsable.relacion}
-                            </span>
-                          </span>
-                          <span>
-                            <span className="font-medium text-foreground">
-                              Provincia:
-                            </span>{" "}
-                            <span className="text-muted-foreground">
-                              {selectedResponsable.provincia}
-                            </span>
-                          </span>
-                          <span className="col-span-2">
-                            <span className="font-medium text-foreground">
-                              Dirección:
-                            </span>{" "}
-                            <span className="text-muted-foreground">
-                              {selectedResponsable.direccion_calle}{" "}
-                              {selectedResponsable.direccion_numero},{" "}
-                              {selectedResponsable.direccion_localidad}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="flex justify-between pt-3 border-t border-slate-700">
+                      {/* Cancelar cuando no hay selección activa */}
+                      {!selectedResponsable && (
+                        <div className="pt-2">
                           <Button
                             type="button"
                             variant="outline"
+                            className="w-full"
                             onClick={handleCancelarResponsable}
                           >
                             Cancelar
                           </Button>
-                          <Button
-                            type="button"
-                            variant="primary"
-                            onClick={handleAnadirPacienteExistente}
-                          >
-                            Añadir paciente
-                          </Button>
                         </div>
-                      </div>
-                    )}
-
-                    {/* Cancelar cuando no hay selección activa */}
-                    {!selectedResponsable && (
-                      <div className="pt-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleCancelarResponsable}
-                        >
-                          Cancelar
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── STAGE: PACIENTE ─────────────────────────────────────────── */}
-          {stage === "paciente" && (
-            <div className="rounded-lg border border-border bg-card p-6 space-y-6">
-              <PatientFormFields
-                data={patient}
-                errors={patientErrors}
-                onChange={handlePatientChange}
-                onRadioChange={handlePatientRadioChange}
-              />
-              <div className="flex justify-between pt-4 border-t border-slate-700">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancelarPaciente}
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  isLoading={isSubmitting}
-                  onClick={handleGuardarPaciente}
-                >
-                  Guardar
-                </Button>
+            {/* ── STAGE: PACIENTE ─────────────────────────────────────────── */}
+            {stage === "paciente" && (
+              <div className="rounded-lg border border-border bg-card p-6 space-y-6">
+                <PatientFormFields
+                  data={patient}
+                  errors={patientErrors}
+                  onChange={handlePatientChange}
+                  onRadioChange={handlePatientRadioChange}
+                />
+                <div className="flex gap-3 pt-4 border-t border-slate-700">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleCancelarPaciente}
+                    disabled={isSubmitting}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    className="flex-1"
+                    isLoading={isSubmitting}
+                    onClick={handleGuardarPaciente}
+                  >
+                    Guardar
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
     </MainLayout>

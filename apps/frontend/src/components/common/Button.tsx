@@ -19,7 +19,8 @@ export const Button: React.FC<ButtonProps> = ({
     primary:
       "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20",
     secondary: "bg-slate-700 hover:bg-slate-600 text-white",
-    outline: "border border-slate-600 hover:bg-slate-800 text-slate-200",
+    outline:
+      "border border-slate-300 hover:bg-slate-100 hover:border-slate-400 text-slate-900",
     ghost: "hover:bg-slate-800 text-slate-300",
   };
 
