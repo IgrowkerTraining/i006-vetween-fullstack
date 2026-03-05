@@ -329,12 +329,20 @@ export const api = {
   },
 
   async createResponsable(data: CreateResponsableRequest): Promise<unknown> {
+    const payload = {
+      nombre: data.nombre,
+      apellido: data.apellido,
+      email: data.email,
+      telefono: data.telefono,
+      relacion: data.relacion,
+      direccion: `${data.direccion_calle} ${data.direccion_numero}, ${data.direccion_localidad}, ${data.provincia}`,
+    };
     const response = await fetch(
       "https://backend-vetween.onrender.com/api/responsables",
       {
         method: "POST",
         headers: getRequestHeaders(true),
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       },
     );
     const result = await response.json();
@@ -350,12 +358,33 @@ export const api = {
     id: string | number,
     data: UpdateResponsableRequest,
   ): Promise<unknown> {
+    const hasAddressFields =
+      data.direccion_calle !== undefined ||
+      data.direccion_numero !== undefined ||
+      data.direccion_localidad !== undefined ||
+      data.provincia !== undefined;
+
+    const {
+      direccion_calle,
+      direccion_numero,
+      direccion_localidad,
+      provincia,
+      ...rest
+    } = data;
+    const payload = {
+      ...rest,
+      ...(hasAddressFields && {
+        direccion:
+          `${direccion_calle ?? ""} ${direccion_numero ?? ""}, ${direccion_localidad ?? ""}, ${provincia ?? ""}`.trim(),
+      }),
+    };
+
     const response = await fetch(
       `https://backend-vetween.onrender.com/api/responsables/${id}`,
       {
         method: "PATCH",
         headers: getRequestHeaders(true),
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       },
     );
     const result = await response.json();

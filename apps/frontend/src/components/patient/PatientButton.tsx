@@ -35,7 +35,7 @@ const PatientButton: React.FC<PatientButtonProps> = ({
           edad: parseFloat(data.patient.age) || 0,
           color: data.patient.color,
           senia: data.patient.characteristic,
-          sexo: data.patient.sex === "male" ? "Macho" : "Hembra",
+          sexo: data.patient.sex as "Macho" | "Hembra",
           raza: data.patient.breed,
           peso: parseFloat(data.patient.weight) || 0,
           esterilizado: data.patient.sterilized === "yes",
