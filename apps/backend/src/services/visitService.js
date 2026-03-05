@@ -1,6 +1,50 @@
 const supabase = require('../config/supabaseClient');
 
-const createVisit = async (visitData) => {
+// Verificar que el paciente exista y pertenezca a la clínica
+const validarPacienteClinica = async (id_paciente, id_clinica) => {
+    const { data: paciente, error } = await supabase
+        .from('pacientes')
+        .select('id_clinica')
+        .eq('id_pacientes', id_paciente)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    if (!paciente) {
+        throw new Error("PACIENTE_NO_ENCONTRADO");
+    }
+
+    if (paciente.id_clinica !== id_clinica) {
+        throw new Error("ACCESO_DENEGADO");
+    }
+
+    return true;
+};
+
+// Verificar límite de pacientes activos
+const validarLimitePacientesActivos = async (id_clinica) => {
+    const { count, error } = await supabase
+        .from('pacientes')
+        .select('*', { count: 'exact', head: true })
+        .eq('id_clinica', id_clinica)
+        .eq('activo', true);
+
+    if (error) throw error;
+
+    if (count >= 3) {
+        throw new Error("LIMITE_PACIENTES_ACTIVOS");
+    }
+};
+
+const createVisit = async (visitData, id_clinica) => {
+    const { id_paciente } = visitData;
+
+    // Validar paciente + clínica
+    await validarPacienteClinica(id_paciente, id_clinica);
+
+    // Validar límite de pacientes activos
+    await validarLimitePacientesActivos(id_clinica);
+
     const { data: nuevaVisita, error: visitError } = await supabase
         .from('visitas')
         .insert([visitData])
@@ -19,36 +63,44 @@ const createVisit = async (visitData) => {
         .eq('activo', false); // Solo actualiza si el paciente estaba inactivo
 
     if (patientError) {
-        console.error(`Error al intentar activar al paciente ${visitData.id_paciente}:`, patientError.message);
+        console.error(`Error al intentar activar al paciente ${id_paciente}:`, patientError.message);
     }
 
     return nuevaVisita;
 };
 
 const inactivateVisit = async (idVisita) => {
+
+    // Buscar la visita
+    const { data: visita, error: visitError } = await supabase
+        .from('visitas')
+        .select('id_visitas, id_paciente')
+        .eq('id_visitas', idVisita)
+        .single();
+
+    if (visitError || !visita) {
+        throw new Error('VISITA_NO_ENCONTRADA');
+    }
+
+    // Validar que el paciente pertenezca a la clínica
+    await validarPacienteClinica(visita.id_paciente, id_clinica);
+
     const { data, error } = await supabase
         .from('visitas')
+        // estado: false = activa | true = inactiva
         .update({ estado: true })
         .eq('id_visitas', idVisita)
         .select()
         .single();
 
-    if (error) throw new Error(`ERROR_INACTIVAR_VISITA`);
+    if (error || !data ) throw new Error(`ERROR_INACTIVAR_VISITA`);
 
     return data;
 };
 
-const getVisitsByPatientId = async (idPaciente) => {
-    // Primero verificar que el paciente exista
-    const { error: patientError } = await supabase
-        .from('pacientes')
-        .select('id_pacientes')
-        .eq('id_pacientes', idPaciente)
-        .single(); 
+const getVisitsByPatientId = async (idPaciente, id_clinica) => {
 
-    if (patientError) {
-        throw new Error('PACIENTE_NO_ENCONTRADO');
-    }
+    await validarPacienteClinica(idPaciente, id_clinica);
 
     const { data, error } = await supabase
         .from('visitas')

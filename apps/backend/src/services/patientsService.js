@@ -2,10 +2,11 @@ const supabase = require('../config/supabaseClient');
 const { update } = require('../controllers/patientsController');
 
 //Obtener todos los pacientes
-const getAllPatients = async () => {
+const getAllPatients = async (id_clinica) => {
     const { data, error } = await supabase
     .from('pacientes')
-    .select('*');
+    .select('*')
+    .eq('id_clinica', id_clinica);
 
     if(error) throw error;
 
@@ -13,11 +14,12 @@ const getAllPatients = async () => {
 };
 
 //Obtener paciente por ID
-const getPatientById = async (id) => {
+const getPatientById = async (id, id_clinica) => {
     const { data, error } = await supabase
     .from('pacientes')
     .select('*')
     .eq('id_pacientes', id)
+    .eq('id_clinica', id_clinica)
     .maybeSingle();
 
     if(error) throw error;
@@ -117,17 +119,23 @@ const createPatient = async (patientData) => {
 };
 
 //Actualizar paciente
-const updatePatient = async (id, updateData) => {
+const updatePatient = async (id, updateData, id_clinica) => {
 
     //Verificar que exista el paciente
     const { data: patient, error: patientError } = await supabase
     .from('pacientes')
-    .select('id_pacientes, activo')
+    .select('id_pacientes, activo, id_clinica')
     .eq('id_pacientes', id)
     .maybeSingle();
 
-    if(patientError) throw patientError;
-    if(!patient) throw new Error("Paciente no encontrado");
+    if (patientError || !patient) {
+        throw new Error("PACIENTE_NO_ENCONTRADO");
+    }
+
+    // Validar clínica con el token
+    if (patient.id_clinica !== id_clinica) {
+        throw new Error("ACCESO_DENEGADO");
+    }
 
     if(updateData.activo === true && patient.activo === false){
 
@@ -140,19 +148,20 @@ const updatePatient = async (id, updateData) => {
         if(visitError) throw visitError;
 
         if(visitCount === 0){
-            throw new Error("No se puede activar un paciente sin visitas registradas");
+            throw new Error("NO_SE_PUEDE_ACTIVAR_SIN_VISITAS");
         }
 
         //Verificar limite de pacientes activos
         const { count: activeCount, error: countError } = await supabase
         .from('pacientes')
         .select('*', { count: 'exact', head: true})
-        .eq('activo', true)
+        .eq('id_clinica', id_clinica)
+        .eq('activo', true);
 
         if(countError) throw countError;
 
         if(activeCount >= 3){
-            throw new Error("No se pueden registrar más de 50 pacientes activos")
+            throw new Error("LIMITE_PACIENTES_ACTIVOS")
         }
     }
 
@@ -169,19 +178,22 @@ const updatePatient = async (id, updateData) => {
 };
 
 //Eliminar paciente
-const deletePatient = async (id) => {
+const deletePatient = async (id, id_clinica) => {
 
     //Verificar que el paciente exista
     const { data: paciente, error: pacienteError } = await supabase
     .from('pacientes')
-    .select('id_pacientes')
+    .select('id_pacientes, id_clinica')
     .eq('id_pacientes', id)
     .maybeSingle();
 
-    if(pacienteError) throw pacienteError;
+    if (pacienteError || !paciente) {
+        throw new Error("PACIENTE_NO_ENCONTRADO");
+    }
 
-    if(!paciente){
-        throw new Error("El paciente no existe");
+    // Validar clínica
+    if (paciente.id_clinica !== id_clinica) {
+        throw new Error("ACCESO_DENEGADO");
     }
 
     //Verificar si tiene visitas registradas
@@ -193,7 +205,7 @@ const deletePatient = async (id) => {
     if(visitError) throw visitError;
 
     if(count > 0){
-        throw new Error("No se puede eliminar un paciente con visitas registradas")
+        throw new Error("NO_SE_PUEDE_ELIMINAR_CON_VISITAS")
     }
 
     const { error } = await supabase

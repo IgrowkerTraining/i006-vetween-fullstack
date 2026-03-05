@@ -3,67 +3,138 @@ const patientsService = require("../services/patientsService");
 //Obtener todos los pacientes
 const getAll = async (req, res) => {
     try {
-        const patients = await patientsService.getAllPatients();
 
-        res.json({success: true, data: patients});
+        const id_clinica = req.user.id_clinica;
+        const patients = await patientsService.getAllPatients(id_clinica);
+
+        return ResponseHelper.success(
+            res,
+            patients,
+            'Pacientes obtenidos exitosamente'
+        );
     } catch (error) {
-        res.status(500).json({message: error.message})
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 //Obtener paciente por ID
 const getById = async (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
 
-        const patient = await patientsService.getPatientById(id);
+    const id = parseInt(req.params.id);
+    const id_clinica = req.user.id_clinica;
+
+    try {
+        const patient = await patientsService.getPatientById(id, id_clinica);
 
         if(!patient){
-            return res.status(404).json({message: "Paciente no encontrado"})
+            return ResponseHelper.notFound(res, "Paciente no encontrado");
         }
 
-        res.json({success: true, data: patient});
+        return ResponseHelper.success(
+            res,
+            patient,
+            "Paciente obtenido exitosamente"
+        );
     } catch (error) {
-        res.status(500).json({message: error.message})
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 //Crear paciente
 const create = async (req, res) => {
     try{
+
+        if (req.body.id_clinica !== req.user.id_clinica) {
+            return ResponseHelper.forbidden(
+                res,
+                'No puedes crear pacientes en otra clínica'
+            );
+        }
+
         const newPatient = await patientsService.createPatient(req.body);
 
-        res.status(201).json({success: true, data: newPatient});
+        return ResponseHelper.created(
+            res,
+            newPatient,
+            'Paciente creado exitosamente'
+        );
     } catch (error) {
-        res.status(400).json({message: error.message});
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 //Actualizar un paciente por ID
 const update = async (req, res) => {    
-    try {
-        const id = parseInt(req.params.id);
-        const updatedPatient = await patientsService.updatePatient(id, req.body);
+    const id = parseInt(req.params.id);
+    const id_clinica_token = req.user.id_clinica;
 
-        if(!updatedPatient){
-            return res.status(404).json({message: "Paciente no encontrado"})
+    try {
+
+        if (
+            req.body.id_clinica &&
+            req.body.id_clinica !== id_clinica_token
+        ) {
+            return ResponseHelper.forbidden(
+                res,
+                'No puedes modificar pacientes de otra clínica'
+            );
         }
 
-        res.json({success: true, data: updatedPatient});
+        const updatedPatient = await patientsService.updatePatient(id, req.body, id_clinica_token);
+
+        return ResponseHelper.success(
+            res,
+            updatedPatient,
+            'Paciente actualizado correctamente'
+        );
     } catch (error) {
-        res.status(400).json({message: error.message});
+        if (error.message === "PACIENTE_NO_ENCONTRADO") {
+            return ResponseHelper.notFound(res, 'Paciente no encontrado');
+        }
+
+        if (error.message === "ACCESO_DENEGADO") {
+            return ResponseHelper.forbidden(res, 'No autorizado');
+        }
+
+        if (error.message === "NO_SE_PUEDE_ACTIVAR_SIN_VISITAS") {
+            return ResponseHelper.conflict(res, 'No se puede activar sin visitas');
+        }
+
+        if (error.message === "LIMITE_PACIENTES_ACTIVOS") {
+            return ResponseHelper.conflict(res, 'Se alcanzó el límite de pacientes activos');
+        }
+
+        return ResponseHelper.error(res, error.message);
     }
 };
 
 //Eliminar un paciente por ID
 const remove = async (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        const deletedPatient = await patientsService.deletePatient(id);
+    const id = parseInt(req.params.id);
+    const id_clinica = req.user.id_clinica;
 
-        return res.status(200).json(deletedPatient);
+    try {
+        const deletedPatient = await patientsService.deletePatient(id, id_clinica);
+
+        return ResponseHelper.success(
+            res,
+            null,
+            'Paciente eliminado correctamente'
+        );
     } catch (error) {
-        return res.status(500).json({message: error.message})
+        if (error.message === "PACIENTE_NO_ENCONTRADO") {
+            return ResponseHelper.notFound(res, 'Paciente no encontrado');
+        }
+
+        if (error.message === "ACCESO_DENEGADO") {
+            return ResponseHelper.forbidden(res, 'No autorizado');
+        }
+
+        if (error.message === "NO_SE_PUEDE_ELIMINAR_CON_VISITAS") {
+            return ResponseHelper.conflict(res, 'No se puede eliminar un paciente con visitas');
+        }
+
+        return ResponseHelper.error(res, error.message);
     }
 };
 

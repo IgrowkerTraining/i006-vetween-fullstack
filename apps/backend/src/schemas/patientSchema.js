@@ -1,8 +1,8 @@
 const Joi = require('joi');
 
-const sexosValidos = ['Macho', 'Hembra'];
+const sexosValidos = ['Macho','Hembra'];
 
-const especiesValidas = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
+const especiesValidas = ['Caninos','Felinos','Peces','Aves','Roedores','Otros'];
 
 const patientSchema = Joi.object({
     nombre: Joi.string().trim().min(2).max(50).required().messages({
@@ -24,6 +24,12 @@ const patientSchema = Joi.object({
         'string.empty': 'El color es obligatorio',
         'string.min': 'El color debe tener al menos 2 caracteres',
         'string.max': 'El color no puede tener más de 30 caracteres'
+    }),
+
+    senia: Joi.string().trim().min(2).max(150).required().messages({
+        'string.empty': 'La seña es obligatoria',
+        'string.min': 'La seña debe tener al menos 2 caracteres',
+        'string.max': 'La seña no puede tener más de 150 caracteres'
     }),
 
     sexo: Joi.string().valid(...sexosValidos).required().messages({
@@ -58,20 +64,24 @@ const patientSchema = Joi.object({
         })
     }),
 
-    activo: Joi.boolean().required().messages({
+    activo: Joi.boolean().messages({
         'boolean.base': 'El campo activo debe ser un valor booleano',
-        'any.required': 'El campo activo es requerido para registrar al paciente'
     }),
 
     id_responsable: Joi.number().integer().positive().required().messages({
         'number.base': 'El ID del responsable debe ser un número',
         'any.required': 'El paciente debe estar asociado a un responsable existente'
     }),
+
+    id_clinica: Joi.number().integer().positive().required().messages({
+        'number.base': 'El ID de la clinica debe ser un número',
+        'any.required': 'La clinica debe estar asociado a un responsable existente',
+    }),
 });
 
 const updatePatientSchema = patientSchema.fork(
-  Object.keys(patientSchema.describe().keys),
-  (field) => field.optional()
+    Object.keys(patientSchema.describe().keys),
+    (field) => field.optional()
 );
 
 module.exports = { patientSchema, updatePatientSchema };

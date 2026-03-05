@@ -1,9 +1,9 @@
 const Joi = require('joi');
 
 // Definimos ENUMS para validarlos con Joi
-const especialidadesValidas = ['Compania', 'Acuaticos'];
+const especialidadesValidas = ['Clinica general','Medicina preventiva','Dermatologia','Diagnostico','Urgencias','Otras'];
 
-const tiposAnimalesValidos = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
+const tiposAnimalesValidos = ['Caninos','Felinos','Peces','Aves','Roedores','Otros'];
 
 // Esquema de validación para el register (registro)
 const registerSchema = Joi.object({
@@ -35,8 +35,9 @@ const registerSchema = Joi.object({
         'number.positive': 'La matrícula no puede ser negativa'
     }),
     
-    especialidad: Joi.string().valid(...especialidadesValidas).required().messages({
-        'any.only': 'Selecciona una especialidad válida'
+    especialidad: Joi.array().items(
+        Joi.string().valid(...especialidadesValidas)).min(1).required().messages({
+        'any.min': 'Debes seleccionar al menos una especialidad válida'
     }),
     
     tipos_animales: Joi.array().items(
@@ -62,11 +63,30 @@ const registerSchema = Joi.object({
         'any.required': 'El número de habilitación es requerido para registrar la clínica'
     }),
 
-    direccion: Joi.string().trim().min(6).max(150).required().messages({
-        'string.empty': 'La dirección no puede estar vacía',
-        'string.min': 'La dirección debe tener al menos 6 caracteres',
-        'string.max': 'La dirección no puede tener más de 150 caracteres'
-    }),
+    direccion_calle: Joi.string().trim().min(6).max(150).required().messages({
+            'string.empty': 'La dirección no puede estar vacía',
+            'string.min': 'La dirección debe tener al menos 6 caracteres',
+            'string.max': 'La dirección no puede tener más de 150 caracteres'
+        }),
+
+    direccion_numero: Joi.string().trim().min(3).max(6).required().messages({
+            'string.empty': 'El número no puede estar vacío',
+            'string.min': 'El número debe tener al menos 3 caracteres',
+            'string.max': 'El número no puede tener más de 6 caracteres'
+        }),
+
+    direccion_localidad: Joi.string().trim().min(6).max(150).required().messages({
+            'string.empty': 'La localidad no puede estar vacía',
+            'string.min': 'La localidad debe tener al menos 6 caracteres',
+            'string.max': 'La localidad no puede tener más de 150 caracteres'
+        }),
+        
+    provincia: Joi.string().trim().min(6).max(150).required().messages({
+            'string.empty': 'La provinica no puede estar vacía',
+            'string.min': 'La provincia debe tener al menos 6 caracteres',
+            'string.max': 'La provincia no puede tener más de 150 caracteres'
+        }),
+        
     telefono: Joi.string().trim().max(20).required().messages({
         'string.empty': 'El teléfono no puede estar vacío',
         'string.max': 'El teléfono no puede tener más de 20 caracteres'

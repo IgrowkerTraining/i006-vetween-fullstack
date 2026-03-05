@@ -5,6 +5,12 @@ const validateData = require('../middleware/validateData');
 const { protect } = require('../middleware/authMiddleware');
 const { vaccineSchema } = require('../schemas/vaccineSchema');
 
+router.get(
+    '/:id',
+    protect,
+    vaccineController.getPatientVaccines
+);
+
 router.post('/', 
     protect,
     validateData(vaccineSchema), 

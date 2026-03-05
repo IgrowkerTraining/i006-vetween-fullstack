@@ -1,11 +1,9 @@
 const Joi = require('joi');
 
 // ENUMS
-const especialidadesValidas = [
-    'Compania', 'Acuaticos'
-];
+const especialidadesValidas = ['Clinica general','Medicina preventiva','Dermatologia','Diagnostico','Urgencias','Otras'];
 
-const tiposAnimalesValidos = ['Perros','Gatos','Aves','Peces','Tortugas','Conejos','Hurones','Roedores'];
+const tiposAnimalesValidos = ['Caninos','Felinos','Peces','Aves','Roedores','Otros'];
 
 const updateVeterinarianSchema = Joi.object({
     nombre: Joi.string().trim().min(2).max(50).messages({
