@@ -55,6 +55,7 @@ export interface CreatePatientRequest {
   num_microchip?: string;
   activo: boolean;
   id_responsable: number;
+  id_clinica?: never;
 }
 
 export interface UpdatePatientRequest {
@@ -132,7 +133,6 @@ export interface PatientDetailResponse {
   // responsable id returned by new API
   id_responsable?: number | string;
   // responsable fields (may come flattened or nested)
-  id_responsables?: number | string;
   nombre_responsable?: string;
   apellido?: string;
   email?: string;
@@ -144,7 +144,7 @@ export interface PatientDetailResponse {
   relacion?: string;
   // nested object as returned by the API
   responsables?: {
-    id_responsables?: number | string;
+    id_responsable?: number | string;
     nombre?: string;
     apellido?: string;
     email?: string;
@@ -158,7 +158,7 @@ export interface PatientDetailResponse {
 }
 
 export interface ResponsableDetailResponse {
-  id_responsables?: number | string;
+  id_responsable?: number | string;
   nombre?: string;
   apellido?: string;
   email?: string;
@@ -171,7 +171,7 @@ export interface ResponsableDetailResponse {
 }
 
 export interface ResponsibleListItem {
-  id_responsables: number;
+  id_responsable: number;
   nombre: string;
   apellido: string;
   email: string;
@@ -329,20 +329,12 @@ export const api = {
   },
 
   async createResponsable(data: CreateResponsableRequest): Promise<unknown> {
-    const payload = {
-      nombre: data.nombre,
-      apellido: data.apellido,
-      email: data.email,
-      telefono: data.telefono,
-      relacion: data.relacion,
-      direccion: `${data.direccion_calle} ${data.direccion_numero}, ${data.direccion_localidad}, ${data.provincia}`,
-    };
     const response = await fetch(
       "https://backend-vetween.onrender.com/api/responsables",
       {
         method: "POST",
         headers: getRequestHeaders(true),
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       },
     );
     const result = await response.json();
@@ -358,33 +350,12 @@ export const api = {
     id: string | number,
     data: UpdateResponsableRequest,
   ): Promise<unknown> {
-    const hasAddressFields =
-      data.direccion_calle !== undefined ||
-      data.direccion_numero !== undefined ||
-      data.direccion_localidad !== undefined ||
-      data.provincia !== undefined;
-
-    const {
-      direccion_calle,
-      direccion_numero,
-      direccion_localidad,
-      provincia,
-      ...rest
-    } = data;
-    const payload = {
-      ...rest,
-      ...(hasAddressFields && {
-        direccion:
-          `${direccion_calle ?? ""} ${direccion_numero ?? ""}, ${direccion_localidad ?? ""}, ${provincia ?? ""}`.trim(),
-      }),
-    };
-
     const response = await fetch(
       `https://backend-vetween.onrender.com/api/responsables/${id}`,
       {
         method: "PATCH",
         headers: getRequestHeaders(true),
-        body: JSON.stringify(payload),
+        body: JSON.stringify(data),
       },
     );
     const result = await response.json();

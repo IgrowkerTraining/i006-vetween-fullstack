@@ -43,7 +43,6 @@ const PatientButton: React.FC<PatientButtonProps> = ({
           num_microchip: data.patient.microchipNumber,
           activo: true,
           id_responsable: 0,
-          id_clinica: 0,
         });
       } else {
         // TODO: Implementar api.updatePatient cuando esté disponible
