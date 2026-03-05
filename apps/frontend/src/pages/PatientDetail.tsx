@@ -2,14 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
-import PatientButton from "../components/patient/PatientButton";
+import {
+  EditPatientForm,
+  PatientFormData,
+} from "../components/forms/EditPatientForm";
+import pawIconPlus from "../assets/pawIconPlus.svg";
 import PatientCard from "../components/patient/PatientCard";
 import PatientTabs from "../components/patient/PatientTabs";
-import DatosGenerales from "../components/patient/DatosGenerales";
-import HistorialClinico from "../components/patient/HistorialClinico";
-import HistorialVacunas from "../components/patient/HistorialVacunas";
-import { VisitaClinica } from "../components/patient/VisitaClinicaTimeline";
-import { Vacuna } from "../components/patient/VacunaTimeline";
+import PatientOverview from "../components/patient/PatientOverview";
+import ClinicalHistory from "../components/clinical/ClinicalHistory";
+import VaccineHistory from "../components/vaccine/VaccineHistory";
+import { VisitaClinica } from "../components/clinical/ClinicalVisitTimeline";
+import { Vacuna } from "../components/vaccine/VaccineTimeline";
 import {
   api,
   PatientDetailResponse,
@@ -21,63 +25,9 @@ import {
   ClinicalVisitForm,
   ClinicalVisitFormData,
 } from "../components/forms/ClinicalVisitForm";
-import {
-  VaccineRegistrationModal,
-  VaccineFormData,
-} from "../components/forms/VaccineRegistrationModal";
+import { VaccineForm, VaccineFormData } from "../components/forms/VaccineForm";
 
-// Mock de antecedentes clínicos previos (pendiente de conectar a API)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _mockAntecedentesPrevios = {
-  fecha: "18/02/2026",
-  descripcion:
-    "Paciente con diagnóstico previo de dermatitis alérgica.\nTratamiento previo con corticoides.",
-};
-
-// Mock de visitas clínicas
-const mockVisitasIniciales: VisitaClinica[] = [
-  {
-    id: "1",
-    fechaVisita: "18/02/2026",
-    fechaCorregido: "23/02/2026",
-    motivoConsulta: "Obesidad y posible ingestión de objeto extraño",
-    expandido: true,
-  },
-  {
-    id: "2",
-    fechaVisita: "18/01/2026",
-    motivoConsulta: "Control de peso",
-    expandido: false,
-  },
-  {
-    id: "3",
-    fechaVisita: "15/12/2025",
-    motivoConsulta: "Vacunación anual",
-    expandido: false,
-  },
-];
-
-// Mock de vacunas
-const mockVacunasIniciales: Vacuna[] = [
-  {
-    id: "1",
-    fechaAplicacion: "18/02/2026",
-    nombreCientifico: "Séxtuple canina",
-    tipoVacuna: "DHPPi + L",
-    observacion: "Vacunación anual al día",
-    expandido: true,
-  },
-  {
-    id: "2",
-    fechaAplicacion: "15/12/2025",
-    nombreCientifico: "Antirrábica",
-    tipoVacuna: "Rabia",
-    observacion: "Sin reacciones adversas",
-    expandido: false,
-  },
-];
-
-const Patient: React.FC = () => {
+const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState<PatientDetailResponse | null>(
@@ -92,6 +42,9 @@ const Patient: React.FC = () => {
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
   const [isVisitFormLoading, setIsVisitFormLoading] = useState(false);
   const [isVaccineModalOpen, setIsVaccineModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditFormLoading, setIsEditFormLoading] = useState(false);
+  const [editApiError, setEditApiError] = useState<string | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summarySuccess, setSummarySuccess] = useState(false);
@@ -107,7 +60,7 @@ const Patient: React.FC = () => {
           api.getVacunasByPatientId(id),
         ]);
         setPatientData(data);
-        const responsableId = data.id_responsable ?? data.id_responsable;
+        const responsableId = data.id_responsable ?? data.id_responsables;
         if (responsableId) {
           try {
             const respData = await api.getResponsableById(responsableId);
@@ -247,14 +200,6 @@ const Patient: React.FC = () => {
     );
   };
 
-  const handleCorregirRegistro = (id: string) => {
-    console.log("Corregir registro:", id);
-  };
-
-  const handleVerDetalle = (id: string) => {
-    console.log("Ver detalle:", id);
-  };
-
   const handleVisitSubmit = async (data: ClinicalVisitFormData) => {
     const patientId =
       patientData?.id_pacientes ??
@@ -351,6 +296,19 @@ const Patient: React.FC = () => {
     }
   };
 
+  const handleEditSubmit = async (_data: PatientFormData) => {
+    setIsEditFormLoading(true);
+    setEditApiError(null);
+    try {
+      // TODO: Implementar edición de paciente + responsable via API
+      setIsEditModalOpen(false);
+    } catch (err: any) {
+      setEditApiError(err?.message || "Ocurrió un error inesperado.");
+    } finally {
+      setIsEditFormLoading(false);
+    }
+  };
+
   const handleVaccineSave = async (data: VaccineFormData) => {
     const patientId =
       patientData?.id_pacientes ??
@@ -415,7 +373,7 @@ const Patient: React.FC = () => {
       id: "datos-generales",
       label: "Datos generales",
       content: (
-        <DatosGenerales
+        <PatientOverview
           responsable={responsable}
           paciente={{
             nombre: paciente.nombre,
@@ -437,10 +395,10 @@ const Patient: React.FC = () => {
       id: "historial-clinico",
       label: "Historial clínico",
       content: (
-        <HistorialClinico
+        <ClinicalHistory
           visitas={visitas}
-          onCorregirRegistro={handleCorregirRegistro}
-          onVerDetalle={handleVerDetalle}
+          onCorregirRegistro={() => {}}
+          onVerDetalle={() => {}}
           onExpandir={handleExpandir}
         />
       ),
@@ -449,18 +407,48 @@ const Patient: React.FC = () => {
       id: "vacunas",
       label: "Vacunas",
       content: (
-        <HistorialVacunas vacunas={vacunas} onExpandir={handleExpandirVacuna} />
+        <VaccineHistory vacunas={vacunas} onExpandir={handleExpandirVacuna} />
       ),
     },
   ];
 
   return (
     <MainLayout>
-      <VaccineRegistrationModal
+      <Modal
         isOpen={isVaccineModalOpen}
         onClose={() => setIsVaccineModalOpen(false)}
-        onSave={handleVaccineSave}
-      />
+        title="Registro de Vacunas"
+        size="md"
+      >
+        <VaccineForm
+          onSave={handleVaccineSave}
+          onClose={() => setIsVaccineModalOpen(false)}
+        />
+      </Modal>
+
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditApiError(null);
+        }}
+        title="Editar paciente"
+        size="lg"
+      >
+        {editApiError && (
+          <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            {editApiError}
+          </div>
+        )}
+        <EditPatientForm
+          onSubmit={handleEditSubmit}
+          onCancel={() => {
+            setIsEditModalOpen(false);
+            setEditApiError(null);
+          }}
+          isLoading={isEditFormLoading}
+        />
+      </Modal>
 
       <Modal
         isOpen={isVisitModalOpen}
@@ -479,7 +467,15 @@ const Patient: React.FC = () => {
         subtitle="Hola, usuario"
         title="Perfil clínico del paciente"
         showBackButton
-        actions={<PatientButton mode="edit" />}
+        actions={
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
+          >
+            <img src={pawIconPlus} alt="" className="size-10" />
+            Editar paciente
+          </button>
+        }
       />
 
       {/* Content */}
@@ -541,4 +537,4 @@ const Patient: React.FC = () => {
   );
 };
 
-export default Patient;
+export default PatientDetail;

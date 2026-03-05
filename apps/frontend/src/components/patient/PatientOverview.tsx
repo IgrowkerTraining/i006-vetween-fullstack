@@ -23,7 +23,7 @@ interface PacienteData {
   microchip?: string;
 }
 
-interface DatosGeneralesProps {
+interface PatientOverviewProps {
   responsable: ResponsableData;
   paciente: PacienteData;
 }
@@ -40,7 +40,7 @@ const DataItem: React.FC<DataItemProps> = ({ label, value }) => (
   </div>
 );
 
-const DatosGenerales: React.FC<DatosGeneralesProps> = ({
+const PatientOverview: React.FC<PatientOverviewProps> = ({
   responsable,
   paciente,
 }) => {
@@ -98,4 +98,4 @@ const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   );
 };
 
-export default DatosGenerales;
+export default PatientOverview;

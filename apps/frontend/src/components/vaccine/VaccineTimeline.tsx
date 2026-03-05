@@ -8,12 +8,12 @@ export interface Vacuna extends TimelineItem {
   observacion?: string;
 }
 
-interface VacunaTimelineProps {
+interface VaccineTimelineProps {
   vacunas: Vacuna[];
   onExpandir?: (id: string) => void;
 }
 
-const VacunaTimeline: React.FC<VacunaTimelineProps> = ({
+const VaccineTimeline: React.FC<VaccineTimelineProps> = ({
   vacunas,
   onExpandir,
 }) => {
@@ -57,4 +57,4 @@ const VacunaTimeline: React.FC<VacunaTimelineProps> = ({
   );
 };
 
-export default VacunaTimeline;
+export default VaccineTimeline;

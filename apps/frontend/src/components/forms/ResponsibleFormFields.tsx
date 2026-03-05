@@ -60,7 +60,7 @@ const RELATIONSHIP_OPTIONS = [
   { value: "Cuidador/a", label: "Cuidador/a" },
 ];
 
-interface ResponsibleFieldsProps {
+interface ResponsibleFormFieldsProps {
   data: ResponsibleData;
   errors: ResponsibleErrors;
   onChange: (
@@ -68,7 +68,7 @@ interface ResponsibleFieldsProps {
   ) => void;
 }
 
-export const ResponsibleFields: React.FC<ResponsibleFieldsProps> = ({
+export const ResponsibleFormFields: React.FC<ResponsibleFormFieldsProps> = ({
   data,
   errors,
   onChange,

@@ -1,6 +1,6 @@
 import React from "react";
 
-const EmptyHistorialClinico: React.FC = () => {
+const EmptyClinicalHistory: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center py-12">
       {/* Icono de libreta con lápiz */}
@@ -112,4 +112,4 @@ const EmptyHistorialClinico: React.FC = () => {
   );
 };
 
-export default EmptyHistorialClinico;
+export default EmptyClinicalHistory;

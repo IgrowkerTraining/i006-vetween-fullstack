@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import DetalleVisitaModal, { DetalleVisita } from "./DetalleVisitaModal";
+import DetalleVisitaModal, {
+  DetalleVisita,
+} from "../patient/DetalleVisitaModal";
 
 export interface VisitaClinica {
   id: string;
@@ -14,7 +16,7 @@ export interface VisitaClinica {
   observaciones?: string;
 }
 
-interface VisitaClinicaTimelineProps {
+interface ClinicalVisitTimelineProps {
   visitas: VisitaClinica[];
   onCorregirRegistro?: (id: string) => void;
   onVerDetalle?: (id: string) => void;
@@ -32,7 +34,7 @@ const getDetalleVisita = (visita: VisitaClinica): DetalleVisita => ({
   observaciones: visita.observaciones || "-",
 });
 
-const VisitaClinicaTimeline: React.FC<VisitaClinicaTimelineProps> = ({
+const ClinicalVisitTimeline: React.FC<ClinicalVisitTimelineProps> = ({
   visitas,
   onCorregirRegistro,
   onVerDetalle,
@@ -140,4 +142,4 @@ const VisitaClinicaTimeline: React.FC<VisitaClinicaTimelineProps> = ({
   );
 };
 
-export default VisitaClinicaTimeline;
+export default ClinicalVisitTimeline;

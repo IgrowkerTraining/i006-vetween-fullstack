@@ -81,7 +81,7 @@ const YES_NO_OPTIONS = [
   { value: "no", label: "No" },
 ];
 
-interface PatientFieldsProps {
+interface PatientFormFieldsProps {
   data: PatientData;
   errors: PatientErrors;
   onChange: (
@@ -90,7 +90,7 @@ interface PatientFieldsProps {
   onRadioChange: (name: keyof PatientData, value: string) => void;
 }
 
-export const PatientFields: React.FC<PatientFieldsProps> = ({
+export const PatientFormFields: React.FC<PatientFormFieldsProps> = ({
   data,
   errors,
   onChange,

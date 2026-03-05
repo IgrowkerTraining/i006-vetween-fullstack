@@ -4,26 +4,26 @@ import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { Button } from "../components/common/Button";
 import {
-  ResponsibleFields,
+  ResponsibleFormFields,
   ResponsibleData,
   ResponsibleErrors,
   initialResponsibleData,
   validateResponsibleData,
-} from "../components/patient/ResponsibleFields";
+} from "../components/forms/ResponsibleFormFields";
 import {
-  PatientFields,
+  PatientFormFields,
   PatientData,
   PatientErrors,
   initialPatientData,
   validatePatientData,
-} from "../components/patient/PatientFields";
+} from "../components/forms/PatientFormFields";
 import { api, ResponsibleListItem } from "../services/api";
 import { ROUTES } from "../constants/routes";
 
 type PageStage = "responsable" | "paciente";
 type ResponsableTab = "nuevo" | "existente";
 
-const RegisterPatient: React.FC = () => {
+const PatientRegister: React.FC = () => {
   const navigate = useNavigate();
 
   // ─── Stage ────────────────────────────────────────────────────────────────
@@ -121,7 +121,6 @@ const RegisterPatient: React.FC = () => {
         provincia: responsible.province,
       })) as any;
 
-      console.log("[createResponsable] raw result:", result);
       const id =
         result?.data?.id_responsable ??
         result?.data?.id_responsables ??
@@ -149,12 +148,7 @@ const RegisterPatient: React.FC = () => {
     if (!selectedResponsable) return;
     const rid =
       selectedResponsable.id_responsable ?? selectedResponsable.id_responsables;
-    console.log(
-      "[existente] selectedResponsable:",
-      selectedResponsable,
-      "→ id:",
-      rid,
-    );
+
     if (!rid) {
       setApiError(
         "No se pudo obtener el ID del responsable. Recargá la página e intentá de nuevo.",
@@ -209,7 +203,6 @@ const RegisterPatient: React.FC = () => {
         activo: true,
         id_responsable: resolvedResponsable.id,
       };
-      console.log("[createPatient] payload:", payload);
       await api.createPatient(payload);
       navigate(ROUTES.DASHBOARD);
     } catch (err: any) {
@@ -285,7 +278,7 @@ const RegisterPatient: React.FC = () => {
                 {/* ── Pestaña: nuevo ── */}
                 {responsableTab === "nuevo" && (
                   <>
-                    <ResponsibleFields
+                    <ResponsibleFormFields
                       data={responsible}
                       errors={responsibleErrors}
                       onChange={handleResponsibleChange}
@@ -461,7 +454,7 @@ const RegisterPatient: React.FC = () => {
           {/* ── STAGE: PACIENTE ─────────────────────────────────────────── */}
           {stage === "paciente" && (
             <div className="rounded-lg border border-border bg-card p-6 space-y-6">
-              <PatientFields
+              <PatientFormFields
                 data={patient}
                 errors={patientErrors}
                 onChange={handlePatientChange}
@@ -493,4 +486,4 @@ const RegisterPatient: React.FC = () => {
   );
 };
 
-export default RegisterPatient;
+export default PatientRegister;

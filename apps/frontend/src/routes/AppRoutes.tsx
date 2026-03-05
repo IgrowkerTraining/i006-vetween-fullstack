@@ -9,12 +9,11 @@ import MyAccount from "../pages/MyAccount";
 import ProfessionalProfile from "../pages/ProfessionalProfile";
 import ClinicProfile from "../pages/ClinicProfile";
 import SecurityProfile from "../pages/SecurityProfile";
-import DevPlayground from "../pages/DevPlayground";
-import Patient from "../pages/Patient";
+import PatientDetail from "../pages/PatientDetail";
 import ClinicalSummaryList from "../pages/ClinicalSummaryList";
 import ClinicalSummaryDetail from "../pages/ClinicalSummaryDetail";
 import ResponsibleList from "../pages/ResponsibleList";
-import RegisterPatient from "../pages/RegisterPatient";
+import PatientRegister from "../pages/PatientRegister";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -103,7 +102,7 @@ export const AppRoutes: React.FC = () => {
         path="/register-patient"
         element={
           <ProtectedRoute>
-            <RegisterPatient />
+            <PatientRegister />
           </ProtectedRoute>
         }
       />
@@ -112,13 +111,10 @@ export const AppRoutes: React.FC = () => {
         path="/patient/:id"
         element={
           <ProtectedRoute>
-            <Patient />
+            <PatientDetail />
           </ProtectedRoute>
         }
       />
-
-      {/* Dev route - solo para desarrollo */}
-      <Route path="/dev" element={<DevPlayground />} />
     </Routes>
   );
 };

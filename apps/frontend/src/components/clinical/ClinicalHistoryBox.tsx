@@ -5,7 +5,7 @@ interface AntecedentesClinicosBoxProps {
   descripcion: string;
 }
 
-const AntecedentesClinicosBox: React.FC<AntecedentesClinicosBoxProps> = ({
+const ClinicalHistoryBox: React.FC<AntecedentesClinicosBoxProps> = ({
   fecha,
   descripcion,
 }) => {
@@ -24,4 +24,4 @@ const AntecedentesClinicosBox: React.FC<AntecedentesClinicosBoxProps> = ({
   );
 };
 
-export default AntecedentesClinicosBox;
+export default ClinicalHistoryBox;

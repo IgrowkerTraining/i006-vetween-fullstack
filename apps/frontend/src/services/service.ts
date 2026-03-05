@@ -10,16 +10,3 @@ export const getSecurityTip = async (): Promise<string> => {
 
   return tips[Math.floor(Math.random() * tips.length)];
 };
-
-export const getAIGreeting = async (name: string): Promise<string> => {
-  // Mock AI greetings - in production, this would call an actual AI service
-  const greetings = [
-    `Welcome back, ${name}! Your digital fortress awaits.`,
-    `Hello ${name}! Ready to secure your digital identity?`,
-    `Greetings ${name}! Your portal is at your command.`,
-    `${name}, it's great to see you again! Let's make today secure.`,
-    `Welcome ${name}! Your identity ecosystem is ready for action.`,
-  ];
-
-  return greetings[Math.floor(Math.random() * greetings.length)];
-};

@@ -1,7 +1,7 @@
 import React from "react";
-import VacunaTimeline, { Vacuna } from "./VacunaTimeline";
+import VaccineTimeline, { Vacuna } from "./VaccineTimeline";
 
-interface HistorialVacunasProps {
+interface VaccineHistoryProps {
   vacunas: Vacuna[];
   onExpandir?: (id: string) => void;
 }
@@ -78,7 +78,7 @@ const EmptyVacunas: React.FC = () => (
   </div>
 );
 
-const HistorialVacunas: React.FC<HistorialVacunasProps> = ({
+const VaccineHistory: React.FC<VaccineHistoryProps> = ({
   vacunas,
   onExpandir,
 }) => {
@@ -87,7 +87,7 @@ const HistorialVacunas: React.FC<HistorialVacunasProps> = ({
   return (
     <div>
       {tieneVacunas ? (
-        <VacunaTimeline vacunas={vacunas} onExpandir={onExpandir} />
+        <VaccineTimeline vacunas={vacunas} onExpandir={onExpandir} />
       ) : (
         <EmptyVacunas />
       )}
@@ -95,4 +95,4 @@ const HistorialVacunas: React.FC<HistorialVacunasProps> = ({
   );
 };
 
-export default HistorialVacunas;
+export default VaccineHistory;

@@ -1,14 +1,14 @@
 import React from "react";
-import AntecedentesClinicosBox from "./AntecedentesClinicosBox";
-import VisitaClinicaTimeline, { VisitaClinica } from "./VisitaClinicaTimeline";
-import EmptyHistorialClinico from "./EmptyHistorialClinico";
+import ClinicalHistoryBox from "./ClinicalHistoryBox";
+import ClinicalVisitTimeline, { VisitaClinica } from "./ClinicalVisitTimeline";
+import EmptyClinicalHistory from "./EmptyClinicalHistory";
 
 interface AntecedentesPrevios {
   fecha: string;
   descripcion: string;
 }
 
-interface HistorialClinicoProps {
+interface ClinicalHistoryProps {
   visitas: VisitaClinica[];
   antecedentesPrevios?: AntecedentesPrevios;
   onCorregirRegistro?: (id: string) => void;
@@ -16,7 +16,7 @@ interface HistorialClinicoProps {
   onExpandir?: (id: string) => void;
 }
 
-const HistorialClinico: React.FC<HistorialClinicoProps> = ({
+const ClinicalHistory: React.FC<ClinicalHistoryProps> = ({
   visitas,
   antecedentesPrevios,
   onCorregirRegistro,
@@ -29,7 +29,7 @@ const HistorialClinico: React.FC<HistorialClinicoProps> = ({
     <div>
       {/* Antecedentes clínicos previos (si el paciente fue dado de alta con diagnóstico previo) */}
       {antecedentesPrevios && (
-        <AntecedentesClinicosBox
+        <ClinicalHistoryBox
           fecha={antecedentesPrevios.fecha}
           descripcion={antecedentesPrevios.descripcion}
         />
@@ -37,17 +37,17 @@ const HistorialClinico: React.FC<HistorialClinicoProps> = ({
 
       {/* Timeline de visitas o estado vacío */}
       {tieneVisitas ? (
-        <VisitaClinicaTimeline
+        <ClinicalVisitTimeline
           visitas={visitas}
           onCorregirRegistro={onCorregirRegistro}
           onVerDetalle={onVerDetalle}
           onExpandir={onExpandir}
         />
       ) : (
-        <EmptyHistorialClinico />
+        <EmptyClinicalHistory />
       )}
     </div>
   );
 };
 
-export default HistorialClinico;
+export default ClinicalHistory;
