@@ -171,7 +171,8 @@ export interface ResponsableDetailResponse {
 }
 
 export interface ResponsibleListItem {
-  id_responsable: number;
+  id_responsable?: number;
+  id_responsables?: number;
   nombre: string;
   apellido: string;
   email: string;

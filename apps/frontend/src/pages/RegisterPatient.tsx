@@ -121,7 +121,14 @@ const RegisterPatient: React.FC = () => {
         provincia: responsible.province,
       })) as any;
 
-      const id = result?.data?.id_responsable ?? result?.id_responsable;
+      console.log("[createResponsable] raw result:", result);
+      const id =
+        result?.data?.id_responsable ??
+        result?.data?.id_responsables ??
+        result?.responsable?.id_responsable ??
+        result?.responsable?.id_responsables ??
+        result?.id_responsable ??
+        result?.id_responsables;
       if (!id) throw new Error("No se recibió el ID del responsable creado.");
 
       setResolvedResponsable({ id, isNew: true });
@@ -140,10 +147,21 @@ const RegisterPatient: React.FC = () => {
 
   const handleAnadirPacienteExistente = () => {
     if (!selectedResponsable) return;
-    setResolvedResponsable({
-      id: selectedResponsable.id_responsable,
-      isNew: false,
-    });
+    const rid =
+      selectedResponsable.id_responsable ?? selectedResponsable.id_responsables;
+    console.log(
+      "[existente] selectedResponsable:",
+      selectedResponsable,
+      "→ id:",
+      rid,
+    );
+    if (!rid) {
+      setApiError(
+        "No se pudo obtener el ID del responsable. Recargá la página e intentá de nuevo.",
+      );
+      return;
+    }
+    setResolvedResponsable({ id: rid, isNew: false });
     setStage("paciente");
   };
 
@@ -175,12 +193,12 @@ const RegisterPatient: React.FC = () => {
     setIsSubmitting(true);
     setApiError(null);
     try {
-      await api.createPatient({
+      const payload = {
         nombre: patient.name,
         especie: patient.species,
         edad: parseInt(patient.age, 10),
         color: patient.color,
-        senia: patient.characteristic,
+        ...(patient.characteristic ? { senia: patient.characteristic } : {}),
         sexo: patient.sex as "Macho" | "Hembra",
         raza: patient.breed,
         peso: parseFloat(patient.weight.replace(",", ".")),
@@ -190,7 +208,9 @@ const RegisterPatient: React.FC = () => {
           patient.microchip === "yes" ? patient.microchipNumber : undefined,
         activo: true,
         id_responsable: resolvedResponsable.id,
-      });
+      };
+      console.log("[createPatient] payload:", payload);
+      await api.createPatient(payload);
       navigate(ROUTES.DASHBOARD);
     } catch (err: any) {
       setApiError(err?.message || "Error al crear el paciente.");
