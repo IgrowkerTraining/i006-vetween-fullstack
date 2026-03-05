@@ -15,11 +15,6 @@ const getAll = async (req, res) => {
 
 // Obtener por ID
 const getById = async (req, res) => {
-
-    if (isNaN(id)) {
-        return ResponseHelper.badRequest(res, "ID inválido");
-    }
-
     try {
         const id = parseInt(req.params.id);
         const id_clinica = req.user.id_clinica;
@@ -51,11 +46,6 @@ const create = async (req, res) => {
 
 // Actualizar
 const update = async (req, res) => {
-
-    if (isNaN(id)) {
-        return ResponseHelper.badRequest(res, "ID inválido");
-    }
-
     try {
         const id = parseInt(req.params.id);
         const id_clinica = req.user.id_clinica;
@@ -75,11 +65,6 @@ const update = async (req, res) => {
 
 // Eliminar un responsable por ID
 const remove = async (req, res) => {
-
-    if (isNaN(id)) {
-        return ResponseHelper.badRequest(res, "ID inválido");
-    }
-
     try {
         const id = parseInt(req.params.id);
         const id_clinica = req.user.id_clinica;
