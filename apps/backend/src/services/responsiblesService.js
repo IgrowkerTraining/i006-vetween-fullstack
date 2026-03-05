@@ -30,14 +30,17 @@ const getById = async (id) => {
 
 // Crear responsable
 const create = async (body) => {
-    const { nombre, apellido, email, telefono, direccion, relacion } = body;
+    const { nombre, apellido, email, telefono, direccion_calle, direccion_numero, direccion_localidad, provincia, relacion } = body;
 
     if (
         nombre === undefined ||
         apellido === undefined ||
         email === undefined ||
         telefono === undefined ||
-        direccion === undefined ||
+        direccion_calle === undefined ||
+        direccion_numero === undefined ||
+        direccion_localidad === undefined ||
+        provincia === undefined ||
         relacion === undefined
     ) {
         throw new Error("Faltan campos requeridos");
@@ -68,7 +71,10 @@ const create = async (body) => {
             apellido,
             email,
             telefono,
-            direccion,
+            direccion_calle,
+            direccion_numero,
+            direccion_localidad,
+            provincia,
             relacion
         }])
         .select()
