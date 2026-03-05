@@ -70,7 +70,7 @@ const update = async (req, res) => {
             return ResponseHelper.badRequest(res, "No se puede activar un paciente sin visitas registradas");
         }
         if (error.message.includes("LIMITE_ALCANZADO")) {
-            return ResponseHelper.badRequest(res, "No se pueden registrar más de 50 pacientes activos por clínica");
+            return ResponseHelper.badRequest(res, "No se pueden registrar más de 10 pacientes activos por clínica");
         }
         return ResponseHelper.error(res, error.message);
     }

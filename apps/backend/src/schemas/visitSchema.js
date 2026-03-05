@@ -3,12 +3,14 @@ const Joi = require('joi');
 const visitSchema = Joi.object({
     fecha: Joi.date().iso().max('now').required().messages({
         'date.base': 'La fecha debe tener un formato válido (YYYY-MM-DD)',
+        'date.format': 'La fecha debe tener el formato ISO (YYYY-MM-DD)',
         'date.max': 'La fecha de la visita no puede ser futura',
         'any.required': 'La fecha es obligatoria'
     }),
 
     motivo_consulta: Joi.string().trim().min(2).max(200).required().messages({
         'string.empty': 'El motivo de consulta es obligatorio',
+        'string.min': 'El motivo de consulta debe tener al menos 2 caracteres',
         'string.max': 'El motivo no puede superar los 200 caracteres',
         'any.required': 'Debes indicar el motivo de la consulta'
     }),

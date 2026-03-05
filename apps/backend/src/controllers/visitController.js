@@ -19,7 +19,7 @@ const createVisit = async (req, res) => {
         }
 
         if (error.message === 'LIMITE_PACIENTES_ACTIVOS') {
-            return ResponseHelper.conflict(res, 'Se alcanzó el límite de 50 pacientes activos');
+            return ResponseHelper.conflict(res, 'Se alcanzó el límite de 10 pacientes activos');
         }
 
         return ResponseHelper.error(res, error.message);

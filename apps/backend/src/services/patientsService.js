@@ -132,7 +132,7 @@ const updatePatient = async (id, updateData, id_clinica) => {
 
         if(countError) throw countError;
 
-        if(activeCount >= 50){
+        if(activeCount >= 10){
             throw new Error("LIMITE_ALCANZADO");
         }
     }

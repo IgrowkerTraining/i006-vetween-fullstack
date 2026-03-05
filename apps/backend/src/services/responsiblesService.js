@@ -35,38 +35,6 @@ const create = async (body, id_clinica) => {
     const { nombre, apellido, email, telefono, direccion_calle, 
         direccion_numero, direccion_localidad, provincia, relacion } = body;
 
-    if (
-        nombre === undefined ||
-        apellido === undefined ||
-        email === undefined ||
-        telefono === undefined ||
-        direccion_calle === undefined ||
-        direccion_numero === undefined ||
-        direccion_localidad === undefined ||
-        provincia === undefined ||
-        relacion === undefined
-    ) {
-        throw new Error("Faltan campos requeridos");
-    }
-
-    //Validacion de formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(email)) {
-        throw new Error("Email inválido");
-    }
-
-    //Verificar que el email no este duplicado
-    const { data: existingEmail } = await supabase
-    .from('responsables')
-    .select('id_responsables')
-    .eq('email', email)
-    .maybeSingle();
-
-    if (existingEmail) {
-        throw new Error("El email ya está registrado");
-    }
-
     const { data, error } = await supabase
         .from('responsables')
         .insert([{

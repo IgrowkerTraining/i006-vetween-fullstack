@@ -3,18 +3,21 @@ const Joi = require('joi');
 const vaccineSchema = Joi.object({
     tipo: Joi.string().trim().min(2).max(100).required().messages({
         'string.empty': 'El tipo de vacuna es obligatorio',
+        'string.min': 'El tipo de vacuna debe tener al menos 2 caracteres',
         'string.max': 'El tipo de vacuna no puede superar los 100 caracteres',
         'any.required': 'Debes indicar el tipo de vacuna'
     }),
 
     nombre_cientifico: Joi.string().trim().min(2).max(150).required().messages({
         'string.empty': 'El nombre científico es obligatorio',
+        'string.min': 'El nombre científico debe tener al menos 2 caracteres',
         'string.max': 'El nombre científico no puede superar los 150 caracteres',
         'any.required': 'Debes indicar el nombre científico de la vacuna'
     }),
     
     fecha_aplicacion: Joi.date().iso().max('now').required().messages({
         'date.base': 'Fecha inválida',
+        'date.format': 'La fecha debe tener el formato ISO (YYYY-MM-DD)',
         'date.max': 'La fecha no puede ser futura',
         'any.required': 'La fecha de aplicación es obligatoria'
     }),

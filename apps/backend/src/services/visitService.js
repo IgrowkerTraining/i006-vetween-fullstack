@@ -31,7 +31,7 @@ const validarLimitePacientesActivos = async (id_clinica) => {
 
     if (error) throw error;
 
-    if (count >= 3) {
+    if (count >= 10) {
         throw new Error("LIMITE_PACIENTES_ACTIVOS");
     }
 };
@@ -69,7 +69,7 @@ const createVisit = async (visitData, id_clinica) => {
     return nuevaVisita;
 };
 
-const inactivateVisit = async (idVisita) => {
+const inactivateVisit = async (idVisita, id_clinica) => {
 
     // Buscar la visita
     const { data: visita, error: visitError } = await supabase
