@@ -42,11 +42,11 @@ export interface ChangePasswordRequest {
 }
 
 export interface CreatePatientRequest {
-  nombre_paciente: string;
+  nombre: string;
   especie: string;
   edad: number;
   color: string;
-  senia: string;
+  senia?: string;
   sexo: "Macho" | "Hembra";
   raza: string;
   peso: number;
@@ -54,15 +54,46 @@ export interface CreatePatientRequest {
   tiene_microchip: boolean;
   num_microchip?: string;
   activo: boolean;
-  nombre_responsable: string;
+  id_responsable: number;
+}
+
+export interface UpdatePatientRequest {
+  nombre?: string;
+  especie?: string;
+  edad?: number;
+  color?: string;
+  senia?: string;
+  sexo?: "Macho" | "Hembra";
+  raza?: string;
+  peso?: number;
+  esterilizado?: boolean;
+  tiene_microchip?: boolean;
+  num_microchip?: string;
+  activo?: boolean;
+}
+
+export interface CreateResponsableRequest {
+  nombre: string;
   apellido: string;
   email: string;
   telefono: string;
+  relacion: string;
   direccion_calle: string;
   direccion_numero: string;
   direccion_localidad: string;
   provincia: string;
-  relacion: string;
+}
+
+export interface UpdateResponsableRequest {
+  nombre?: string;
+  apellido?: string;
+  email?: string;
+  telefono?: string;
+  relacion?: string;
+  direccion_calle?: string;
+  direccion_numero?: string;
+  direccion_localidad?: string;
+  provincia?: string;
 }
 
 export interface PatientsListItem {
@@ -156,12 +187,17 @@ export interface ResponsibleListItem {
 }
 
 export const api = {
-  async register(data: RegisterRequest): Promise<{ user: User; message: string; token?: string }> {
-    const response = await fetch("https://backend-vetween.onrender.com/api/auth/register", {
-      method: "POST",
-      headers: getRequestHeaders(),
-      body: JSON.stringify(data),
-    });
+  async register(
+    data: RegisterRequest,
+  ): Promise<{ user: User; message: string; token?: string }> {
+    const response = await fetch(
+      "https://backend-vetween.onrender.com/api/auth/register",
+      {
+        method: "POST",
+        headers: getRequestHeaders(),
+        body: JSON.stringify(data),
+      },
+    );
 
     const result = await response.json();
     if (!response.ok) {
@@ -201,38 +237,10 @@ export const api = {
     };
   },
 
-  async createPatient(data: CreatePatientRequest): Promise<unknown> {
-    const response = await fetch("https://backend-vetween.onrender.com/api/pacientes-responsables", {
-      method: "POST",
-      headers: getRequestHeaders(true),
-      body: JSON.stringify(data),
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      const backendMessage =
-        result?.error ||
-        result?.message ||
-        (Array.isArray(result?.details) ? result.details.join(", ") : undefined) ||
-        "Error al crear el paciente";
-
-      if (
-        typeof backendMessage === "string" &&
-        (backendMessage.includes("pacientes_num_microchip_key") ||
-          backendMessage.toLowerCase().includes("duplicate key value"))
-      ) {
-        throw new Error(
-          "El número de microchip ya está registrado. Ingresá uno diferente.",
-        );
-      }
-
-      throw new Error(
-        backendMessage,
-      );
-    }
-    return result;
-  },
-
-  async getPatients(): Promise<PatientsListItem[] | { data?: PatientsListItem[]; pacientes?: PatientsListItem[] }> {
+  async getPatients(): Promise<
+    | PatientsListItem[]
+    | { data?: PatientsListItem[]; pacientes?: PatientsListItem[] }
+  > {
     const response = await fetch(
       "https://backend-vetween.onrender.com/api/pacientes",
       {
@@ -243,14 +251,127 @@ export const api = {
 
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result?.error || result?.message || "Error al obtener pacientes");
+      throw new Error(
+        result?.error || result?.message || "Error al obtener pacientes",
+      );
     }
 
     return result;
   },
 
+  async createPatient(data: CreatePatientRequest): Promise<unknown> {
+    const response = await fetch(
+      "https://backend-vetween.onrender.com/api/pacientes",
+      {
+        method: "POST",
+        headers: getRequestHeaders(true),
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      const msg =
+        result?.error ||
+        result?.message ||
+        (Array.isArray(result?.details)
+          ? result.details.join(", ")
+          : undefined) ||
+        "Error al crear el paciente";
+      if (
+        typeof msg === "string" &&
+        (msg.includes("pacientes_num_microchip_key") ||
+          msg.toLowerCase().includes("duplicate key value"))
+      ) {
+        throw new Error(
+          "El número de microchip ya está registrado. Ingresá uno diferente.",
+        );
+      }
+      throw new Error(msg);
+    }
+    return result;
+  },
+
+  async updatePatient(
+    id: string | number,
+    data: UpdatePatientRequest,
+  ): Promise<unknown> {
+    const response = await fetch(
+      `https://backend-vetween.onrender.com/api/pacientes/${id}`,
+      {
+        method: "PATCH",
+        headers: getRequestHeaders(true),
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        result?.error || result?.message || "Error al actualizar el paciente",
+      );
+    }
+    return result;
+  },
+
+  async deletePatient(id: string | number): Promise<void> {
+    const response = await fetch(
+      `https://backend-vetween.onrender.com/api/pacientes/${id}`,
+      {
+        method: "DELETE",
+        headers: getRequestHeaders(true),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        result?.error || result?.message || "Error al eliminar el paciente",
+      );
+    }
+  },
+
+  async createResponsable(data: CreateResponsableRequest): Promise<unknown> {
+    const response = await fetch(
+      "https://backend-vetween.onrender.com/api/responsables",
+      {
+        method: "POST",
+        headers: getRequestHeaders(true),
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        result?.error || result?.message || "Error al crear el responsable",
+      );
+    }
+    return result;
+  },
+
+  async updateResponsable(
+    id: string | number,
+    data: UpdateResponsableRequest,
+  ): Promise<unknown> {
+    const response = await fetch(
+      `https://backend-vetween.onrender.com/api/responsables/${id}`,
+      {
+        method: "PATCH",
+        headers: getRequestHeaders(true),
+        body: JSON.stringify(data),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        result?.error ||
+          result?.message ||
+          "Error al actualizar el responsable",
+      );
+    }
+    return result;
+  },
+
   async getResponsables(): Promise<
-    ResponsibleListItem[] | { data?: ResponsibleListItem[]; responsables?: ResponsibleListItem[] }
+    | ResponsibleListItem[]
+    | { data?: ResponsibleListItem[]; responsables?: ResponsibleListItem[] }
   > {
     const response = await fetch(
       "https://backend-vetween.onrender.com/api/responsables",
@@ -262,7 +383,9 @@ export const api = {
 
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result?.error || result?.message || "Error al obtener responsables");
+      throw new Error(
+        result?.error || result?.message || "Error al obtener responsables",
+      );
     }
 
     return result;
@@ -281,11 +404,17 @@ export const api = {
     console.log("[getPatientById] raw response:", result);
 
     if (!response.ok) {
-      throw new Error(result?.error || result?.message || "Error al obtener el paciente");
+      throw new Error(
+        result?.error || result?.message || "Error al obtener el paciente",
+      );
     }
 
     // Desempaquetar si la respuesta viene envuelta
-    if (result?.data && typeof result.data === "object" && !Array.isArray(result.data)) {
+    if (
+      result?.data &&
+      typeof result.data === "object" &&
+      !Array.isArray(result.data)
+    ) {
       return result.data as PatientDetailResponse;
     }
     if (result?.paciente && typeof result.paciente === "object") {
@@ -295,7 +424,9 @@ export const api = {
     return result as PatientDetailResponse;
   },
 
-  async getResponsableById(id: string | number): Promise<ResponsableDetailResponse> {
+  async getResponsableById(
+    id: string | number,
+  ): Promise<ResponsableDetailResponse> {
     const response = await fetch(
       `https://backend-vetween.onrender.com/api/responsables/${id}`,
       {
@@ -305,23 +436,28 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result?.error || result?.message || "Error al obtener el responsable");
+      throw new Error(
+        result?.error || result?.message || "Error al obtener el responsable",
+      );
     }
-    if (result?.data && typeof result.data === "object") return result.data as ResponsableDetailResponse;
+    if (result?.data && typeof result.data === "object")
+      return result.data as ResponsableDetailResponse;
     return result as ResponsableDetailResponse;
   },
 
-  async getVisitasByPatientId(id: string): Promise<{
-    id_visitas: number;
-    fecha: string;
-    motivo_consulta: string;
-    diagnostico: string;
-    tratamiento: string;
-    observaciones: string;
-    estado: boolean;
-    historial_previo: boolean;
-    id_paciente: number;
-  }[]> {
+  async getVisitasByPatientId(id: string): Promise<
+    {
+      id_visitas: number;
+      fecha: string;
+      motivo_consulta: string;
+      diagnostico: string;
+      tratamiento: string;
+      observaciones: string;
+      estado: boolean;
+      historial_previo: boolean;
+      id_paciente: number;
+    }[]
+  > {
     const response = await fetch(
       `https://backend-vetween.onrender.com/api/pacientes/${id}/visitas`,
       {
@@ -331,22 +467,28 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result?.error || result?.message || "Error al obtener el historial de visitas");
+      throw new Error(
+        result?.error ||
+          result?.message ||
+          "Error al obtener el historial de visitas",
+      );
     }
     if (Array.isArray(result)) return result;
     if (Array.isArray(result?.data)) return result.data;
     return [];
   },
 
-  async getVacunasByPatientId(id: string): Promise<{
-    id_vacunas: number;
-    tipo: string;
-    nombre_cientifico: string;
-    fecha_aplicacion: string;
-    observacion: string;
-    estado: boolean;
-    id_paciente: number;
-  }[]> {
+  async getVacunasByPatientId(id: string): Promise<
+    {
+      id_vacunas: number;
+      tipo: string;
+      nombre_cientifico: string;
+      fecha_aplicacion: string;
+      observacion: string;
+      estado: boolean;
+      id_paciente: number;
+    }[]
+  > {
     const response = await fetch(
       `https://backend-vetween.onrender.com/api/pacientes/${id}/vacunas`,
       {
@@ -356,7 +498,11 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result?.error || result?.message || "Error al obtener el historial de vacunas");
+      throw new Error(
+        result?.error ||
+          result?.message ||
+          "Error al obtener el historial de vacunas",
+      );
     }
     if (Array.isArray(result)) return result;
     if (Array.isArray(result?.data)) return result.data;
@@ -371,11 +517,14 @@ export const api = {
     estado: boolean;
     id_paciente: number | string;
   }): Promise<unknown> {
-    const response = await fetch("https://backend-vetween.onrender.com/api/vacunas", {
-      method: "POST",
-      headers: getRequestHeaders(true),
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      "https://backend-vetween.onrender.com/api/vacunas",
+      {
+        method: "POST",
+        headers: getRequestHeaders(true),
+        body: JSON.stringify(data),
+      },
+    );
     const result = await response.json();
     if (!response.ok) {
       throw new Error(
@@ -395,11 +544,14 @@ export const api = {
     historial_previo: boolean;
     id_paciente: number | string;
   }): Promise<unknown> {
-    const response = await fetch("https://backend-vetween.onrender.com/api/visitas", {
-      method: "POST",
-      headers: getRequestHeaders(true),
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(
+      "https://backend-vetween.onrender.com/api/visitas",
+      {
+        method: "POST",
+        headers: getRequestHeaders(true),
+        body: JSON.stringify(data),
+      },
+    );
     const result = await response.json();
     if (!response.ok) {
       throw new Error(
@@ -425,7 +577,7 @@ export const api = {
       `https://backend-vetween.onrender.com/api/veterinario`,
       {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       },
@@ -442,7 +594,7 @@ export const api = {
       `https://backend-vetween.onrender.com/api/clinica`,
       {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       },
@@ -454,13 +606,16 @@ export const api = {
     return result.data;
   },
 
-  async changePassword(data: ChangePasswordRequest, token: string): Promise<{ message: string }> {
+  async changePassword(
+    data: ChangePasswordRequest,
+    token: string,
+  ): Promise<{ message: string }> {
     const response = await fetch(
       `${API_ENDPOINTS.BASE}/auth/cambiar-contraseña`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
@@ -473,13 +628,17 @@ export const api = {
     return result;
   },
 
-  async updateVeterinarian(id: number, data: Partial<Veterinarian>, token: string): Promise<Veterinarian> {
+  async updateVeterinarian(
+    id: number,
+    data: Partial<Veterinarian>,
+    token: string,
+  ): Promise<Veterinarian> {
     const response = await fetch(
       `https://backend-vetween.onrender.com/api/veterinario`,
       {
         method: "PATCH",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
@@ -487,7 +646,9 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.error || "Error al actualizar datos del veterinario");
+      throw new Error(
+        result.error || "Error al actualizar datos del veterinario",
+      );
     }
     return result;
   },
@@ -498,7 +659,7 @@ export const api = {
       {
         method: "PATCH",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
@@ -506,7 +667,9 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.error || "Error al actualizar datos de la clínica");
+      throw new Error(
+        result.error || "Error al actualizar datos de la clínica",
+      );
     }
     return result.data;
   },
@@ -529,7 +692,9 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.error || result.message || "Error al generar resumen clínico");
+      throw new Error(
+        result.error || result.message || "Error al generar resumen clínico",
+      );
     }
     return result;
   },
@@ -544,7 +709,9 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.error || result.message || "Error al obtener resumen clínico");
+      throw new Error(
+        result.error || result.message || "Error al obtener resumen clínico",
+      );
     }
     if (Array.isArray(result)) return result;
     if (result.data && Array.isArray(result.data)) return result.data;
