@@ -2,7 +2,8 @@ const Joi = require('joi');
 
 // Definimos ENUMS para validarlos con Joi
 const especialidadesValidas = [
-    'Compania', 'Produccion', 'Silvestres', 'Exoticos', 'Acuaticos'
+    'Clinica general', 'Medicina preventiva', 'Dermatología', 'Diagnóstico',
+    'Urgencias', 'Otra', 'Compania', 'Produccion', 'Silvestres', 'Exoticos', 'Acuaticos'
 ];
 
 const tiposAnimalesValidos = [
@@ -42,8 +43,9 @@ const registerSchema = Joi.object({
         'number.positive': 'La matrícula no puede ser negativa'
     }),
     
-    especialidad: Joi.string().valid(...especialidadesValidas).required().messages({
-        'any.only': 'Selecciona una especialidad válida'
+    especialidad: Joi.array().items(
+        Joi.string().valid(...especialidadesValidas)).min(1).required().messages({
+        'array.min': 'Debes seleccionar al menos una especialidad'
     }),
     
     tipos_animales: Joi.array().items(
@@ -67,10 +69,10 @@ const registerSchema = Joi.object({
         'any.required': 'El número de habilitación es requerido para registrar la clínica'
     }),
 
-    direccion: Joi.string().trim().max(150).allow('').required().messages({
-        'string.empty': 'La dirección no puede estar vacía',
-        'string.max': 'La dirección no puede tener más de 150 caracteres'
-    }),
+    direccion_calle: Joi.string().trim().max(150).allow('').optional(),
+    direccion_numero: Joi.string().trim().max(20).allow('').optional(),
+    direccion_localidad: Joi.string().trim().max(100).allow('').optional(),
+    provincia: Joi.string().trim().max(100).allow('').optional(),
     telefono: Joi.string().trim().max(20).allow('').required().messages({
         'string.empty': 'El teléfono no puede estar vacío',
         'string.max': 'El teléfono no puede tener más de 20 caracteres'

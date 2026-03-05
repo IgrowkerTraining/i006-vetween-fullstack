@@ -10,7 +10,7 @@ import HistorialClinico from "../components/patient/HistorialClinico";
 import HistorialVacunas from "../components/patient/HistorialVacunas";
 import { VisitaClinica } from "../components/patient/VisitaClinicaTimeline";
 import { Vacuna } from "../components/patient/VacunaTimeline";
-import { api, PatientDetailResponse } from "../services/api";
+import { api, PatientDetailResponse, ResponsableDetailResponse } from "../services/api";
 import { ROUTES } from "../constants/routes";
 import { Modal } from "../components/common/Modal";
 import { ClinicalVisitForm, ClinicalVisitFormData } from "../components/forms/ClinicalVisitForm";
@@ -71,6 +71,7 @@ const Patient: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState<PatientDetailResponse | null>(null);
+  const [responsableData, setResponsableData] = useState<ResponsableDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [visitas, setVisitas] = useState<VisitaClinica[]>([]);
@@ -93,6 +94,15 @@ const Patient: React.FC = () => {
           api.getVacunasByPatientId(id),
         ]);
         setPatientData(data);
+        const responsableId = data.id_responsable ?? data.id_responsables;
+        if (responsableId) {
+          try {
+            const respData = await api.getResponsableById(responsableId);
+            setResponsableData(respData);
+          } catch {
+            // Si falla, continúa sin datos del responsable
+          }
+        }
         const mappedVisitas: VisitaClinica[] = visitasData.map((v, index) => ({
           id: String(v.id_visitas),
           fechaVisita: v.fecha,
@@ -145,7 +155,7 @@ const Patient: React.FC = () => {
   };
 
   const buildDireccion = (d: PatientDetailResponse): string => {
-    const r = d.responsables;
+    const r = responsableData ?? d.responsables;
     const calle = r?.direccion_calle ?? d.direccion_calle ?? "";
     const numero = r?.direccion_numero ?? d.direccion_numero ?? "";
     const localidad = r?.direccion_localidad ?? d.direccion_localidad ?? "";
@@ -173,12 +183,12 @@ const Patient: React.FC = () => {
 
   const responsable = patientData
     ? {
-        nombre: patientData.responsables?.nombre ?? patientData.nombre_responsable ?? "-",
-        apellido: patientData.responsables?.apellido ?? patientData.apellido ?? "-",
-        email: patientData.responsables?.email ?? patientData.email ?? "-",
-        telefono: patientData.responsables?.telefono ?? patientData.telefono ?? "-",
+        nombre: responsableData?.nombre ?? patientData.responsables?.nombre ?? patientData.nombre_responsable ?? "-",
+        apellido: responsableData?.apellido ?? patientData.responsables?.apellido ?? patientData.apellido ?? "-",
+        email: responsableData?.email ?? patientData.responsables?.email ?? patientData.email ?? "-",
+        telefono: responsableData?.telefono ?? patientData.responsables?.telefono ?? patientData.telefono ?? "-",
         direccion: buildDireccion(patientData),
-        relacion: patientData.responsables?.relacion ?? patientData.relacion ?? "-",
+        relacion: responsableData?.relacion ?? patientData.responsables?.relacion ?? patientData.relacion ?? "-",
       }
     : null;
 

@@ -22,7 +22,10 @@ const registerUser = async (userData) => {
         const nuevaClinica = {
             nombre: userData.nombre_consultorio,
             num_habilitacion: userData.num_habilitacion,
-            direccion: userData.direccion,
+            direccion_calle: userData.direccion_calle,
+            direccion_numero: userData.direccion_numero,
+            direccion_localidad: userData.direccion_localidad,
+            provincia: userData.provincia,
             telefono: userData.telefono
         };
 
