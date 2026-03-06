@@ -26,10 +26,15 @@ import {
   ClinicalVisitFormData,
 } from "../components/forms/ClinicalVisitForm";
 import { VaccineForm, VaccineFormData } from "../components/forms/VaccineForm";
+import { useAuth } from "../hooks/useAuth";
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
+  const userDisplayName =
+    rawName.charAt(0).toUpperCase() + rawName.slice(1);
   const [patientData, setPatientData] = useState<PatientDetailResponse | null>(
     null,
   );
@@ -60,7 +65,8 @@ const PatientDetail: React.FC = () => {
           api.getVacunasByPatientId(id),
         ]);
         setPatientData(data);
-        const responsableId = data.id_responsable ?? data.id_responsables;
+        const responsableId =
+          data.id_responsable ?? data.responsables?.id_responsable;
         if (responsableId) {
           try {
             const respData = await api.getResponsableById(responsableId);
@@ -69,16 +75,43 @@ const PatientDetail: React.FC = () => {
             // Si falla, continúa sin datos del responsable
           }
         }
-        const mappedVisitas: VisitaClinica[] = visitasData.map((v, index) => ({
-          id: String(v.id_visitas),
-          fechaVisita: v.fecha,
-          motivoConsulta: v.motivo_consulta,
-          diagnostico: v.diagnostico,
-          tratamiento: v.tratamiento,
-          observaciones: v.observaciones,
-          estado: v.estado ? "Corregido" : "Original",
-          expandido: index === 0,
-        }));
+        const pickText = (...values: unknown[]): string => {
+          const found = values.find(
+            (value) =>
+              typeof value === "string" && value.trim().length > 0,
+          ) as string | undefined;
+          return found ?? "-";
+        };
+
+        const mappedVisitas: VisitaClinica[] = visitasData.map((v, index) => {
+          const visit = v as Record<string, unknown>;
+          return {
+            id: String(visit.id_visitas ?? visit.id_visita ?? visit.id ?? "-"),
+            fechaVisita: pickText(visit.fecha, visit.fecha_visita),
+            motivoConsulta: pickText(
+              visit.motivo_consulta,
+              visit.motivoConsulta,
+              visit.motivo,
+            ),
+            diagnostico: pickText(
+              visit.diagnostico,
+              visit.diagnosis,
+              visit.diagnostico_visita,
+            ),
+            tratamiento: pickText(
+              visit.tratamiento,
+              visit.treatments,
+              visit.tratamiento_indicado,
+            ),
+            observaciones: pickText(
+              visit.observaciones,
+              visit.observacion,
+              visit.observaciones_generales,
+            ),
+            estado: visit.estado ? "Corregido" : "Original",
+            expandido: index === 0,
+          };
+        });
         setVisitas(mappedVisitas);
         const mappedVacunas: Vacuna[] = vacunasData.map((v, index) => ({
           id: String(v.id_vacunas),
@@ -576,7 +609,7 @@ const PatientDetail: React.FC = () => {
       </Modal>
 
       <PageHeader
-        subtitle="Hola, usuario"
+        subtitle={`Hola, ${userDisplayName}`}
         title="Perfil clínico del paciente"
         showBackButton
         actions={
