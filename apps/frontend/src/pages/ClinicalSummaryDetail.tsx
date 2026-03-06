@@ -46,8 +46,10 @@ interface ClinicalSummaryApiItem {
 export default function ClinicalSummaryDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
-  const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const rawName = user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
+  const firstName = rawName.trim().split(/[\s._-]+/)[0] || "usuario";
+  const userDisplayName =
+    firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
   const [summary, setSummary] = useState<ClinicalSummaryApiItem | null>(null);
   const [patientName, setPatientName] = useState<string>("-");

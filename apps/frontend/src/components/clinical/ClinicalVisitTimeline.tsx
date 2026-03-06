@@ -102,7 +102,7 @@ const ClinicalVisitTimeline: React.FC<ClinicalVisitTimelineProps> = ({
                 <div className="flex gap-2">
                   <button
                     onClick={() => onCorregirRegistro?.(visita.id)}
-                    className="rounded-lg bg-vetween-teal px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-vetween-teal/90"
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
                   >
                     Corregir registro
                   </button>

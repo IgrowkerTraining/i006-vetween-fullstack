@@ -32,9 +32,10 @@ const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
+  const rawName = user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
+  const firstName = rawName.trim().split(/[\s._-]+/)[0] || "usuario";
   const userDisplayName =
-    rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    firstName.charAt(0).toUpperCase() + firstName.slice(1);
   const [patientData, setPatientData] = useState<PatientDetailResponse | null>(
     null,
   );
@@ -296,13 +297,15 @@ const PatientDetail: React.FC = () => {
   };
 
   const handleVisitSubmit = async (data: ClinicalVisitFormData) => {
-    const patientId =
+    const patientIdRaw =
       patientData?.id_pacientes ??
       patientData?.id_paciente ??
       patientData?.id ??
       id;
 
-    if (!patientId) {
+    const patientId = Number(patientIdRaw);
+
+    if (!patientId || Number.isNaN(patientId)) {
       console.error("No se encontró el ID del paciente");
       return;
     }
@@ -324,6 +327,10 @@ const PatientDetail: React.FC = () => {
         id: String(Date.now()),
         fechaVisita: data.date,
         motivoConsulta: data.reason,
+        diagnostico: data.diagnosis || "-",
+        tratamiento: data.treatments || "-",
+        observaciones: data.observaciones || "-",
+        estado: "Original",
         expandido: true,
       };
       setVisitas((prev) => [newVisita, ...prev]);
@@ -615,7 +622,7 @@ const PatientDetail: React.FC = () => {
         actions={
           <button
             onClick={() => setIsEditModalOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
+            className="flex items-center gap-2 rounded-lg bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
           >
             <img src={pawIconPlus} alt="" className="size-10" />
             Editar paciente

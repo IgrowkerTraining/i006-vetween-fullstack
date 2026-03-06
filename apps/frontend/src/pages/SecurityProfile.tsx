@@ -28,7 +28,9 @@ export default function SecurityProfile() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const userName = user?.nombre || "Usuario";
+  const rawName = user?.nombre || user?.name || user?.email?.split("@")[0] || "Usuario";
+  const firstName = rawName.trim().split(/[\s._-]+/)[0] || "Usuario";
+  const userName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

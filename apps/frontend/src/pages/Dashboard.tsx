@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import pawIcon from "../assets/pawIcon.svg";
+import addResponsibleIcon from "../assets/addResponsibleIcon.svg"
 import pawIconPlus from "../assets/pawIconPlus.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
@@ -35,8 +36,10 @@ export default function Dashboard() {
     navigate(`${ROUTES.PATIENT}/${patientId}`);
   };
 
-  const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
-  const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const rawName = user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
+  const firstName = rawName.trim().split(/[\s._-]+/)[0] || "usuario";
+  const userDisplayName =
+    firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
   const mapStateLabel = (value: unknown): string => {
     if (typeof value === "boolean") return value ? "Activo" : "Inactivo";
@@ -85,7 +88,13 @@ export default function Dashboard() {
 
       const responsablesById = new Map<string, ResponsibleListItem>();
       responsables.forEach((responsable) => {
-        responsablesById.set(String(responsable.id_responsable), responsable);
+        const rid =
+          responsable.id_responsable ??
+          responsable.id_responsables ??
+          (responsable as any).id;
+        if (rid !== undefined && rid !== null && String(rid).length > 0) {
+          responsablesById.set(String(rid), responsable);
+        }
       });
 
       const mapped: Patient[] = rows.map((item: any) => {
@@ -101,7 +110,7 @@ export default function Dashboard() {
             ? `${responsableById.nombre} ${responsableById.apellido}`.trim()
             : "") ||
           item.responsable ||
-          `${item.nombre_responsable ?? ""} ${item.apellido ?? ""}`.trim();
+          `${item.nombre_responsable ?? item.nombreResponsable ?? ""} ${item.apellido_responsable ?? item.apellidoResponsable ?? item.apellido ?? ""}`.trim();
 
         return {
           id: String(item.id_pacientes ?? item.id_paciente ?? item.id ?? "-"),
@@ -196,10 +205,10 @@ export default function Dashboard() {
           actions={
             <button
               onClick={handleAddPatient}
-              className="flex items-center gap-2 rounded-lg bg-vetween-teal px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-vetween-teal/85"
+              className="flex items-center gap-2 rounded-lg bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
             >
-              <img src={pawIconPlus} alt="Paw Icon Add" className="size-10" />
-              {"Añadir paciente"}
+              <img src={addResponsibleIcon} alt="Paw Icon Add" className="size-7" />
+              {"Añadir responsable"}
             </button>
           }
         />
@@ -216,7 +225,7 @@ export default function Dashboard() {
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-indigo-600 text-accent-foreground">
+                <tr className="bg-[#7ACBD9] text-black font-semibold">
                   <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("id")}>
                     ID
                     {sortConfig?.key === "id" && (

@@ -558,7 +558,7 @@ export const api = {
     tratamiento: string;
     observaciones: string;
     estado: boolean;
-    historial_previo: boolean;
+    historial_previo?: boolean;
     id_paciente: number | string;
   }): Promise<unknown> {
     const response = await fetch(
@@ -571,8 +571,14 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
+      const validationErrors = Array.isArray(result?.errors)
+        ? result.errors.join(" | ")
+        : undefined;
       throw new Error(
-        result?.error || result?.message || "Error al registrar la visita",
+        validationErrors ||
+          result?.error ||
+          result?.message ||
+          "Error al registrar la visita",
       );
     }
     return result;

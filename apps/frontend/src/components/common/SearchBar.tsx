@@ -37,7 +37,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         onKeyPress={handleKeyPress}
         className="flex-grow"
       />
-      <Button onClick={handleSearchClick}>Pesquisar</Button>
+      <Button onClick={handleSearchClick}>Buscar</Button>
     </div>
   );
 };

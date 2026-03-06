@@ -47,12 +47,18 @@ const extractPatientsArray = (payload: unknown): any[] => {
 export default function ResponsibleList() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
-  const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-const [responsables, setResponsables] = useState<ResponsableRow[]>([]);
-const [searchQuery, setSearchQuery] = useState("");
-const [loadError, setLoadError] = useState<string | null>(null);
-const [sortConfig, setSortConfig] = useState<{ key: keyof ResponsableRow; direction: "asc" | "desc" } | null>(null);
+  const rawName =
+    user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
+  const firstName = rawName.trim().split(/[\s._-]+/)[0] || "usuario";
+  const userDisplayName =
+    firstName.charAt(0).toUpperCase() + firstName.slice(1);
+  const [responsables, setResponsables] = useState<ResponsableRow[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof ResponsableRow;
+    direction: "asc" | "desc";
+  } | null>(null);
 
   const loadData = async () => {
     try {
@@ -82,7 +88,9 @@ const [sortConfig, setSortConfig] = useState<{ key: keyof ResponsableRow; direct
       });
 
       const mapped: ResponsableRow[] = rows.map((item) => {
-        const rid = String(item.id_responsable ?? "");
+        const rid = String(
+          item.id_responsable ?? item.id_responsables ?? (item as any).id ?? "",
+        );
         const mascotas = mascotasByResponsable.get(rid) ?? [];
         return {
           id: rid || "-",
@@ -106,28 +114,28 @@ const [sortConfig, setSortConfig] = useState<{ key: keyof ResponsableRow; direct
     loadData();
   }, []);
 
-const filteredResponsables = responsables.filter((r) => {
-  const q = searchQuery.toLowerCase();
-  return (
-    r.nombre.toLowerCase().includes(q) ||
-    r.apellido.toLowerCase().includes(q) ||
-    r.email.toLowerCase().includes(q) ||
-    r.mascotas.some((m) => m.nombre.toLowerCase().includes(q)) ||
-    r.id.toLowerCase().includes(q)
-  );
-});
+  const filteredResponsables = responsables.filter((r) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      r.nombre.toLowerCase().includes(q) ||
+      r.apellido.toLowerCase().includes(q) ||
+      r.email.toLowerCase().includes(q) ||
+      r.mascotas.some((m) => m.nombre.toLowerCase().includes(q)) ||
+      r.id.toLowerCase().includes(q)
+    );
+  });
 
-const sortedResponsables = sortConfig
-  ? sortArray(filteredResponsables, sortConfig.key, sortConfig.direction)
-  : filteredResponsables;
+  const sortedResponsables = sortConfig
+    ? sortArray(filteredResponsables, sortConfig.key, sortConfig.direction)
+    : filteredResponsables;
 
-const handleSort = (key: keyof ResponsableRow) => {
-  let direction: "asc" | "desc" = "asc";
-  if (sortConfig?.key === key) {
-    direction = sortConfig.direction === "asc" ? "desc" : "asc";
-  }
-  setSortConfig({ key, direction });
-};
+  const handleSort = (key: keyof ResponsableRow) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig?.key === key) {
+      direction = sortConfig.direction === "asc" ? "desc" : "asc";
+    }
+    setSortConfig({ key, direction });
+  };
 
   return (
     <MainLayout>
@@ -148,54 +156,64 @@ const handleSort = (key: keyof ResponsableRow) => {
           )}
 
           <div className="mb-4">
-            <SearchBar onSearch={setSearchQuery} placeholder="Buscar por nombre" />
+            <SearchBar
+              onSearch={setSearchQuery}
+              placeholder="Buscar por nombre"
+            />
           </div>
 
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-indigo-600 text-white font-semibold">
-<th
-  className="px-6 py-3 cursor-pointer"
-  onClick={() => handleSort("id")}
->
-  ID
-  {sortConfig?.key === "id" && (
-    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
-      {sortConfig.direction === "asc" ? "↑" : "↓"}
-    </span>
-  )}
-</th>
-<th
-  className="px-6 py-3 cursor-pointer"
-  onClick={() => handleSort("nombre")}
->
-  Nombre
-  {sortConfig?.key === "nombre" && (
-    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
-      {sortConfig.direction === "asc" ? "↑" : "↓"}
-    </span>
-  )}
-</th>
-<th
-  className="px-6 py-3 cursor-pointer"
-  onClick={() => handleSort("apellido")}
->
-  Apellido
-  {sortConfig?.key === "apellido" && (
-    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
-      {sortConfig.direction === "asc" ? "↑" : "↓"}
-    </span>
-  )}
-</th>
+                <tr className="bg-[#7ACBD9] text-black font-semibold">
+                  <th
+                    className="px-6 py-3 cursor-pointer"
+                    onClick={() => handleSort("id")}
+                  >
+                    ID
+                    {sortConfig?.key === "id" && (
+                      <span
+                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                      >
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
+                  <th
+                    className="px-6 py-3 cursor-pointer"
+                    onClick={() => handleSort("nombre")}
+                  >
+                    Nombre
+                    {sortConfig?.key === "nombre" && (
+                      <span
+                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                      >
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
+                  <th
+                    className="px-6 py-3 cursor-pointer"
+                    onClick={() => handleSort("apellido")}
+                  >
+                    Apellido
+                    {sortConfig?.key === "apellido" && (
+                      <span
+                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                      >
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
+                  <th className="px-6 py-3">ID Mascota</th>
                   <th className="px-6 py-3">Mascota</th>
                   <th className="px-6 py-3">Email</th>
                   <th className="px-6 py-3">Teléfono</th>
                 </tr>
               </thead>
-{sortedResponsables.length > 0 && (
-  <tbody>
-    {sortedResponsables.map((r) => (
+              {sortedResponsables.length > 0 && (
+                <tbody>
+                  {sortedResponsables.map((r) => (
                     <tr
                       key={r.id}
                       className="border-t border-border text-black transition-colors hover:bg-muted/60"
@@ -203,6 +221,16 @@ const handleSort = (key: keyof ResponsableRow) => {
                       <td className="px-6 py-3 font-medium">{r.id}</td>
                       <td className="px-6 py-3">{r.nombre}</td>
                       <td className="px-6 py-3">{r.apellido}</td>
+                      <td className="px-6 py-3">
+                        {r.mascotas.length > 0
+                          ? r.mascotas.map((m, i) => (
+                              <React.Fragment key={`id-${m.id}`}>
+                                {i > 0 && <span className="mr-1">,</span>}
+                                <span>{m.id}</span>
+                              </React.Fragment>
+                            ))
+                          : "-"}
+                      </td>
                       <td className="px-6 py-3">
                         {r.mascotas.length > 0
                           ? r.mascotas.map((m, i) => (

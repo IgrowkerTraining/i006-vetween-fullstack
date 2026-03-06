@@ -99,7 +99,7 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
 
       {/* Campo Tipo de Vacuna */}
       <Input
-        label="Tipo de Vacina"
+        label="Tipo de Vacuna"
         placeholder="Ingrese el tipo de vacuna"
         value={formData.tipoVacuna}
         onChange={handleChange("tipoVacuna")}
