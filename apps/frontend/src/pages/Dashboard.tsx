@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isFormLoading, setIsFormLoading] = useState(false)
   const [modalStep, setModalStep] = useState(1)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [patientsError, setPatientsError] = useState<string | null>(null)
   const [sortConfig, setSortConfig] = useState<{ key: keyof Patient; direction: "asc" | "desc" } | null>(null);
 
@@ -132,6 +133,23 @@ export default function Dashboard() {
   useEffect(() => {
     loadPatients();
   }, []);
+
+  const handleDeletePatient = async (patientId: string) => {
+    const confirmed = window.confirm("¿Seguro que deseas eliminar este paciente?");
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(patientId);
+      await api.deletePatient(patientId);
+      setPatients((prev) => prev.filter((p) => p.id !== patientId));
+      setPatientsError(null);
+    } catch (err: any) {
+      console.error("Error al eliminar paciente:", err.message);
+      setPatientsError(err?.message || "No se pudo eliminar el paciente.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleAddPatient = () => navigate(ROUTES.REGISTER_PATIENT);
 
@@ -295,8 +313,12 @@ export default function Dashboard() {
                         </button>
                       </td>
                       <td className="px-6 py-3">
-                        <button className="text-sm font-medium text-red-500 transition-colors hover:text-red-700">
-                          Eliminar
+                        <button
+                          onClick={() => handleDeletePatient(patient.id)}
+                          disabled={deletingId === patient.id}
+                          className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {deletingId === patient.id ? "Eliminando..." : "Eliminar"}
                         </button>
                       </td>
                     </tr>
