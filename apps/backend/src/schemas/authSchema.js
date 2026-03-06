@@ -91,9 +91,9 @@ const registerSchema = Joi.object({
         'string.max': 'La calle no puede tener más de 150 caracteres'
     }),
 
-    direccion_numero: Joi.string().trim().max(10).required().messages({
-        'string.empty': 'El número de dirección no puede estar vacío',
-        'string.max': 'El número no puede tener más de 10 caracteres'
+    direccion_numero: Joi.number().positive().max(10).messages({
+        'number.empty': 'El número de dirección no puede estar vacío',
+        'number.max': 'El número no puede tener más de 10 caracteres'
     }),
 
     direccion_localidad: Joi.string().trim().min(2).max(100).required().messages({
