@@ -4,7 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import Dashboard from "../pages/Dashboard";
+import PatientList from "../pages/PatientList";
 import MyAccount from "../pages/MyAccount";
 import ProfessionalProfile from "../pages/ProfessionalProfile";
 import ClinicProfile from "../pages/ClinicProfile";
@@ -13,7 +13,7 @@ import PatientDetail from "../pages/PatientDetail";
 import ClinicalSummaryList from "../pages/ClinicalSummaryList";
 import ClinicalSummaryDetail from "../pages/ClinicalSummaryDetail";
 import ResponsibleList from "../pages/ResponsibleList";
-import PatientRegister from "../pages/PatientRegister";
+import ResponsibleAndPatientRegister from "../pages/ResponsibleAndPatientRegister";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -38,7 +38,7 @@ export const AppRoutes: React.FC = () => {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <PatientList />
           </ProtectedRoute>
         }
       />
@@ -102,7 +102,7 @@ export const AppRoutes: React.FC = () => {
         path="/register-patient"
         element={
           <ProtectedRoute>
-            <PatientRegister />
+            <ResponsibleAndPatientRegister />
           </ProtectedRoute>
         }
       />

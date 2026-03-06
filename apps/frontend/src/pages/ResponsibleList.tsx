@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import addResponsibleIcon from "../assets/addResponsibleIcon.svg";
 import { sortArray } from "../utils/sort";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
@@ -137,12 +138,23 @@ export default function ResponsibleList() {
     setSortConfig({ key, direction });
   };
 
+  const handleAddResponsible = () => navigate(ROUTES.REGISTER_PATIENT);
+
   return (
     <MainLayout>
       <section className="flex flex-1 flex-col overflow-y-auto">
         <PageHeader
           subtitle={`Hola, ${userDisplayName}`}
           title="Responsables"
+          actions={
+            <button
+              onClick={handleAddResponsible}
+              className="flex items-center gap-2 rounded-lg bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
+            >
+              <img src={addResponsibleIcon} alt="Paw Icon Add" className="size-7" />
+              {"Añadir responsable"}
+            </button>
+          }
         />
 
         <section

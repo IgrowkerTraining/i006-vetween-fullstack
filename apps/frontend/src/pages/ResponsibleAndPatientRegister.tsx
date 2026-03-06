@@ -23,7 +23,7 @@ import { ROUTES } from "../constants/routes";
 type PageStage = "responsable" | "paciente";
 type ResponsableTab = "nuevo" | "existente";
 
-const PatientRegister: React.FC = () => {
+const ResponsibleAndPatientRegister: React.FC = () => {
   const navigate = useNavigate();
 
   // ─── Stage ────────────────────────────────────────────────────────────────
@@ -495,4 +495,4 @@ const PatientRegister: React.FC = () => {
   );
 };
 
-export default PatientRegister;
+export default ResponsibleAndPatientRegister;

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import pawIcon from "../assets/pawIcon.svg";
-import addResponsibleIcon from "../assets/addResponsibleIcon.svg"
 import pawIconPlus from "../assets/pawIconPlus.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
@@ -21,7 +20,7 @@ export interface Patient {
   estado: string;
 }
 
-export default function Dashboard() {
+export default function PatientList() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -151,8 +150,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleAddPatient = () => navigate(ROUTES.REGISTER_PATIENT);
-
   const filteredPatients = patients.filter((p) => {
     const q = searchQuery.toLowerCase();
     return (
@@ -220,15 +217,6 @@ export default function Dashboard() {
         <PageHeader
           subtitle={`Hola, ${userDisplayName}`}
           title="Pacientes"
-          actions={
-            <button
-              onClick={handleAddPatient}
-              className="flex items-center gap-2 rounded-lg bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
-            >
-              <img src={addResponsibleIcon} alt="Paw Icon Add" className="size-7" />
-              {"Añadir responsable"}
-            </button>
-          }
         />
 
         <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
