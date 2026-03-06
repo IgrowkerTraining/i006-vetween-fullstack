@@ -39,9 +39,11 @@ const responsibleSchema = Joi.object({
         'string.max': 'La calle no puede tener más de 150 caracteres'
     }),
 
-    direccion_numero: Joi.number().positive().max(10).messages({
-        'number.empty': 'El número de dirección no puede estar vacío',
-        'number.max': 'El número no puede tener más de 10 caracteres'
+    direccion_numero: Joi.number().integer().positive().max(9999999999).required().messages({
+        'number.base': 'El número de dirección debe ser numérico',
+        'number.positive': 'El número de dirección debe ser mayor a cero',
+        'number.max': 'El número de dirección no puede tener más de 10 dígitos',
+        'any.required': 'El número de dirección es obligatorio'
     }),
 
     direccion_localidad: Joi.string().trim().min(2).max(100).required().messages({
@@ -90,9 +92,11 @@ const updateResponsibleSchema = Joi.object({
         'string.max': 'La calle no puede tener más de 150 caracteres'
     }),
 
-    direccion_numero: Joi.number().positive().max(10).messages({
-        'number.empty': 'El número de dirección no puede estar vacío',
-        'number.max': 'El número no puede tener más de 10 caracteres'
+    direccion_numero: Joi.number().integer().positive().max(9999999999).required().messages({
+        'number.base': 'El número de dirección debe ser numérico',
+        'number.positive': 'El número de dirección debe ser mayor a cero',
+        'number.max': 'El número de dirección no puede tener más de 10 dígitos',
+        'any.required': 'El número de dirección es obligatorio'
     }),
 
     direccion_localidad: Joi.string().trim().min(2).max(100).messages({
