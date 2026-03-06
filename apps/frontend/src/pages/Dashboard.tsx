@@ -4,7 +4,10 @@ import pawIcon from "../assets/pawIcon.svg";
 import pawIconPlus from "../assets/pawIconPlus.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
+import { SearchBar } from "../components/common/SearchBar";
+// import { PatientForm, PatientFormData } from "../components/patient/PatientForm";
 import { api, ResponsibleListItem } from "../services/api";
+import { sortArray } from "../utils/sort";
 import { useAuth } from "../hooks/useAuth";
 import { ROUTES } from "../constants/routes";
 
@@ -21,7 +24,12 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [patientsError, setPatientsError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isFormLoading, setIsFormLoading] = useState(false)
+  const [modalStep, setModalStep] = useState(1)
+  const [patientsError, setPatientsError] = useState<string | null>(null)
+  const [sortConfig, setSortConfig] = useState<{ key: keyof Patient; direction: "asc" | "desc" } | null>(null);
 
   const handlePatientClick = (patientId: string) => {
     navigate(`${ROUTES.PATIENT}/${patientId}`);
@@ -118,6 +126,66 @@ export default function Dashboard() {
 
   const handleAddPatient = () => navigate(ROUTES.REGISTER_PATIENT);
 
+  const filteredPatients = patients.filter((p) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      p.nombre.toLowerCase().includes(q) ||
+      p.responsable.toLowerCase().includes(q) ||
+      p.id.toLowerCase().includes(q)
+    );
+  });
+
+  const sortedPatients = sortConfig
+    ? sortArray(filteredPatients, sortConfig.key, sortConfig.direction)
+    : filteredPatients;
+
+  const handleSort = (key: keyof Patient) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig?.key === key) {
+      direction = sortConfig.direction === "asc" ? "desc" : "asc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+
+  // const handleFormSubmit = async (data: PatientFormData) => {
+  //   setIsFormLoading(true)
+  //   try {
+  //     const hasMicrochip = data.patient.microchip === "yes"
+  //     await api.createPatient({
+  //       nombre_paciente: data.patient.name,
+  //       especie: data.patient.species,
+  //       edad: parseInt(data.patient.age, 10) || 0,
+  //       color: data.patient.color,
+  //       senia: data.patient.characteristic,
+  //       sexo: data.patient.sex === "Hembra" ? "Hembra" : "Macho",
+  //       raza: data.patient.breed,
+  //       peso: parseFloat(data.patient.weight) || 0,
+  //       esterilizado: data.patient.sterilized === "yes",
+  //       tiene_microchip: hasMicrochip,
+  //       ...(hasMicrochip
+  //         ? { num_microchip: data.patient.microchipNumber.trim() }
+  //         : {}),
+  //       activo: true,
+  //       nombre_responsable: data.responsible.firstName,
+  //       apellido: data.responsible.lastName,
+  //       email: data.responsible.email,
+  //       telefono: data.responsible.phone,
+  //       direccion_calle: data.responsible.street,
+  //       direccion_numero: data.responsible.number,
+  //       direccion_localidad: data.responsible.locality,
+  //       provincia: data.responsible.province,
+  //       relacion: data.responsible.relationship,
+  //     })
+  //     await loadPatients()
+  //     setIsModalOpen(false)
+  //   } catch (err: any) {
+  //     console.error("Error al crear paciente:", err.message)
+  //   } finally {
+  //     setIsFormLoading(false)
+  //   }
+  // }
+
   return (
     <MainLayout>
       {/* Main content */}
@@ -143,32 +211,46 @@ export default function Dashboard() {
             </div>
           )}
           <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Buscar paciente..."
-              className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
-            />
+            <SearchBar onSearch={setSearchQuery} placeholder="Buscar paciente..." />
           </div>
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-indigo-600 text-accent-foreground">
-                  <th className="px-6 py-3 font-semibold">ID</th>
-                  <th className="px-6 py-3 font-semibold">Nombre</th>
+                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("id")}>
+                    ID
+                    {sortConfig?.key === "id" && (
+                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
+                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("nombre")}>
+                    Nombre
+                    {sortConfig?.key === "nombre" && (
+                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
                   <th className="px-6 py-3 font-semibold">Especie</th>
-                  <th className="px-6 py-3 font-semibold">Responsable</th>
+                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("responsable")}>
+                    Responsable
+                    {sortConfig?.key === "responsable" && (
+                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                        {sortConfig.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
                   <th className="px-6 py-3 font-semibold">Estado</th>
                   <th className="px-6 py-3 font-semibold">Editar</th>
                   <th className="px-6 py-3 font-semibold">Eliminar</th>
                 </tr>
               </thead>
-              {patients.length > 0 && (
+              {sortedPatients.length > 0 && (
                 <tbody>
-                  {patients.map((patient) => (
-                    <tr
-                      key={patient.id}
-                      className="text-black border-t border-border transition-colors hover:bg-muted/60"
-                    >
+                  {sortedPatients.map((patient) => (
+                    <tr key={patient.id} className="text-black border-t border-border transition-colors hover:bg-muted/60">
                       <td className="px-6 py-3 font-medium">
                         <button
                           onClick={() => handlePatientClick(patient.id)}
@@ -214,18 +296,18 @@ export default function Dashboard() {
               )}
             </table>
 
-            {patients.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16">
-                <img src={pawIcon} alt="paw icon" />
-                <h3 className="mt-4 text-lg font-semibold text-foreground">
-                  No hay pacientes registrados aun
-                </h3>
-                <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                  {"Agrega uno nuevo haciendo click en el boton superior."}
-                </p>
-              </div>
-            )}
-          </div>
+          {filteredPatients.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <img src={pawIcon} alt="paw icon" />
+              <h3 className="mt-4 text-lg font-semibold text-foreground">
+                No hay pacientes registrados aun
+              </h3>
+              <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
+                {"Agrega uno nuevo haciendo click en el boton superior."}
+              </p>
+            </div>
+          )}
+        </div>
         </section>
       </section>
     </MainLayout>

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { sortArray } from "../utils/sort";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
+import { SearchBar } from "../components/common/SearchBar";
 import { api, ResponsibleListItem } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 import { ROUTES } from "../constants/routes";
@@ -47,9 +49,10 @@ export default function ResponsibleList() {
   const { user } = useAuth();
   const rawName = user?.name || user?.email?.split("@")[0] || "usuario";
   const userDisplayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-  const [responsables, setResponsables] = useState<ResponsableRow[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loadError, setLoadError] = useState<string | null>(null);
+const [responsables, setResponsables] = useState<ResponsableRow[]>([]);
+const [searchQuery, setSearchQuery] = useState("");
+const [loadError, setLoadError] = useState<string | null>(null);
+const [sortConfig, setSortConfig] = useState<{ key: keyof ResponsableRow; direction: "asc" | "desc" } | null>(null);
 
   const loadData = async () => {
     try {
@@ -103,16 +106,28 @@ export default function ResponsibleList() {
     loadData();
   }, []);
 
-  const filteredResponsables = responsables.filter((r) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      r.nombre.toLowerCase().includes(q) ||
-      r.apellido.toLowerCase().includes(q) ||
-      r.email.toLowerCase().includes(q) ||
-      r.mascotas.some((m) => m.nombre.toLowerCase().includes(q)) ||
-      r.id.toLowerCase().includes(q)
-    );
-  });
+const filteredResponsables = responsables.filter((r) => {
+  const q = searchQuery.toLowerCase();
+  return (
+    r.nombre.toLowerCase().includes(q) ||
+    r.apellido.toLowerCase().includes(q) ||
+    r.email.toLowerCase().includes(q) ||
+    r.mascotas.some((m) => m.nombre.toLowerCase().includes(q)) ||
+    r.id.toLowerCase().includes(q)
+  );
+});
+
+const sortedResponsables = sortConfig
+  ? sortArray(filteredResponsables, sortConfig.key, sortConfig.direction)
+  : filteredResponsables;
+
+const handleSort = (key: keyof ResponsableRow) => {
+  let direction: "asc" | "desc" = "asc";
+  if (sortConfig?.key === key) {
+    direction = sortConfig.direction === "asc" ? "desc" : "asc";
+  }
+  setSortConfig({ key, direction });
+};
 
   return (
     <MainLayout>
@@ -132,34 +147,55 @@ export default function ResponsibleList() {
             </div>
           )}
 
-          <div className="mb-4 relative">
-            <input
-              type="text"
-              placeholder="Buscar por nombre"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-vetween-teal focus:outline-none focus:ring-1 focus:ring-vetween-teal"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-              🔍
-            </span>
+          <div className="mb-4">
+            <SearchBar onSearch={setSearchQuery} placeholder="Buscar por nombre" />
           </div>
 
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-indigo-600 text-white font-semibold">
-                  <th className="px-6 py-3">ID</th>
-                  <th className="px-6 py-3">Nombre</th>
-                  <th className="px-6 py-3">Apellido</th>
+<th
+  className="px-6 py-3 cursor-pointer"
+  onClick={() => handleSort("id")}
+>
+  ID
+  {sortConfig?.key === "id" && (
+    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+      {sortConfig.direction === "asc" ? "↑" : "↓"}
+    </span>
+  )}
+</th>
+<th
+  className="px-6 py-3 cursor-pointer"
+  onClick={() => handleSort("nombre")}
+>
+  Nombre
+  {sortConfig?.key === "nombre" && (
+    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+      {sortConfig.direction === "asc" ? "↑" : "↓"}
+    </span>
+  )}
+</th>
+<th
+  className="px-6 py-3 cursor-pointer"
+  onClick={() => handleSort("apellido")}
+>
+  Apellido
+  {sortConfig?.key === "apellido" && (
+    <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+      {sortConfig.direction === "asc" ? "↑" : "↓"}
+    </span>
+  )}
+</th>
                   <th className="px-6 py-3">Mascota</th>
                   <th className="px-6 py-3">Email</th>
                   <th className="px-6 py-3">Teléfono</th>
                 </tr>
               </thead>
-              {filteredResponsables.length > 0 && (
-                <tbody>
-                  {filteredResponsables.map((r) => (
+{sortedResponsables.length > 0 && (
+  <tbody>
+    {sortedResponsables.map((r) => (
                     <tr
                       key={r.id}
                       className="border-t border-border text-black transition-colors hover:bg-muted/60"
