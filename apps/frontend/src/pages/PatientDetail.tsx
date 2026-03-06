@@ -624,7 +624,7 @@ const PatientDetail: React.FC = () => {
             onClick={() => setIsEditModalOpen(true)}
             className="flex items-center gap-2 rounded-lg bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
           >
-            <img src={pawIconPlus} alt="" className="size-10" />
+            <img src={pawIconPlus} alt="" className="size-8" />
             Editar paciente
           </button>
         }
@@ -646,13 +646,13 @@ const PatientDetail: React.FC = () => {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setIsVisitModalOpen(true)}
-              className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              className="rounded-lg bg-[#5451FF] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
             >
               Registrar visita clínica
             </button>
             <button
               onClick={() => setIsVaccineModalOpen(true)}
-              className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+              className="rounded-lg bg-[#5451FF] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
             >
               Registrar vacuna
             </button>
@@ -677,7 +677,7 @@ const PatientDetail: React.FC = () => {
           <button
             onClick={handleGenerateSummary}
             disabled={isGeneratingSummary}
-            className="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-lg bg-[#5451FF] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
           >
             {isGeneratingSummary
               ? "Generando resumen..."

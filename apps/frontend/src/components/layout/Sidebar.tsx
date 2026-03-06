@@ -4,9 +4,9 @@ import { useAuth } from "../../hooks/useAuth";
 import onlylogo from "../../assets/onlylogo.svg";
 
 const navItems = [
+  { label: "Responsables", id: "historial", path: "/responsables" },
   { label: "Pacientes", id: "pacientes", path: "/dashboard" },
   { label: "Resumen clínico", id: "resumen", path: "/clinical-summary" },
-  { label: "Responsables", id: "historial", path: "/responsables" },
   { label: "Mi Cuenta", id: "mi-cuenta", path: "/mi-cuenta" },
 ];
 
@@ -53,7 +53,7 @@ const Sidebar: React.FC = () => {
                 onClick={() => handleNavClick(item)}
                 className={`flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                   activeNav === item.id
-                    ? "bg-indigo-600 text-accent-foreground shadow-sm"
+                    ? "bg-[#5451FF] text-accent-foreground shadow-sm"
                     : "text-sidebar-foreground hover:bg-indigo-100 hover:text-indigo-700 hover:translate-x-1"
                 }`}
               >
