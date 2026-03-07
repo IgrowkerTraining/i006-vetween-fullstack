@@ -1,5 +1,8 @@
 const Joi = require('joi');
 
+// Pattern
+const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+
 const vaccineSchema = Joi.object({
     tipo: Joi.string().trim().min(2).max(100).required().messages({
         'string.empty': 'El tipo de vacuna es obligatorio',
@@ -22,8 +25,9 @@ const vaccineSchema = Joi.object({
         'any.required': 'La fecha de aplicación es obligatoria'
     }),
 
-    observacion: Joi.string().trim().max(200).allow('', null).optional().messages({
-        'string.max': 'La observación no puede superar los 200 caracteres'
+    observacion: Joi.string().trim().max(200).allow('', null).pattern(soloLetras).optional().messages({
+        'string.max': 'La observación no puede superar los 200 caracteres',
+        'string.pattern.base': 'La observación solo puede contener letras y espacios'
     }),
 
     estado: Joi.boolean().default(false).optional().messages({
