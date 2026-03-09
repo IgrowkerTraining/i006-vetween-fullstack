@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import { useAuth } from "../hooks/useAuth";
@@ -14,10 +14,43 @@ export default function ClinicProfile() {
 
   // Estado del formulario y nombre de la clínica
   const [clinicName, setClinicName] = useState("Nombre de la clínica");
+  const [provinceOpen, setProvinceOpen] = useState(false);
+  const provinceRef = useRef<HTMLDivElement>(null);
+
+  const PROVINCE_OPTIONS = [
+    "CABA",
+    "Buenos Aires",
+    "Catamarca",
+    "Chaco",
+    "Chubut",
+    "Cordoba",
+    "Corrientes",
+    "Entre Rios",
+    "Formosa",
+    "Jujuy",
+    "La Pampa",
+    "La Rioja",
+    "Mendoza",
+    "Misiones",
+    "Neuquen",
+    "Rio Negro",
+    "Salta",
+    "San Juan",
+    "San Luis",
+    "Santa Cruz",
+    "Santa Fe",
+    "Santiago del Estero",
+    "Tierra del Fuego",
+    "Tucuman",
+  ];
+
   const [formData, setFormData] = useState({
     nombre: "",
     num_habilitacion: "",
-    direccion: "",
+    direccion_calle: "",
+    direccion_numero: "",
+    direccion_localidad: "",
+    provincia: "",
     telefono: "",
   });
 
@@ -34,7 +67,10 @@ export default function ClinicProfile() {
           setFormData({
             nombre: clinicData.nombre || "",
             num_habilitacion: clinicData.num_habilitacion || "",
-            direccion: clinicData.direccion || "",
+            direccion_calle: clinicData.direccion_calle || "",
+            direccion_numero: clinicData.direccion_numero || "",
+            direccion_localidad: clinicData.direccion_localidad || "",
+            provincia: clinicData.provincia || "",
             telefono: clinicData.telefono || "",
           });
         } catch (error) {
@@ -52,6 +88,21 @@ export default function ClinicProfile() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleProvinceChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, provincia: value }));
+    setProvinceOpen(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (provinceRef.current && !provinceRef.current.contains(e.target as Node)) {
+        setProvinceOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleCancel = () => {
     navigate(-1);
@@ -72,7 +123,10 @@ export default function ClinicProfile() {
       const updateData = {
         nombre: formData.nombre,
         num_habilitacion: formData.num_habilitacion,
-        direccion: formData.direccion,
+        direccion_calle: formData.direccion_calle,
+        direccion_numero: formData.direccion_numero,
+        direccion_localidad: formData.direccion_localidad,
+        provincia: formData.provincia,
         telefono: formData.telefono,
       };
 
@@ -177,15 +231,85 @@ export default function ClinicProfile() {
                   />
                 </div>
 
-                {/* Dirección */}
+                {/* Calle */}
                 <div>
                   <Input
-                    label="Dirección"
-                    name="direccion"
-                    placeholder="Dirección de la clínica"
-                    value={formData.direccion}
+                    label="Calle"
+                    name="direccion_calle"
+                    placeholder="Av. San Martín"
+                    value={formData.direccion_calle}
                     onChange={handleChange}
                   />
+                </div>
+
+                {/* Número */}
+                <div>
+                  <Input
+                    label="Número"
+                    name="direccion_numero"
+                    placeholder="1234"
+                    value={formData.direccion_numero}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Localidad */}
+                <div>
+                  <Input
+                    label="Localidad"
+                    name="direccion_localidad"
+                    placeholder="Ciudad"
+                    value={formData.direccion_localidad}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Provincia */}
+                <div ref={provinceRef}>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Provincia
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setProvinceOpen((prev) => !prev)}
+                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-vetween-teal/50 focus:border-vetween-teal transition-all duration-200 flex items-center justify-between"
+                  >
+                    <span className={formData.provincia === "" ? "text-muted-foreground" : "text-foreground truncate pr-2"}>
+                      {formData.provincia === "" ? "Seleccionar provincia…" : formData.provincia}
+                    </span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${provinceOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {provinceOpen && (
+                    <div className="mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-10 overflow-hidden max-h-48 overflow-y-auto">
+                      <div className="p-2 grid grid-cols-1 gap-1">
+                        {PROVINCE_OPTIONS.map((prov) => (
+                          <label
+                            key={prov}
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-vetween-teal/10 cursor-pointer text-sm text-foreground select-none"
+                          >
+                            <input
+                              type="radio"
+                              name="provincia"
+                              value={prov}
+                              checked={formData.provincia === prov}
+                              onChange={() => handleProvinceChange(prov)}
+                              className="w-4 h-4 accent-vetween-teal flex-shrink-0"
+                            />
+                            {prov}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Número de Teléfono */}

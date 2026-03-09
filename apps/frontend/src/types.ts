@@ -25,7 +25,10 @@ export interface Veterinarian {
 export interface Clinic {
   id_clinica: number;
   nombre: string;
-  direccion: string;
+  direccion_calle: string;
+  direccion_numero: string;
+  direccion_localidad: string;
+  provincia: string;
   telefono: string;
   num_habilitacion: string;
   fecha_creacion: string;
@@ -49,7 +52,10 @@ export interface User {
   // Datos de la clínica (del token/login)
   nombre_consultorio?: string;
   num_habilitacion?: string;
-  direccion?: string;
+  direccion_calle?: string;
+  direccion_numero?: string;
+  direccion_localidad?: string;
+  provincia?: string;
   telefono?: string;
   fecha_creacion?: string;
 }
