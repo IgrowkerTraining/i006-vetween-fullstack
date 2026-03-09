@@ -33,10 +33,42 @@ const generateSummary = async (id_paciente, id_clinica) => {
 
     // Validar asociación paciente-clínica
     await validarPacienteClinica(id_paciente, id_clinica);
+
+    // Obtener paciente
+    const { data: paciente, error: pacienteError } = await supabase
+        .from("pacientes")
+        .select("*")
+        .eq("id_pacientes", id_paciente)
+        .maybeSingle();
+
+    if (pacienteError) throw pacienteError;
+
+    // Obtener visitas
+    const { data: visitas, error: visitasError } = await supabase
+        .from("visitas")
+        .select("*")
+        .eq("id_paciente", id_paciente);
+
+    if (visitasError) throw visitasError;
+
+    // Obtener vacunas
+    const { data: vacunas, error: vacunasError } = await supabase
+        .from("vacunas")
+        .select("*")
+        .eq("id_paciente", id_paciente);
+
+    if (vacunasError) throw vacunasError;
     
     try {
 
-	const bodyIA = { id_paciente };	
+	const bodyIA ={ 
+        id_paciente,
+        datos_clinicos: {
+            paciente,
+            visitas,
+            vacunas
+        }
+    };	
 
         // Solicitar resumen a la IA
         const { data: resumen } = await axios.post(
