@@ -202,7 +202,8 @@ export const api = {
 
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.error || "Registration failed");
+      const message = result.errors?.join(', ') || result.message || result.error || "Registration failed";
+      throw new Error(message);
     }
     return result;
   },

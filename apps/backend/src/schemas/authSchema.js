@@ -7,10 +7,10 @@ const especialidadesValidas = [
 ];
 
 const tiposAnimalesValidos = [
-    'Perros', 'Gatos', 'Conejos', 'Aves', 'Bovinos', 'Porcinos', 'Caprinos', 
+    'Caninos', 'Felinos', 'Perros', 'Gatos', 'Conejos', 'Aves', 'Bovinos', 'Porcinos', 'Caprinos', 
     'Ovinos', 'Aves de corral', 'Mamiferos silvestres', 'Aves silvestres', 
     'Reptiles silvestres', 'Reptiles exoticos', 'Roedores exoticos', 'Aves exoticas', 
-    'Peces', 'Crustaceos'
+    'Peces', 'Crustaceos', 'Otros'
 ];
 
 // Esquema de validación para el register (registro)
