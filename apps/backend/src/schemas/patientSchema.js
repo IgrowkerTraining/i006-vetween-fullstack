@@ -65,6 +65,7 @@ const patientSchema = Joi.object({
     num_microchip: Joi.string().trim().when('tiene_microchip', {
         is: true,
         then: Joi.string().max(30).pattern(/^[0-9]+$/).required().messages({
+            'string.base': 'El número de microchip debe enviarse entre comillas',
             'string.empty': 'El número de microchip es obligatorio cuando el paciente tiene microchip',
             'string.max': 'El número de microchip no puede tener más de 30 caracteres',
             'string.pattern.base': 'El número de microchip solo puede contener números sin espacios'
@@ -137,6 +138,7 @@ const updatePatientSchema = Joi.object({
     num_microchip: Joi.string().trim().when('tiene_microchip', {
         is: true,
         then: Joi.string().max(30).pattern(/^[0-9]+$/).required().messages({
+            'string.base': 'El número de microchip debe enviarse entre comillas',
             'string.empty': 'El número de microchip es obligatorio si tiene microchip',
             'string.max': 'El número de microchip no puede tener más de 30 caracteres',
             'string.pattern.base': 'El número de microchip solo puede contener números sin espacios'
