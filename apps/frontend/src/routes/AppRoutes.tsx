@@ -35,7 +35,7 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path="/dashboard"
+        path="/lista-pacientes"
         element={
           <ProtectedRoute>
             <PatientList />
@@ -75,7 +75,7 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path="/clinical-summary/detail/:id"
+        path="/resumen-clinico/detail/:id"
         element={
           <ProtectedRoute>
             <ClinicalSummaryDetail />
@@ -83,7 +83,7 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path="/clinical-summary"
+        path="/resumen-clinico"
         element={
           <ProtectedRoute>
             <ClinicalSummaryList />

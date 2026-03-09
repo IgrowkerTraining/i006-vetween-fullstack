@@ -211,7 +211,7 @@ const Register: React.FC = () => {
       }
 
       login(user);
-      navigate("/dashboard");
+      navigate("/lista-pacientes");
     } catch (err: any) {
       setServerError(err.message || "Registration failed");
     } finally {
