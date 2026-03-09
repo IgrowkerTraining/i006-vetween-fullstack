@@ -26,11 +26,10 @@ const updateClinicSchema = Joi.object({
         'string.pattern.base': 'La calle solo puede contener letras y espacios'
     }),
 
-    direccion_numero: Joi.number().integer().positive().max(9999999999).required().messages({
+    direccion_numero: Joi.number().integer().positive().max(9999999999).messages({
         'number.base': 'El número de dirección debe ser numérico',
         'number.positive': 'El número de dirección debe ser mayor a cero',
-        'number.max': 'El número de dirección no puede tener más de 10 dígitos',
-        'any.required': 'El número de dirección es obligatorio'
+        'number.max': 'El número de dirección no puede tener más de 10 dígitos'
     }),
 
     direccion_localidad: Joi.string().trim().min(2).max(100).pattern(soloLetras).messages({
@@ -41,8 +40,7 @@ const updateClinicSchema = Joi.object({
     }),
 
     provincia: Joi.string().valid(...provinciasValidas).messages({
-        'any.only': 'Debes seleccionar una provincia válida',
-        'any.required': 'La provincia es obligatoria'
+        'any.only': 'Debes seleccionar una provincia válida'
     }),
 
     telefono: Joi.string().trim().min(8).max(20).pattern(/^[0-9\s]+$/).messages({

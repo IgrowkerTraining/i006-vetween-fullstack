@@ -89,7 +89,7 @@ const createPatient = async (patientData, id_clinica) => {
 
         // El código 23503 en PostgreSQL es "foreign_key_violation"
         if (error.code === '23503') {
-            if (error.message.includes('id_responsable')) {
+            if (error.message.includes('fk_responsable')) {
                 throw new Error("ID_RESPONSABLE_NO_EXISTE");
             }
             if (error.message.includes('id_clinica')) {
