@@ -3,9 +3,10 @@ const ResponseHelper = require("../utils/responseHelper");
 
 const createSummary = async (req, res) => {
     try {
-        const id_clinica = req.user.id_clinica; 
+        const id_clinica = req.user.id_clinica;
+        const { id_paciente } = req.body;
 
-        const data = await aiReportService.generateSummary(req.body, id_clinica);
+        const data = await aiReportService.generateSummary(id_paciente, id_clinica);
         
         return ResponseHelper.created(res, data, "Resumen de IA generado y guardado correctamente");
 

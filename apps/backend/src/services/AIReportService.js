@@ -25,8 +25,7 @@ const validarPacienteClinica = async (id_paciente, id_clinica) => {
 };
 
 // POST a la IA
-const generateSummary = async (body, id_clinica) => {
-    const { id_paciente } = body;
+const generateSummary = async (id_paciente, id_clinica) => {
 
     if (!id_paciente) {
         throw new Error("El ID del paciente es requerido");
@@ -34,12 +33,15 @@ const generateSummary = async (body, id_clinica) => {
 
     // Validar asociación paciente-clínica
     await validarPacienteClinica(id_paciente, id_clinica);
-
+    
     try {
+
+	const bodyIA = { id_paciente };	
+
         // Solicitar resumen a la IA
         const { data: resumen } = await axios.post(
             `${AI_URL}/api/v1/informes/resumenia`,
-            body
+            bodyIA
         );        
         
         // Guardar en Supabase
