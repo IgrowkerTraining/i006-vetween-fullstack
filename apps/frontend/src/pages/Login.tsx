@@ -5,6 +5,8 @@ import { Button } from "../components/common/Button";
 import { User } from "../types";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../context/ToastContext";
+import { HttpError } from "../utils/httpErrorHandler";
 import { storage } from "../utils/storage";
 import logo from "../assets/logo.svg";
 import onlylogo from "../assets/onlylogo.svg"
@@ -12,25 +14,28 @@ import onlylogo from "../assets/onlylogo.svg"
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
 
     try {
       storage.clear();
       const response = await api.login({ email, password });
       storage.setToken(response.token);
       login(response.user);
-      navigate("/lista-pacientes");
+      showToast("Sesión iniciada correctamente", "success");
+      navigate("/responsables");
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred");
+      // HttpErrors (401, 5xx) are already toasted by the fetch interceptor
+      if (!(err instanceof HttpError)) {
+        showToast(err.message || "Error al iniciar sesión", "error");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -55,26 +60,6 @@ const Login: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg flex items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
-                    />
-                  </svg>
-                  {error}
-                </div>
-              )}
-
               <Input
                 label="Email"
                 placeholder="nombre@email.com"

@@ -9,7 +9,7 @@ interface PublicRouteProps {
 
 export const PublicRoute: React.FC<PublicRouteProps> = ({ 
   children, 
-  redirectTo = '/lista-pacientes' 
+  redirectTo = '/responsables' 
 }) => {
   const { isAuthenticated, loading } = useAuth();
 

@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { useToast } from '../context/ToastContext';
+import { HttpError } from '../utils/httpErrorHandler';
 
 interface ApiState<T> {
   data: T | null;
@@ -20,6 +22,8 @@ export const useApi = <T>(
     error: null,
   });
 
+  const { showToast } = useToast();
+
   const execute = useCallback(async (): Promise<T | null> => {
     setState(prev => ({ ...prev, loading: true, error: null }));
     
@@ -30,9 +34,13 @@ export const useApi = <T>(
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       setState(prev => ({ ...prev, loading: false, error: errorMessage }));
+      // HttpErrors are already toasted by the fetch interceptor (401, 5xx)
+      if (!(error instanceof HttpError)) {
+        showToast(errorMessage, 'error');
+      }
       return null;
     }
-  }, [apiFunction]);
+  }, [apiFunction, showToast]);
 
   const reset = useCallback(() => {
     setState({ data: null, loading: false, error: null });
