@@ -43,6 +43,15 @@ const generateSummary = async (id_paciente, id_clinica) => {
 
     if (pacienteError) throw pacienteError;
 
+    if (!paciente) {
+        throw new Error("Paciente no encontrado");
+    }
+
+    // Validación de paciente activo
+    if (paciente.activo === false) {
+        throw new Error("Paciente inactivo");
+    }
+
     // Obtener visitas
     const { data: visitas, error: visitasError } = await supabase
         .from("visitas")
@@ -58,6 +67,16 @@ const generateSummary = async (id_paciente, id_clinica) => {
         .eq("id_paciente", id_paciente);
 
     if (vacunasError) throw vacunasError;
+
+    const { data: resumenExistente } = await supabase
+        .from("resumen_ia")
+        .select("id_resumenia")
+        .eq("id_paciente", id_paciente)
+        .maybeSingle();
+
+    if (resumenExistente) {
+        throw new Error("Resumen ya existe para este paciente");
+    }
     
     try {
 
@@ -101,8 +120,9 @@ const generateSummary = async (id_paciente, id_clinica) => {
     }
 };
 
-// GET resúmenes
+// GET resúmenes por paciente
 const getSummariesByPatientFromDB = async (id_paciente, id_clinica) => {
+
     // Validar asociación paciente-clínica
     await validarPacienteClinica(id_paciente, id_clinica);
 

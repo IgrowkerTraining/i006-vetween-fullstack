@@ -11,6 +11,25 @@ const createSummary = async (req, res) => {
         return ResponseHelper.created(res, data, "Resumen de IA generado y guardado correctamente");
 
     } catch (error) {
+
+        if (error.message.includes("Paciente no encontrado")) {
+            return ResponseHelper.notFound(res, "Paciente no encontrado");
+        }
+
+        if (error.message.includes("Paciente inactivo")) {
+            return ResponseHelper.unprocessableEntity(
+                res,
+                "No se puede generar un resumen para un paciente inactivo."
+            );
+        }
+
+        if (error.message.includes("Resumen ya existe")) {
+            return ResponseHelper.conflict(
+                res,
+                "Este paciente ya tiene un resumen generado."
+            );
+        }
+
         if (error.message.includes("Request failed with status code 422")) {
             return ResponseHelper.unprocessableEntity(res, "La IA no pudo procesar la solicitud. Verifique los datos enviados y vuelva a intentarlo.");
         }
