@@ -52,6 +52,17 @@ const generateSummary = async (id_paciente, id_clinica) => {
         throw new Error("Paciente inactivo");
     }
 
+    const { data: resumenExistente, error: resumenError } = await supabase
+    .from("resumen_ia")
+    .select("id_resumenia")
+    .eq("id_paciente", id_paciente);
+
+    if (resumenError) throw resumenError;
+
+    if (resumenExistente.length > 0) {
+        throw new Error("Resumen ya existe para este paciente");
+    }
+
     // Obtener visitas
     const { data: visitas, error: visitasError } = await supabase
         .from("visitas")
@@ -67,16 +78,6 @@ const generateSummary = async (id_paciente, id_clinica) => {
         .eq("id_paciente", id_paciente);
 
     if (vacunasError) throw vacunasError;
-
-    const { data: resumenExistente } = await supabase
-        .from("resumen_ia")
-        .select("id_resumenia")
-        .eq("id_paciente", id_paciente)
-        .maybeSingle();
-
-    if (resumenExistente) {
-        throw new Error("Resumen ya existe para este paciente");
-    }
     
     try {
 
