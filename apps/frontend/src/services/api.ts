@@ -91,6 +91,7 @@ export interface UpdateResponsableRequest {
   email?: string;
   telefono?: string;
   relacion?: string;
+  direccion?: string;
   direccion_calle?: string;
   direccion_numero?: string;
   direccion_localidad?: string;
@@ -202,7 +203,11 @@ export const api = {
 
     const result = await response.json();
     if (!response.ok) {
-      const message = result.errors?.join(', ') || result.message || result.error || "Registration failed";
+      const message =
+        result.errors?.join(", ") ||
+        result.message ||
+        result.error ||
+        "Registration failed";
       throw new Error(message);
     }
     return result;

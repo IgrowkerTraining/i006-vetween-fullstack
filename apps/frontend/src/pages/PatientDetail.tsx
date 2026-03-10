@@ -2,10 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
-import {
-  EditPatientForm,
-  PatientFormData,
-} from "../components/forms/EditPatientForm";
+import { EditPatientForm } from "../components/forms/EditPatientForm";
 import pawIconPlus from "../assets/pawIconPlus.svg";
 import PatientCard from "../components/patient/PatientCard";
 import PatientTabs from "../components/patient/PatientTabs";
@@ -27,12 +24,14 @@ import {
 } from "../components/forms/ClinicalVisitForm";
 import { VaccineForm, VaccineFormData } from "../components/forms/VaccineForm";
 import { useAuth } from "../hooks/useAuth";
+import { useEditPatient } from "../hooks/useEditPatient";
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const rawName = user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
+  const rawName =
+    user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
   const firstName = rawName.trim().split(/[\s._-]+/)[0] || "usuario";
   const userDisplayName =
     firstName.charAt(0).toUpperCase() + firstName.slice(1);
@@ -48,9 +47,18 @@ const PatientDetail: React.FC = () => {
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
   const [isVisitFormLoading, setIsVisitFormLoading] = useState(false);
   const [isVaccineModalOpen, setIsVaccineModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isEditFormLoading, setIsEditFormLoading] = useState(false);
-  const [editApiError, setEditApiError] = useState<string | null>(null);
+  const {
+    isEditModalOpen,
+    isEditFormLoading,
+    editApiError,
+    editInitialData,
+    openEdit,
+    closeEdit,
+    submitEdit,
+  } = useEditPatient(async (patientId) => {
+    const updated = await api.getPatientById(patientId);
+    setPatientData(updated);
+  });
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summarySuccess, setSummarySuccess] = useState(false);
@@ -78,8 +86,7 @@ const PatientDetail: React.FC = () => {
         }
         const pickText = (...values: unknown[]): string => {
           const found = values.find(
-            (value) =>
-              typeof value === "string" && value.trim().length > 0,
+            (value) => typeof value === "string" && value.trim().length > 0,
           ) as string | undefined;
           return found ?? "-";
         };
@@ -216,68 +223,6 @@ const PatientDetail: React.FC = () => {
       }
     : null;
 
-  const editInitialData: PatientFormData | undefined = patientData
-    ? {
-        patient: {
-          name: patientData.nombre ?? patientData.nombre_paciente ?? "",
-          species: patientData.especie ?? "",
-          breed: patientData.raza ?? "",
-          age: patientData.edad != null ? String(patientData.edad) : "",
-          sex: patientData.sexo ?? "",
-          weight: patientData.peso != null ? String(patientData.peso) : "",
-          color: patientData.color ?? "",
-          characteristic: patientData.senia ?? "",
-          sterilized:
-            patientData.esterilizado === true
-              ? "yes"
-              : patientData.esterilizado === false
-                ? "no"
-                : "",
-          microchip:
-            patientData.tiene_microchip === true
-              ? "yes"
-              : patientData.tiene_microchip === false
-                ? "no"
-                : "",
-          microchipNumber: patientData.num_microchip ?? "",
-        },
-        responsible: {
-          firstName:
-            responsableData?.nombre ?? patientData.responsables?.nombre ?? "",
-          lastName:
-            responsableData?.apellido ??
-            patientData.responsables?.apellido ??
-            "",
-          email:
-            responsableData?.email ?? patientData.responsables?.email ?? "",
-          street:
-            responsableData?.direccion_calle ??
-            patientData.responsables?.direccion_calle ??
-            "",
-          number:
-            responsableData?.direccion_numero ??
-            patientData.responsables?.direccion_numero ??
-            "",
-          locality:
-            responsableData?.direccion_localidad ??
-            patientData.responsables?.direccion_localidad ??
-            "",
-          province:
-            responsableData?.provincia ??
-            patientData.responsables?.provincia ??
-            "",
-          phone:
-            responsableData?.telefono ??
-            patientData.responsables?.telefono ??
-            "",
-          relationship:
-            responsableData?.relacion ??
-            patientData.responsables?.relacion ??
-            "",
-        },
-      }
-    : undefined;
-
   const handleExpandir = (id: string) => {
     setVisitas((prev) =>
       prev.map((v) => ({
@@ -395,68 +340,6 @@ const PatientDetail: React.FC = () => {
       setSummaryError(err?.message || "No se pudo generar el resumen clínico.");
     } finally {
       setIsGeneratingSummary(false);
-    }
-  };
-
-  const handleEditSubmit = async (data: PatientFormData) => {
-    if (!patientData) return;
-
-    const patientId =
-      patientData.id_pacientes ??
-      patientData.id_paciente ??
-      patientData.id ??
-      id;
-    const responsableId =
-      patientData.id_responsable ?? patientData.responsables?.id_responsable;
-
-    setIsEditFormLoading(true);
-    setEditApiError(null);
-    try {
-      await api.updatePatient(patientId!, {
-        nombre: data.patient.name,
-        especie: data.patient.species,
-        raza: data.patient.breed,
-        edad: parseInt(data.patient.age, 10),
-        sexo: data.patient.sex as "Macho" | "Hembra",
-        peso: parseFloat(data.patient.weight.replace(",", ".")),
-        color: data.patient.color,
-        ...(data.patient.characteristic
-          ? { senia: data.patient.characteristic }
-          : {}),
-        esterilizado: data.patient.sterilized === "yes",
-        tiene_microchip: data.patient.microchip === "yes",
-        ...(data.patient.microchip === "yes"
-          ? { num_microchip: data.patient.microchipNumber }
-          : {}),
-      });
-
-      if (responsableId) {
-        await api.updateResponsable(responsableId, {
-          nombre: data.responsible.firstName,
-          apellido: data.responsible.lastName,
-          email: data.responsible.email,
-          telefono: data.responsible.phone,
-          relacion: data.responsible.relationship,
-          direccion_calle: data.responsible.street,
-          direccion_numero: data.responsible.number,
-          direccion_localidad: data.responsible.locality,
-          provincia: data.responsible.province,
-        });
-      }
-
-      // Re-fetch desde la BD para mostrar datos confirmados
-      const updatedPatient = await api.getPatientById(String(patientId));
-      setPatientData(updatedPatient);
-      if (responsableId) {
-        const updatedResponsable = await api.getResponsableById(responsableId);
-        setResponsableData(updatedResponsable);
-      }
-
-      setIsEditModalOpen(false);
-    } catch (err: any) {
-      setEditApiError(err?.message || "Ocurrió un error inesperado.");
-    } finally {
-      setIsEditFormLoading(false);
     }
   };
 
@@ -579,10 +462,7 @@ const PatientDetail: React.FC = () => {
 
       <Modal
         isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditApiError(null);
-        }}
+        onClose={closeEdit}
         title="Editar paciente"
         size="lg"
       >
@@ -591,15 +471,19 @@ const PatientDetail: React.FC = () => {
             {editApiError}
           </div>
         )}
-        <EditPatientForm
-          onSubmit={handleEditSubmit}
-          onCancel={() => {
-            setIsEditModalOpen(false);
-            setEditApiError(null);
-          }}
-          isLoading={isEditFormLoading}
-          initialData={editInitialData}
-        />
+        {!editInitialData && !editApiError && (
+          <div className="flex justify-center py-8 text-sm text-slate-400">
+            Cargando...
+          </div>
+        )}
+        {editInitialData && (
+          <EditPatientForm
+            onSubmit={submitEdit}
+            onCancel={closeEdit}
+            isLoading={isEditFormLoading}
+            initialData={editInitialData}
+          />
+        )}
       </Modal>
 
       <Modal
@@ -621,7 +505,7 @@ const PatientDetail: React.FC = () => {
         showBackButton
         actions={
           <button
-            onClick={() => setIsEditModalOpen(true)}
+            onClick={() => id && openEdit(id)}
             className="flex items-center gap-2 rounded-lg bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
           >
             <img src={pawIconPlus} alt="" className="size-8" />

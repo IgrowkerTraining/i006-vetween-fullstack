@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import pawIcon from "../assets/pawIcon.svg";
-import pawIconPlus from "../assets/pawIconPlus.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { SearchBar } from "../components/common/SearchBar";
-// import { PatientForm, PatientFormData } from "../components/patient/PatientForm";
+import { Modal } from "../components/common/Modal";
+import { EditPatientForm } from "../components/forms/EditPatientForm";
 import { api, ResponsibleListItem } from "../services/api";
 import { sortArray } from "../utils/sort";
 import { useAuth } from "../hooks/useAuth";
+import { useEditPatient } from "../hooks/useEditPatient";
 import { ROUTES } from "../constants/routes";
 
 export interface Patient {
@@ -25,18 +26,30 @@ export default function PatientList() {
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isFormLoading, setIsFormLoading] = useState(false)
-  const [modalStep, setModalStep] = useState(1)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [patientsError, setPatientsError] = useState<string | null>(null)
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Patient; direction: "asc" | "desc" } | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [patientsError, setPatientsError] = useState<string | null>(null);
+  const {
+    isEditModalOpen,
+    isEditFormLoading,
+    editApiError,
+    editInitialData,
+    openEdit,
+    closeEdit,
+    submitEdit,
+  } = useEditPatient(async () => {
+    await loadPatients();
+  });
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Patient;
+    direction: "asc" | "desc";
+  } | null>(null);
 
   const handlePatientClick = (patientId: string) => {
     navigate(`${ROUTES.PATIENT}/${patientId}`);
   };
 
-  const rawName = user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
+  const rawName =
+    user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
   const firstName = rawName.trim().split(/[\s._-]+/)[0] || "usuario";
   const userDisplayName =
     firstName.charAt(0).toUpperCase() + firstName.slice(1);
@@ -134,7 +147,9 @@ export default function PatientList() {
   }, []);
 
   const handleDeletePatient = async (patientId: string) => {
-    const confirmed = window.confirm("¿Seguro que deseas eliminar este paciente?");
+    const confirmed = window.confirm(
+      "¿Seguro que deseas eliminar este paciente?",
+    );
     if (!confirmed) return;
 
     try {
@@ -171,53 +186,11 @@ export default function PatientList() {
     setSortConfig({ key, direction });
   };
 
-
-  // const handleFormSubmit = async (data: PatientFormData) => {
-  //   setIsFormLoading(true)
-  //   try {
-  //     const hasMicrochip = data.patient.microchip === "yes"
-  //     await api.createPatient({
-  //       nombre_paciente: data.patient.name,
-  //       especie: data.patient.species,
-  //       edad: parseInt(data.patient.age, 10) || 0,
-  //       color: data.patient.color,
-  //       senia: data.patient.characteristic,
-  //       sexo: data.patient.sex === "Hembra" ? "Hembra" : "Macho",
-  //       raza: data.patient.breed,
-  //       peso: parseFloat(data.patient.weight) || 0,
-  //       esterilizado: data.patient.sterilized === "yes",
-  //       tiene_microchip: hasMicrochip,
-  //       ...(hasMicrochip
-  //         ? { num_microchip: data.patient.microchipNumber.trim() }
-  //         : {}),
-  //       activo: true,
-  //       nombre_responsable: data.responsible.firstName,
-  //       apellido: data.responsible.lastName,
-  //       email: data.responsible.email,
-  //       telefono: data.responsible.phone,
-  //       direccion_calle: data.responsible.street,
-  //       direccion_numero: data.responsible.number,
-  //       direccion_localidad: data.responsible.locality,
-  //       provincia: data.responsible.province,
-  //       relacion: data.responsible.relationship,
-  //     })
-  //     await loadPatients()
-  //     setIsModalOpen(false)
-  //   } catch (err: any) {
-  //     console.error("Error al crear paciente:", err.message)
-  //   } finally {
-  //     setIsFormLoading(false)
-  //   }
-  // }
-
   return (
     <MainLayout>
       {/* Main content */}
       <section className="flex flex-1 flex-col overflow-y-auto">
-        <PageHeader
-          subtitle={`Hola, ${userDisplayName}`}
-          title="Pacientes"
-        />
+        <PageHeader subtitle={`Hola, ${userDisplayName}`} title="Pacientes" />
 
         <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
           {patientsError && (
@@ -226,33 +199,51 @@ export default function PatientList() {
             </div>
           )}
           <div className="mb-4">
-            <SearchBar onSearch={setSearchQuery} placeholder="Buscar paciente..." />
+            <SearchBar
+              onSearch={setSearchQuery}
+              placeholder="Buscar paciente..."
+            />
           </div>
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-[#7ACBD9] text-black font-semibold">
-                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("id")}>
+                  <th
+                    className="px-6 py-3 font-semibold cursor-pointer"
+                    onClick={() => handleSort("id")}
+                  >
                     ID
                     {sortConfig?.key === "id" && (
-                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                      <span
+                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                      >
                         {sortConfig.direction === "asc" ? "↑" : "↓"}
                       </span>
                     )}
                   </th>
-                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("nombre")}>
+                  <th
+                    className="px-6 py-3 font-semibold cursor-pointer"
+                    onClick={() => handleSort("nombre")}
+                  >
                     Nombre
                     {sortConfig?.key === "nombre" && (
-                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                      <span
+                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                      >
                         {sortConfig.direction === "asc" ? "↑" : "↓"}
                       </span>
                     )}
                   </th>
                   <th className="px-6 py-3 font-semibold">Especie</th>
-                  <th className="px-6 py-3 font-semibold cursor-pointer" onClick={() => handleSort("responsable")}>
+                  <th
+                    className="px-6 py-3 font-semibold cursor-pointer"
+                    onClick={() => handleSort("responsable")}
+                  >
                     Responsable
                     {sortConfig?.key === "responsable" && (
-                      <span className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}>
+                      <span
+                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                      >
                         {sortConfig.direction === "asc" ? "↑" : "↓"}
                       </span>
                     )}
@@ -265,7 +256,10 @@ export default function PatientList() {
               {sortedPatients.length > 0 && (
                 <tbody>
                   {sortedPatients.map((patient) => (
-                    <tr key={patient.id} className="text-black border-t border-border transition-colors hover:bg-muted/60">
+                    <tr
+                      key={patient.id}
+                      className="text-black border-t border-border transition-colors hover:bg-muted/60"
+                    >
                       <td className="px-6 py-3 font-medium">
                         <button
                           onClick={() => handlePatientClick(patient.id)}
@@ -296,7 +290,10 @@ export default function PatientList() {
                         </span>
                       </td>
                       <td className="px-6 py-3">
-                        <button className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo">
+                        <button
+                          onClick={() => openEdit(patient.id)}
+                          className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo"
+                        >
                           Editar
                         </button>
                       </td>
@@ -306,7 +303,9 @@ export default function PatientList() {
                           disabled={deletingId === patient.id}
                           className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {deletingId === patient.id ? "Eliminando..." : "Eliminar"}
+                          {deletingId === patient.id
+                            ? "Eliminando..."
+                            : "Eliminar"}
                         </button>
                       </td>
                     </tr>
@@ -315,20 +314,45 @@ export default function PatientList() {
               )}
             </table>
 
-          {filteredPatients.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16">
-              <img src={pawIcon} alt="paw icon" />
-              <h3 className="mt-4 text-lg font-semibold text-foreground">
-                No hay pacientes registrados aun
-              </h3>
-              <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                {"Agrega uno nuevo haciendo click en el boton superior."}
-              </p>
-            </div>
-          )}
-        </div>
+            {filteredPatients.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16">
+                <img src={pawIcon} alt="paw icon" />
+                <h3 className="mt-4 text-lg font-semibold text-foreground">
+                  No hay pacientes registrados aun
+                </h3>
+                <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
+                  {"Agrega uno nuevo haciendo click en el boton superior."}
+                </p>
+              </div>
+            )}
+          </div>
         </section>
       </section>
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={closeEdit}
+        title="Editar paciente"
+        size="lg"
+      >
+        {editApiError && (
+          <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            {editApiError}
+          </div>
+        )}
+        {!editInitialData && !editApiError && (
+          <div className="flex justify-center py-8 text-sm text-slate-400">
+            Cargando...
+          </div>
+        )}
+        {editInitialData && (
+          <EditPatientForm
+            onSubmit={submitEdit}
+            onCancel={closeEdit}
+            isLoading={isEditFormLoading}
+            initialData={editInitialData}
+          />
+        )}
+      </Modal>
     </MainLayout>
   );
 }

@@ -1,36 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "../common/Button";
 import {
-  PatientFormFields,
-  PatientData,
-  PatientErrors,
-  initialPatientData,
-  validatePatientData,
-} from "./PatientFormFields";
+  ResponsibleFormFields,
+  ResponsibleData,
+  ResponsibleErrors,
+  initialResponsibleData,
+  validateResponsibleData,
+} from "./ResponsibleFormFields";
 
-export type { PatientData };
+export type { ResponsibleData };
 
-interface EditPatientFormProps {
-  onSubmit: (data: PatientData) => void;
+interface EditResponsibleFormProps {
+  onSubmit: (data: ResponsibleData) => void;
   onCancel: () => void;
   isLoading?: boolean;
-  initialData?: PatientData;
+  initialData?: ResponsibleData;
 }
 
-export const EditPatientForm: React.FC<EditPatientFormProps> = ({
+export const EditResponsibleForm: React.FC<EditResponsibleFormProps> = ({
   onSubmit,
   onCancel,
   isLoading = false,
   initialData,
 }) => {
-  const [patient, setPatient] = useState<PatientData>(
-    initialData ?? initialPatientData,
+  const [responsible, setResponsible] = useState<ResponsibleData>(
+    initialData ?? initialResponsibleData,
   );
-  const [errors, setErrors] = useState<PatientErrors>({});
+  const [errors, setErrors] = useState<ResponsibleErrors>({});
 
   useEffect(() => {
     if (initialData) {
-      setPatient(initialData);
+      setResponsible(initialData);
     }
   }, [initialData]);
 
@@ -38,35 +38,27 @@ export const EditPatientForm: React.FC<EditPatientFormProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setPatient((prev) => ({ ...prev, [name]: value }));
-    if (errors[name as keyof PatientData]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
-  };
-
-  const handleRadioChange = (name: keyof PatientData, value: string) => {
-    setPatient((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
+    setResponsible((prev) => ({ ...prev, [name]: value }));
+    if (errors[name as keyof ResponsibleData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validationErrors = validatePatientData(patient);
+    const validationErrors = validateResponsibleData(responsible);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length === 0) {
-      onSubmit(patient);
+      onSubmit(responsible);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PatientFormFields
-        data={patient}
+      <ResponsibleFormFields
+        data={responsible}
         errors={errors}
         onChange={handleChange}
-        onRadioChange={handleRadioChange}
       />
       <div className="flex justify-between pt-4 border-t border-slate-700">
         <Button type="button" variant="outline" onClick={onCancel}>
