@@ -244,19 +244,17 @@ export const api = {
     };
   },
 
-  async getPatients(): Promise<
-    | PatientsListItem[]
-    | { data?: PatientsListItem[]; pacientes?: PatientsListItem[] }
-  > {
-    const response = await fetch(
-      "https://backend-vetween.onrender.com/api/pacientes",
-      {
+  async getPatients(page = 1): Promise<unknown> {
+    const url = `https://backend-vetween.onrender.com/api/pacientes?page=${page}`;
+    console.log("[getPatients] fetching:", url);
+    const response = await fetch(url, {
         method: "GET",
         headers: getRequestHeaders(true),
       },
     );
 
     const result = await response.json();
+    console.log("[getPatients] page", page, "raw response:", result);
     if (!response.ok) {
       throw new Error(
         result?.error || result?.message || "Error al obtener pacientes",
@@ -392,12 +390,9 @@ export const api = {
     }
   },
 
-  async getResponsables(): Promise<
-    | ResponsibleListItem[]
-    | { data?: ResponsibleListItem[]; responsables?: ResponsibleListItem[] }
-  > {
+  async getResponsables(page = 1): Promise<unknown> {
     const response = await fetch(
-      "https://backend-vetween.onrender.com/api/responsables",
+      `https://backend-vetween.onrender.com/api/responsables?page=${page}`,
       {
         method: "GET",
         headers: getRequestHeaders(true),

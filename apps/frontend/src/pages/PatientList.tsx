@@ -42,6 +42,8 @@ export default function PatientList() {
     key: keyof Patient;
     direction: "asc" | "desc";
   } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const handlePatientClick = (patientId: string) => {
     navigate(`${ROUTES.PATIENT}/${patientId}`);
@@ -68,10 +70,44 @@ export default function PatientList() {
     if (Array.isArray(payload)) return payload;
     if (payload && typeof payload === "object") {
       const asRecord = payload as Record<string, unknown>;
+      // Handle double-nested paginated response: { data: { data: [...], total, pagina, ultimaPagina } }
+      if (
+        asRecord.data &&
+        typeof asRecord.data === "object" &&
+        !Array.isArray(asRecord.data)
+      ) {
+        const inner = asRecord.data as Record<string, unknown>;
+        if (Array.isArray(inner.data)) return inner.data;
+      }
       if (Array.isArray(asRecord.data)) return asRecord.data;
       if (Array.isArray(asRecord.pacientes)) return asRecord.pacientes;
     }
     return [];
+  };
+
+  const extractPaginationMeta = (
+    payload: unknown,
+  ): { total: number; ultimaPagina: number; pagina: number } | null => {
+    if (payload && typeof payload === "object") {
+      const asRecord = payload as Record<string, unknown>;
+      const inner =
+        asRecord.data &&
+        typeof asRecord.data === "object" &&
+        !Array.isArray(asRecord.data)
+          ? (asRecord.data as Record<string, unknown>)
+          : asRecord;
+      if (
+        typeof inner.ultimaPagina === "number" &&
+        typeof inner.total === "number"
+      ) {
+        return {
+          total: inner.total,
+          ultimaPagina: inner.ultimaPagina,
+          pagina: typeof inner.pagina === "number" ? inner.pagina : 1,
+        };
+      }
+    }
+    return null;
   };
 
   const extractResponsablesArray = (
@@ -80,26 +116,61 @@ export default function PatientList() {
     if (Array.isArray(payload)) return payload as ResponsibleListItem[];
     if (payload && typeof payload === "object") {
       const asRecord = payload as Record<string, unknown>;
-      if (Array.isArray(asRecord.data))
-        return asRecord.data as ResponsibleListItem[];
-      if (Array.isArray(asRecord.responsables))
-        return asRecord.responsables as ResponsibleListItem[];
+      // Handle double-nested paginated response: { data: { data: [...] } }
+      if (
+        asRecord.data &&
+        typeof asRecord.data === "object" &&
+        !Array.isArray(asRecord.data)
+      ) {
+        const inner = asRecord.data as Record<string, unknown>;
+        if (Array.isArray(inner.data)) return inner.data as ResponsibleListItem[];
+      }
+      if (Array.isArray(asRecord.data)) return asRecord.data as ResponsibleListItem[];
+      if (Array.isArray(asRecord.responsables)) return asRecord.responsables as ResponsibleListItem[];
     }
     return [];
   };
 
-  const loadPatients = async () => {
+  const extractResponsablesTotalPages = (payload: unknown): number => {
+    if (payload && typeof payload === "object") {
+      const asRecord = payload as Record<string, unknown>;
+      const inner =
+        asRecord.data && typeof asRecord.data === "object" && !Array.isArray(asRecord.data)
+          ? (asRecord.data as Record<string, unknown>)
+          : asRecord;
+      if (typeof inner.ultimaPagina === "number") return inner.ultimaPagina;
+    }
+    return 1;
+  };
+
+  const loadPatients = async (page = 1) => {
     try {
-      const [patientsResponse, responsablesResponse] = await Promise.all([
-        api.getPatients(),
-        api.getResponsables(),
+      const [patientsResponse, firstResponsablesResponse] = await Promise.all([
+        api.getPatients(page),
+        api.getResponsables(1),
       ]);
 
       const rows = extractPatientsArray(patientsResponse);
-      const responsables = extractResponsablesArray(responsablesResponse);
+      const meta = extractPaginationMeta(patientsResponse);
+      if (meta) {
+        setCurrentPage(page);
+        setTotalPages(meta.ultimaPagina);
+      }
+
+      // Fetch remaining responsable pages in parallel so the map is complete
+      const totalResponsablePages = extractResponsablesTotalPages(firstResponsablesResponse);
+      const remainingPages = Array.from(
+        { length: totalResponsablePages - 1 },
+        (_, i) => api.getResponsables(i + 2),
+      );
+      const extraResponsablesResponses = await Promise.all(remainingPages);
+      const allResponsables: ResponsibleListItem[] = [
+        ...extractResponsablesArray(firstResponsablesResponse),
+        ...extraResponsablesResponses.flatMap((r) => extractResponsablesArray(r)),
+      ];
 
       const responsablesById = new Map<string, ResponsibleListItem>();
-      responsables.forEach((responsable) => {
+      allResponsables.forEach((responsable) => {
         const rid =
           responsable.id_responsable ??
           responsable.id_responsables ??
@@ -142,7 +213,7 @@ export default function PatientList() {
   };
 
   useEffect(() => {
-    loadPatients();
+    loadPatients(1);
   }, []);
 
   const handleDeletePatient = async (patientId: string) => {
@@ -325,6 +396,28 @@ export default function PatientList() {
               </div>
             )}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 py-4">
+              <button
+                onClick={() => loadPatients(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ← Anterior
+              </button>
+              <span className="text-sm text-muted-foreground">
+                Página {currentPage} de {totalPages}
+              </span>
+              <button
+                onClick={() => loadPatients(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Siguiente →
+              </button>
+            </div>
+          )}
         </section>
       </section>
       <Modal

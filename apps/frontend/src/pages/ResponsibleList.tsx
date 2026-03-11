@@ -27,18 +27,44 @@ const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
   if (Array.isArray(payload)) return payload as ResponsibleListItem[];
   if (payload && typeof payload === "object") {
     const asRecord = payload as Record<string, unknown>;
-    if (Array.isArray(asRecord.data))
-      return asRecord.data as ResponsibleListItem[];
-    if (Array.isArray(asRecord.responsables))
-      return asRecord.responsables as ResponsibleListItem[];
+    if (
+      asRecord.data &&
+      typeof asRecord.data === "object" &&
+      !Array.isArray(asRecord.data)
+    ) {
+      const inner = asRecord.data as Record<string, unknown>;
+      if (Array.isArray(inner.data)) return inner.data as ResponsibleListItem[];
+    }
+    if (Array.isArray(asRecord.data)) return asRecord.data as ResponsibleListItem[];
+    if (Array.isArray(asRecord.responsables)) return asRecord.responsables as ResponsibleListItem[];
   }
   return [];
+};
+
+const extractTotalPages = (payload: unknown): number => {
+  if (payload && typeof payload === "object") {
+    const asRecord = payload as Record<string, unknown>;
+    const inner =
+      asRecord.data && typeof asRecord.data === "object" && !Array.isArray(asRecord.data)
+        ? (asRecord.data as Record<string, unknown>)
+        : asRecord;
+    if (typeof inner.ultimaPagina === "number") return inner.ultimaPagina;
+  }
+  return 1;
 };
 
 const extractPatientsArray = (payload: unknown): any[] => {
   if (Array.isArray(payload)) return payload;
   if (payload && typeof payload === "object") {
     const asRecord = payload as Record<string, unknown>;
+    if (
+      asRecord.data &&
+      typeof asRecord.data === "object" &&
+      !Array.isArray(asRecord.data)
+    ) {
+      const inner = asRecord.data as Record<string, unknown>;
+      if (Array.isArray(inner.data)) return inner.data;
+    }
     if (Array.isArray(asRecord.data)) return asRecord.data;
     if (Array.isArray(asRecord.pacientes)) return asRecord.pacientes;
   }
@@ -60,20 +86,33 @@ export default function ResponsibleList() {
     key: keyof ResponsableRow;
     direction: "asc" | "desc";
   } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const loadData = async () => {
+  const loadData = async (page = 1) => {
     try {
-      const [responsablesResponse, patientsResponse] = await Promise.all([
-        api.getResponsables(),
-        api.getPatients(),
+      const [firstResponsablesResponse, firstPatientsResponse] = await Promise.all([
+        api.getResponsables(page),
+        api.getPatients(1),
       ]);
 
-      const rows = extractResponsablesArray(responsablesResponse);
-      const patients = extractPatientsArray(patientsResponse);
+      const rows = extractResponsablesArray(firstResponsablesResponse);
+      setCurrentPage(page);
+      setTotalPages(extractTotalPages(firstResponsablesResponse));
+
+      // Fetch all patient pages to build complete mascota map
+      const totalPatientPages = extractTotalPages(firstPatientsResponse);
+      const extraPatientResponses = await Promise.all(
+        Array.from({ length: totalPatientPages - 1 }, (_, i) => api.getPatients(i + 2)),
+      );
+      const allPatients: any[] = [
+        ...extractPatientsArray(firstPatientsResponse),
+        ...extraPatientResponses.flatMap((r) => extractPatientsArray(r)),
+      ];
 
       // Build map: responsable id → [{ id, nombre }]
       const mascotasByResponsable = new Map<string, MascotaRef[]>();
-      patients.forEach((p: any) => {
+      allPatients.forEach((p: any) => {
         const responsableId = String(
           p.id_responsable ?? p.id_responsables ?? p.responsable_id ?? "",
         );
@@ -112,7 +151,7 @@ export default function ResponsibleList() {
   };
 
   useEffect(() => {
-    loadData();
+    loadData(1);
   }, []);
 
   const filteredResponsables = responsables.filter((r) => {
@@ -279,6 +318,28 @@ export default function ResponsibleList() {
               </div>
             )}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 py-4">
+              <button
+                onClick={() => loadData(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ← Anterior
+              </button>
+              <span className="text-sm text-muted-foreground">
+                Página {currentPage} de {totalPages}
+              </span>
+              <button
+                onClick={() => loadData(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Siguiente →
+              </button>
+            </div>
+          )}
         </section>
       </section>
     </MainLayout>
