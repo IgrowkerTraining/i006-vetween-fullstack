@@ -22,6 +22,7 @@ const provinciasValidas = [
 
 // Pattern
 const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+const alMenosUnaLetra = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/;
 
 // Esquema de validación para el register (registro)
 const registerSchema = Joi.object({
@@ -75,9 +76,9 @@ const registerSchema = Joi.object({
         'any.required': 'Los tipos de animales son obligatorios'
     }),
 
-    costo_consulta: Joi.number().precision(2).positive().max(999999).required().messages({
-        'number.base': 'El costo de consulta debe ser un número',
-        'number.positive': 'El costo de consulta no puede ser negativo',
+    costo_consulta: Joi.number().precision(2).min(0).max(999999).required().messages({
+        'number.base': 'El costo de consulta debe ser numérico o no se ha ingresado uno',
+        'number.min': 'El costo de consulta no puede ser negativo',
         'number.max': 'El costo de consulta no puede exceder de 999999',
         'any.required': 'El costo de consulta es obligatorio'
     }),
@@ -97,11 +98,11 @@ const registerSchema = Joi.object({
         'any.required': 'El número de habilitación es requerido para registrar la clínica'
     }),
 
-    direccion_calle: Joi.string().trim().min(2).max(150).pattern(soloLetras).required().messages({
+    direccion_calle: Joi.string().trim().min(2).max(150).pattern(alMenosUnaLetra).required().messages({
         'string.empty': 'La calle no puede estar vacía',
         'string.min': 'La calle debe tener al menos 2 caracteres',
         'string.max': 'La calle no puede tener más de 150 caracteres',
-        'string.pattern.base': 'La calle solo puede contener letras y espacios'
+        'string.pattern.base': 'La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     direccion_numero: Joi.number().integer().positive().max(99999).required().messages({
@@ -111,11 +112,11 @@ const registerSchema = Joi.object({
         'any.required': 'El número de dirección es obligatorio'
     }),
     
-    direccion_localidad: Joi.string().trim().min(2).max(100).pattern(soloLetras).required().messages({
+    direccion_localidad: Joi.string().trim().min(2).max(100).pattern(alMenosUnaLetra).required().messages({
         'string.empty': 'La ciudad / localidad no puede estar vacía',
         'string.min': 'La ciudad / localidad debe tener al menos 2 caracteres',
         'string.max': 'La ciudad no puede tener más de 100 caracteres',
-        'string.pattern.base': 'La ciudad / localidad solo puede contener letras y espacios'
+        'string.pattern.base': 'La ciudad / localidad solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     provincia: Joi.string().valid(...provinciasValidas).required().messages({

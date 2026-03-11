@@ -12,6 +12,7 @@ const relacionValida = ['Dueño/a', 'Tutor/a', 'Cuidador/a'];
 
 // Pattern
 const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+const alMenosUnaLetra = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/;
 
 const responsibleSchema = Joi.object({
     nombre: Joi.string().trim().min(2).max(50).pattern(soloLetras).required().messages({
@@ -40,25 +41,25 @@ const responsibleSchema = Joi.object({
         'string.pattern.base': 'El teléfono solo puede contener números y espacios'
     }),
 
-    direccion_calle: Joi.string().trim().min(2).max(150).pattern(soloLetras).required().messages({
+    direccion_calle: Joi.string().trim().min(2).max(150).pattern(alMenosUnaLetra).required().messages({
         'string.empty': 'La calle no puede estar vacía',
         'string.min': 'La calle debe tener al menos 2 caracteres',
         'string.max': 'La calle no puede tener más de 150 caracteres',
-        'string.pattern.base': 'La calle solo puede contener letras y espacios'
+        'string.pattern.base': 'La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     direccion_numero: Joi.number().integer().positive().max(99999).required().messages({
-        'number.base': 'El número de dirección debe ser numérico',
-        'number.positive': 'El número de dirección debe ser mayor a cero',
+        'number.base': 'El número de dirección debe ser numérico o no se ha ingresado uno',
+        'number.positive': 'El número de dirección no puede ser negativo',
         'number.max': 'El número de dirección no puede tener más de 5 dígitos',
         'any.required': 'El número de dirección es obligatorio'
     }),
 
-    direccion_localidad: Joi.string().trim().min(2).max(100).pattern(soloLetras).required().messages({
+    direccion_localidad: Joi.string().trim().min(2).max(100).pattern(alMenosUnaLetra).required().messages({
         'string.empty': 'La ciudad / localidad no puede estar vacía',
         'string.min': 'La ciudad / localidad debe tener al menos 2 caracteres',
         'string.max': 'La ciudad no puede tener más de 100 caracteres',
-        'string.pattern.base': 'La ciudad / localidad solo puede contener letras y espacios'
+        'string.pattern.base': 'La ciudad / localidad solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     provincia: Joi.string().valid(...provinciasValidas).required().messages({
@@ -98,24 +99,24 @@ const updateResponsibleSchema = Joi.object({
         'string.email': 'Debes ingresar un formato de email válido'
     }),
 
-    direccion_calle: Joi.string().trim().min(2).max(150).pattern(soloLetras).messages({
+    direccion_calle: Joi.string().trim().min(2).max(150).pattern(alMenosUnaLetra).messages({
         'string.empty': 'La calle no puede estar vacía',
         'string.min': 'La calle debe tener al menos 2 caracteres',
         'string.max': 'La calle no puede tener más de 150 caracteres',
-        'string.pattern.base': 'La calle solo puede contener letras y espacios'
+        'string.pattern.base': 'La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     direccion_numero: Joi.number().integer().positive().max(99999).messages({
-        'number.base': 'El número de dirección debe ser numérico',
+        'number.base': 'El número de dirección debe ser numérico o no se ha ingresado uno',
         'number.positive': 'El número de dirección debe ser mayor a cero',
         'number.max': 'El número de dirección no puede tener más de 5 dígitos'
     }),
 
-    direccion_localidad: Joi.string().trim().min(2).max(100).pattern(soloLetras).messages({
+    direccion_localidad: Joi.string().trim().min(2).max(100).pattern(alMenosUnaLetra).messages({
         'string.empty': 'La ciudad / localidad no puede estar vacía',
         'string.min': 'La ciudad / localidad debe tener al menos 2 caracteres',
         'string.max': 'La ciudad no puede tener más de 100 caracteres',
-        'string.pattern.base': 'La ciudad / localidad solo puede contener letras y espacios'
+        'string.pattern.base': 'La ciudad / localidad solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     provincia: Joi.string().valid(...provinciasValidas).messages({

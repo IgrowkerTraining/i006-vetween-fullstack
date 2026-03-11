@@ -47,9 +47,9 @@ const updateVeterinarianSchema = Joi.object({
         'any.only': 'Uno o más tipos de animales ingresados no son válidos'
     }),
 
-    costo_consulta: Joi.number().precision(2).positive().max(999999).messages({
-        'number.base': 'El costo de consulta debe ser un número',
-        'number.positive': 'El costo de consulta debe ser mayor a 0',
+    costo_consulta: Joi.number().precision(2).min(0).max(999999).messages({
+        'number.base': 'El costo de consulta debe ser numérico o no se ha ingresado uno',
+        'number.min': 'El costo de consulta no puede ser negativo',
         'number.max': 'El costo de consulta no puede exceder de 999999',
     })
 })

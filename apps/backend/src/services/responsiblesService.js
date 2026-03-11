@@ -9,6 +9,7 @@ const getAll = async (id_clinica, pagina = 1, limitePagina = 10) => {
         .from('responsables')
         .select('*', { count: 'exact' })
         .eq('id_clinica', id_clinica)
+        .order("fecha", { ascending: false })
         .range(from, to);
 
     if (error) throw error;
