@@ -39,14 +39,15 @@ export const Input: React.FC<InputProps> = (props) => {
   const textareaProps = rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
   const baseClasses = `
-    w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 
+    w-full bg-white rounded-lg px-3 py-2.5 
     ${icon ? "pl-10" : ""} 
     ${prefix ? "pl-7" : ""}
     ${suffix ? "pr-10" : ""} 
     text-indigo-800 placeholder:text-slate-300
-    focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
-    transition-all duration-200
-    ${error ? "border-red-500 focus:ring-red-500/50 focus:border-red-500" : ""}
+    focus:outline-none focus:ring-2 transition-all duration-200
+    ${error
+      ? "border border-red-500 focus:ring-red-500/50 focus:border-red-500"
+      : "border border-slate-700 focus:ring-indigo-500/50 focus:border-indigo-500"}
     ${className}
   `;
 

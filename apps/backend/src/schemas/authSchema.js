@@ -35,7 +35,7 @@ const registerSchema = Joi.object({
     // Regex para password: Mínimo 8 chars, 1 mayúscula, 1 minúscula, 1 número
     password: Joi.string().min(8).pattern(new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/)).required().messages({
         'string.min': 'La contraseña debe tener al menos 8 caracteres',
-        'string.pattern.base': 'La contraseña debe contener 1 letra mayúscula, 1 minúscula y minimo un número'
+        'string.pattern.base': 'La contraseña solo puede contener letras (A-Z) y números, y debe incluir al menos 1 mayúscula, 1 minúscula y 1 número. No se permiten caracteres como ñ, tildes o símbolos.'
     }),
     
     matricula: Joi.number().integer().positive().required().messages({

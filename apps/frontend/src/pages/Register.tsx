@@ -41,7 +41,7 @@ const Register: React.FC = () => {
   const [provinceOpen, setProvinceOpen] = useState(false);
   const provinceRef = useRef<HTMLDivElement>(null);
 
-  const ANIMAL_TYPES_OPTIONS = ["Caninos", "Felinos", "Peces", "Otros"];
+  const ANIMAL_TYPES_OPTIONS = ["Caninos", "Felinos", "Peces", "Otro"];
 
   const PROVINCE_OPTIONS = [
     "CABA",
@@ -71,7 +71,7 @@ const Register: React.FC = () => {
   ];
 
   const SPECIALTIES_OPTIONS = [
-    "Clinica general",
+    "Clínica general",
     "Medicina preventiva",
     "Dermatología",
     "Diagnóstico",
@@ -85,22 +85,24 @@ const Register: React.FC = () => {
   const handleSpecialtyChange = (value: string) => {
     setFormData((prev) => ({ ...prev, specialties: value }));
     setSpecialtiesOpen(false);
+    setErrors((prev) => { const e = { ...prev }; delete e.specialties; return e; });
   };
 
   const handleProvinceChange = (value: string) => {
     setFormData((prev) => ({ ...prev, province: value }));
     setProvinceOpen(false);
+    setErrors((prev) => { const e = { ...prev }; delete e.province; return e; });
   };
 
   const handleAnimalTypeChange = (value: string) => {
     setFormData((prev) => {
       const already = prev.animalTypes.includes(value);
-      return {
-        ...prev,
-        animalTypes: already
-          ? prev.animalTypes.filter((item) => item !== value)
-          : [...prev.animalTypes, value],
-      };
+      const updated = already
+        ? prev.animalTypes.filter((item) => item !== value)
+        : [...prev.animalTypes, value];
+      if (updated.length > 0)
+        setErrors((e) => { const n = { ...e }; delete n.animalTypes; return n; });
+      return { ...prev, animalTypes: updated };
     });
   };
 
@@ -156,18 +158,96 @@ const Register: React.FC = () => {
     }
   };
 
+  const handleStep1Submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim() || formData.name.trim().length < 2)
+      newErrors.name = "El nombre debe tener al menos 2 caracteres";
+    if (!formData.lastName.trim() || formData.lastName.trim().length < 2)
+      newErrors.lastName = "El apellido debe tener al menos 2 caracteres";
+
+    if (formData.password.length < 8) {
+      newErrors.password = "La contraseña debe tener al menos 8 caracteres";
+    } else if (/[^A-Za-z0-9]/.test(formData.password)) {
+      newErrors.password = "La contraseña solo puede contener letras (A-Z) y números. No se permiten caracteres como ñ, tildes o símbolos.";
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(formData.password)) {
+      newErrors.password = "La contraseña debe contener al menos 1 mayúscula, 1 minúscula y 1 número.";
+    }
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Las contraseñas no coinciden";
+
+    const registration = parseInt(formData.registration);
+    if (!formData.registration || isNaN(registration) || String(registration).length < 4)
+      newErrors.registration = "La matrícula debe tener al menos 4 dígitos";
+    if (!formData.specialties)
+      newErrors.specialties = "Debes seleccionar al menos una especialidad";
+    if (formData.animalTypes.length === 0)
+      newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
+    const cost = parseFloat(formData.consultationCost);
+    if (!formData.consultationCost || isNaN(cost) || cost < 0)
+      newErrors.consultationCost = "El costo de consulta no puede ser negativo";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
+    setStep(2);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setServerError(null);
 
     const newErrors: Record<string, string> = {};
+
+    // Datos personales
+    if (!formData.name.trim() || formData.name.trim().length < 2)
+      newErrors.name = "El nombre debe tener al menos 2 caracteres";
+    if (!formData.lastName.trim() || formData.lastName.trim().length < 2)
+      newErrors.lastName = "El apellido debe tener al menos 2 caracteres";
+
+    // Contraseña
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords don't match";
+      newErrors.confirmPassword = "Las contraseñas no coinciden";
     }
     if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+      newErrors.password = "La contraseña debe tener al menos 8 caracteres";
+    } else if (/[^A-Za-z0-9]/.test(formData.password)) {
+      newErrors.password = "La contraseña solo puede contener letras (A-Z) y números. No se permiten caracteres como ñ, tildes o símbolos.";
+    } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(formData.password)) {
+      newErrors.password = "La contraseña debe contener al menos 1 mayúscula, 1 minúscula y 1 número.";
     }
+
+    // Datos profesionales
+    const registration = parseInt(formData.registration);
+    if (!formData.registration || isNaN(registration) || String(registration).length < 4)
+      newErrors.registration = "La matrícula debe tener al menos 4 dígitos";
+    if (!formData.specialties)
+      newErrors.specialties = "Debes seleccionar al menos una especialidad";
+    if (formData.animalTypes.length === 0)
+      newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
+    const cost = parseFloat(formData.consultationCost);
+    if (!formData.consultationCost || isNaN(cost) || cost < 0)
+      newErrors.consultationCost = "El costo de consulta no puede ser negativo";
+
+    // Datos del consultorio
+    if (!formData.consultancy.trim() || formData.consultancy.trim().length < 2)
+      newErrors.consultancy = "El nombre del consultorio debe tener al menos 2 caracteres";
+    if (!formData.habilitation.trim() || formData.habilitation.trim().length < 5)
+      newErrors.habilitation = "El número de habilitación debe tener al menos 5 caracteres";
+    if (formData.addressStreet.trim() && formData.addressStreet.trim().length < 2)
+      newErrors.addressStreet = "La calle debe tener al menos 2 caracteres";
+    if (formData.addressStreet.trim() && !/^[A-Za-zA-ZÀ-ÖØ-öø-ÿ\s]+$/.test(formData.addressStreet.trim()))
+      newErrors.addressStreet = "La calle solo puede contener letras y espacios";
+    if (formData.addressLocality.trim() && formData.addressLocality.trim().length < 2)
+      newErrors.addressLocality = "La ciudad / localidad debe tener al menos 2 caracteres";
+    if (!formData.province)
+      newErrors.province = "Debes seleccionar una provincia válida";
+    if (!formData.phone.trim() || formData.phone.trim().length < 8)
+      newErrors.phone = "El teléfono debe tener al menos 8 caracteres";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -182,7 +262,9 @@ const Register: React.FC = () => {
         email: formData.email,
         password: formData.password,
         matricula: parseInt(formData.registration) || 0,
-        especialidad: formData.specialties ? [formData.specialties] : [],
+        especialidad: formData.specialties
+          ? [formData.specialties.normalize("NFD").replace(/[\u0300-\u036f]/g, "")]
+          : [],
         tipos_animales: formData.animalTypes,
         costo_consulta: parseFloat(formData.consultationCost) || 0,
         nombre_consultorio: formData.consultancy,
@@ -213,7 +295,7 @@ const Register: React.FC = () => {
       login(user);
       navigate("/lista-pacientes");
     } catch (err: any) {
-      setServerError(err.message || "Registration failed");
+      setServerError(err.message || "Error al registrar. Intente nuevamente.");
     } finally {
       setIsLoading(false);
     }
@@ -295,10 +377,7 @@ const Register: React.FC = () => {
 
             {step === 1 && (
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setStep(2);
-                }}
+                onSubmit={handleStep1Submit}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
                 <h2 className="font-bold text-[#0b1001] mb-1">Datos Básicos</h2>
@@ -309,6 +388,7 @@ const Register: React.FC = () => {
                     placeholder="Nombre"
                     required
                     disabled={isLoading}
+                    error={errors.name}
                     value={formData.name}
                     onChange={handleChange}
                   />
@@ -320,6 +400,7 @@ const Register: React.FC = () => {
                     placeholder="Apellido"
                     required
                     disabled={isLoading}
+                    error={errors.lastName}
                     value={formData.lastName}
                     onChange={handleChange}
                   />
@@ -455,6 +536,7 @@ const Register: React.FC = () => {
                     placeholder="Matrícula"
                     required
                     disabled={isLoading}
+                    error={errors.registration}
                     value={formData.registration}
                     onChange={handleChange}
                   />
@@ -464,6 +546,9 @@ const Register: React.FC = () => {
                   <label className="block text-sm font-semibold text-[#0b1001] mb-1">
                     Especies atendidas
                   </label>
+                  {errors.animalTypes && (
+                    <p className="text-red-500 text-xs mt-1 mb-1">{errors.animalTypes}</p>
+                  )}
                   <p className="text-xs text-gray-500 mb-2">
                     Seleccioná todas las que correspondan
                   </p>
@@ -472,7 +557,11 @@ const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setAnimalTypesOpen((prev) => !prev)}
-                    className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                    className={`w-full bg-white rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 transition-all duration-200 flex items-center justify-between ${
+                      errors.animalTypes
+                        ? "border border-red-500 focus:ring-red-500/50 focus:border-red-500"
+                        : "border border-slate-700 focus:ring-indigo-500/50 focus:border-indigo-500"
+                    }`}
                   >
                     <span
                       className={
@@ -549,6 +638,9 @@ const Register: React.FC = () => {
                   <label className="block text-sm font-semibold text-[#0b1001] mb-1">
                     Especialidad
                   </label>
+                  {errors.specialties && (
+                    <p className="text-red-500 text-xs mt-1 mb-1">{errors.specialties}</p>
+                  )}
                   <p className="text-xs text-gray-500 mb-2">
                     Seleccioná una opción
                   </p>
@@ -557,7 +649,11 @@ const Register: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setSpecialtiesOpen((prev) => !prev)}
-                    className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                    className={`w-full bg-white rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 transition-all duration-200 flex items-center justify-between ${
+                      errors.specialties
+                        ? "border border-red-500 focus:ring-red-500/50 focus:border-red-500"
+                        : "border border-slate-700 focus:ring-indigo-500/50 focus:border-indigo-500"
+                    }`}
                   >
                     <span
                       className={
@@ -618,6 +714,7 @@ const Register: React.FC = () => {
                     placeholder="5000"
                     prefix="$"
                     disabled={isLoading}
+                    error={errors.consultationCost}
                     value={formData.consultationCost}
                     onChange={handleChange}
                     min="0"
@@ -650,6 +747,7 @@ const Register: React.FC = () => {
                     placeholder="Nombre de la clínica"
                     required
                     disabled={isLoading}
+                    error={errors.consultancy}
                     value={formData.consultancy}
                     onChange={handleChange}
                   />
@@ -661,6 +759,7 @@ const Register: React.FC = () => {
                     placeholder="Número Habilitación"
                     required
                     disabled={isLoading}
+                    error={errors.habilitation}
                     value={formData.habilitation}
                     onChange={handleChange}
                   />
@@ -672,6 +771,7 @@ const Register: React.FC = () => {
                     placeholder="Av. San Martín"
                     required
                     disabled={isLoading}
+                    error={errors.addressStreet}
                     value={formData.addressStreet}
                     onChange={handleChange}
                   />
@@ -694,6 +794,7 @@ const Register: React.FC = () => {
                     placeholder="Ciudad"
                     required
                     disabled={isLoading}
+                    error={errors.addressLocality}
                     value={formData.addressLocality}
                     onChange={handleChange}
                   />
@@ -702,10 +803,17 @@ const Register: React.FC = () => {
                   <label className="block text-sm font-semibold text-[#0b1001] mb-1">
                     Provincia
                   </label>
+                  {errors.province && (
+                    <p className="text-red-500 text-xs mt-1 mb-1">{errors.province}</p>
+                  )}
                   <button
                     type="button"
                     onClick={() => setProvinceOpen((prev) => !prev)}
-                    className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 flex items-center justify-between"
+                    className={`w-full bg-white rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 transition-all duration-200 flex items-center justify-between ${
+                      errors.province
+                        ? "border border-red-500 focus:ring-red-500/50 focus:border-red-500"
+                        : "border border-slate-700 focus:ring-indigo-500/50 focus:border-indigo-500"
+                    }`}
                   >
                     <span
                       className={
@@ -764,6 +872,7 @@ const Register: React.FC = () => {
                     placeholder="(011)999-9999"
                     required
                     disabled={isLoading}
+                    error={errors.phone}
                     value={formData.phone}
                     onChange={handleChange}
                   />
