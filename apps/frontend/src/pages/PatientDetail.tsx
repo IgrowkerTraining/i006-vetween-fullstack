@@ -96,6 +96,7 @@ const PatientDetail: React.FC = () => {
           return {
             id: String(visit.id_visitas ?? visit.id_visita ?? visit.id ?? "-"),
             fechaVisita: pickText(visit.fecha, visit.fecha_visita),
+            historialPrevio: Boolean(visit.historial_previo),
             motivoConsulta: pickText(
               visit.motivo_consulta,
               visit.motivoConsulta,
@@ -120,6 +121,7 @@ const PatientDetail: React.FC = () => {
             expandido: index === 0,
           };
         });
+        mappedVisitas.sort((a, b) => Number(b.historialPrevio) - Number(a.historialPrevio));
         setVisitas(mappedVisitas);
         const mappedVacunas: Vacuna[] = vacunasData.map((v, index) => ({
           id: String(v.id_vacunas),

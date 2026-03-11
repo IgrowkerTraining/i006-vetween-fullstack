@@ -135,19 +135,6 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
             Tengo historial previo
           </span>
         </label>
-
-        {/* Textarea condicional - solo aparece cuando el checkbox está marcado */}
-        {formData.hasPreviousHistory && (
-          <Input
-            as="textarea"
-            rows={4}
-            label="Historial previo"
-            name="previousHistory"
-            placeholder="Describe el historial clínico previo..."
-            value={formData.previousHistory}
-            onChange={handleChange}
-          />
-        )}
       </div>
 
       {/* Botones de acción */}
