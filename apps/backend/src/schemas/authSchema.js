@@ -45,10 +45,10 @@ const registerSchema = Joi.object({
     }),
     
     // Regex para password: Mínimo 8 chars, 1 mayúscula, 1 minúscula, 1 número
-    password: Joi.string().min(8).pattern(new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/)).required().messages({
+    password: Joi.string().min(8).pattern(new RegExp(/^(?=.*[a-zñ])(?=.*[A-ZÑ])(?=.*\d)[A-Za-zñÑ\d]{8,}$/)).required().messages({
         'string.empty': 'La contraseña es obligatoria',
         'string.min': 'La contraseña debe tener al menos 8 caracteres',
-        'string.pattern.base': 'La contraseña debe contener 1 letra mayúscula, 1 minúscula y minimo un número'
+        'string.pattern.base': 'La contraseña debe contener 1 letra mayúscula, 1 minúscula y minimo un número y no puede contener caracteres especiales'
     }),
     
     matricula: Joi.number().integer().positive().min(1000).max(999999999999999).required().messages({
@@ -82,17 +82,18 @@ const registerSchema = Joi.object({
         'any.required': 'El costo de consulta es obligatorio'
     }),
 
-    nombre_consultorio: Joi.string().trim().max(150).pattern(soloLetras).required().messages({
+    nombre_consultorio: Joi.string().trim().min(2).max(150).pattern(soloLetras).required().messages({
         'string.empty': 'El nombre del consultorio es obligatorio',
+        'string.min': 'El nombre del consultorio debe tener al menos 2 caracteres',
         'string.max': 'El nombre del consultorio no puede tener más de 150 caracteres',
         'string.pattern.base': 'El nombre del consultorio solo puede contener letras y espacios'
     }),
 
     // hacer UNIQUE a la clínica
-    num_habilitacion: Joi.string().trim().min(5).max(200).required().messages({
+    num_habilitacion: Joi.string().trim().min(5).max(50).required().messages({
         'string.empty': 'El número de habilitación municipal/sanitaria es obligatorio',
         'string.min': 'El número de habilitación debe tener al menos 5 caracteres',
-        'string.max': 'El número de habilitación no puede tener más de 200 caracteres',
+        'string.max': 'El número de habilitación no puede tener más de 50 caracteres',
         'any.required': 'El número de habilitación es requerido para registrar la clínica'
     }),
 
@@ -103,10 +104,10 @@ const registerSchema = Joi.object({
         'string.pattern.base': 'La calle solo puede contener letras y espacios'
     }),
 
-    direccion_numero: Joi.number().integer().positive().max(9999999999).required().messages({
+    direccion_numero: Joi.number().integer().positive().max(99999).required().messages({
         'number.base': 'El número de dirección debe ser numérico',
         'number.positive': 'El número de dirección debe ser mayor a cero',
-        'number.max': 'El número de dirección no puede tener más de 10 dígitos',
+        'number.max': 'El número de dirección no puede tener más de 5 dígitos',
         'any.required': 'El número de dirección es obligatorio'
     }),
     
@@ -125,7 +126,8 @@ const registerSchema = Joi.object({
     telefono: Joi.string().trim().min(8).max(20).pattern(/^[0-9\s]+$/).required().messages({
         'string.empty': 'El teléfono no puede estar vacío',
         'string.min': 'El teléfono debe tener al menos 8 caracteres',
-        'string.max': 'El teléfono no puede tener más de 20 caracteres'
+        'string.max': 'El teléfono no puede tener más de 20 caracteres',
+        'string.pattern.base': 'El teléfono solo puede contener números y espacios'
     })
 });
 

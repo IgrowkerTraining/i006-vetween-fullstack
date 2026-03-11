@@ -5,7 +5,9 @@ const ResponseHelper = require("../utils/responseHelper");
 const getAll = async (req, res) => {
     try {
         const id_clinica = req.user.id_clinica;
-        const patients = await patientsService.getAllPatients(id_clinica);
+        const { page, limit } = req.query;
+
+        const patients = await patientsService.getAllPatients(id_clinica, parseInt(page) || 1, parseInt(limit) || 10);
 
         return ResponseHelper.success(res, patients, "Pacientes obtenidos correctamente");
     } catch (error) {

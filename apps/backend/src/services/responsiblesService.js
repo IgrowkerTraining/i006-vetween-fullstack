@@ -1,15 +1,24 @@
 const supabase = require("../config/supabaseClient");
 
 // Obtener todos
-const getAll = async (id_clinica) => {
-    const { data, error } = await supabase
+const getAll = async (id_clinica, pagina = 1, limitePagina = 10) => {
+    const from = (pagina - 1) * limitePagina;
+    const to = from + limitePagina - 1;
+
+    const { data, error, count } = await supabase
         .from('responsables')
-        .select('*')
-        .eq('id_clinica', id_clinica);
+        .select('*', { count: 'exact' })
+        .eq('id_clinica', id_clinica)
+        .range(from, to);
 
     if (error) throw error;
 
-    return data;
+    return {
+        data,
+        total: count,
+        pagina: parseInt(pagina),
+        ultimaPagina: Math.ceil(count / limitePagina)
+    };
 };
 
 // Obtener por ID

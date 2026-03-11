@@ -26,10 +26,10 @@ const updateClinicSchema = Joi.object({
         'string.pattern.base': 'La calle solo puede contener letras y espacios'
     }),
 
-    direccion_numero: Joi.number().integer().positive().max(9999999999).messages({
+    direccion_numero: Joi.number().integer().positive().max(99999).messages({
         'number.base': 'El número de dirección debe ser numérico',
         'number.positive': 'El número de dirección debe ser mayor a cero',
-        'number.max': 'El número de dirección no puede tener más de 10 dígitos'
+        'number.max': 'El número de dirección no puede tener más de 5 dígitos'
     }),
 
     direccion_localidad: Joi.string().trim().min(2).max(100).pattern(soloLetras).messages({
