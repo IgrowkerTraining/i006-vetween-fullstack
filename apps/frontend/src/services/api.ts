@@ -677,7 +677,7 @@ export const api = {
     return result;
   },
 
-  async updateClinic(data: Partial<Clinic>, token: string): Promise<Clinic> {
+  async updateClinic(data: { nombre?: string; direccion_calle?: string; direccion_numero?: string; direccion_localidad?: string; provincia?: string[]; telefono?: string }, token: string): Promise<Clinic> {
     const response = await fetch(
       `https://backend-vetween.onrender.com/api/clinica`,
       {
