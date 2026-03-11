@@ -19,6 +19,14 @@ const extractPatientsArray = (payload: unknown): any[] => {
   if (Array.isArray(payload)) return payload;
   if (payload && typeof payload === "object") {
     const asRecord = payload as Record<string, unknown>;
+    if (
+      asRecord.data &&
+      typeof asRecord.data === "object" &&
+      !Array.isArray(asRecord.data)
+    ) {
+      const inner = asRecord.data as Record<string, unknown>;
+      if (Array.isArray(inner.data)) return inner.data;
+    }
     if (Array.isArray(asRecord.data)) return asRecord.data;
     if (Array.isArray(asRecord.pacientes)) return asRecord.pacientes;
   }
@@ -29,12 +37,30 @@ const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
   if (Array.isArray(payload)) return payload as ResponsibleListItem[];
   if (payload && typeof payload === "object") {
     const asRecord = payload as Record<string, unknown>;
-    if (Array.isArray(asRecord.data))
-      return asRecord.data as ResponsibleListItem[];
-    if (Array.isArray(asRecord.responsables))
-      return asRecord.responsables as ResponsibleListItem[];
+    if (
+      asRecord.data &&
+      typeof asRecord.data === "object" &&
+      !Array.isArray(asRecord.data)
+    ) {
+      const inner = asRecord.data as Record<string, unknown>;
+      if (Array.isArray(inner.data)) return inner.data as ResponsibleListItem[];
+    }
+    if (Array.isArray(asRecord.data)) return asRecord.data as ResponsibleListItem[];
+    if (Array.isArray(asRecord.responsables)) return asRecord.responsables as ResponsibleListItem[];
   }
   return [];
+};
+
+const extractTotalPages = (payload: unknown): number => {
+  if (payload && typeof payload === "object") {
+    const asRecord = payload as Record<string, unknown>;
+    const inner =
+      asRecord.data && typeof asRecord.data === "object" && !Array.isArray(asRecord.data)
+        ? (asRecord.data as Record<string, unknown>)
+        : asRecord;
+    if (typeof inner.ultimaPagina === "number") return inner.ultimaPagina;
+  }
+  return 1;
 };
 
 export default function ClinicalSummaryList() {
@@ -52,20 +78,36 @@ export default function ClinicalSummaryList() {
     key: keyof PatientSummaryRow;
     direction: "asc" | "desc";
   } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const loadData = async () => {
+  const loadData = async (page = 1) => {
     try {
-      const [patientsResponse, responsablesResponse] = await Promise.all([
-        api.getPatients(),
-        api.getResponsables(),
+      const [patientsResponse, firstResponsablesResponse] = await Promise.all([
+        api.getPatients(page),
+        api.getResponsables(1),
       ]);
 
       const rows = extractPatientsArray(patientsResponse);
-      const responsables = extractResponsablesArray(responsablesResponse);
+      setCurrentPage(page);
+      setTotalPages(extractTotalPages(patientsResponse));
+
+      // Fetch all responsable pages to build complete name map
+      const totalResponsablePages = extractTotalPages(firstResponsablesResponse);
+      const extraResponsablesResponses = await Promise.all(
+        Array.from({ length: totalResponsablePages - 1 }, (_, i) => api.getResponsables(i + 2)),
+      );
+      const allResponsables: ResponsibleListItem[] = [
+        ...extractResponsablesArray(firstResponsablesResponse),
+        ...extraResponsablesResponses.flatMap((r) => extractResponsablesArray(r)),
+      ];
 
       const responsablesById = new Map<string, ResponsibleListItem>();
-      responsables.forEach((r) => {
-        responsablesById.set(String(r.id_responsables), r);
+      allResponsables.forEach((r) => {
+        const rid = r.id_responsable ?? r.id_responsables ?? (r as any).id;
+        if (rid !== undefined && rid !== null) {
+          responsablesById.set(String(rid), r);
+        }
       });
 
       const mapped: PatientSummaryRow[] = rows.map((item: any) => {
@@ -99,7 +141,7 @@ export default function ClinicalSummaryList() {
   };
 
   useEffect(() => {
-    loadData();
+    loadData(1);
   }, []);
 
   const filteredPatients = patients.filter((p) => {
@@ -247,6 +289,28 @@ export default function ClinicalSummaryList() {
               </div>
             )}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 py-4">
+              <button
+                onClick={() => loadData(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ← Anterior
+              </button>
+              <span className="text-sm text-muted-foreground">
+                Página {currentPage} de {totalPages}
+              </span>
+              <button
+                onClick={() => loadData(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Siguiente →
+              </button>
+            </div>
+          )}
         </section>
       </section>
     </MainLayout>
