@@ -271,7 +271,7 @@ export default function PatientList() {
           <div className="mb-4">
             <SearchBar
               onSearch={setSearchQuery}
-              placeholder="Buscar paciente..."
+              placeholder="Buscar paciente"
             />
           </div>
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">

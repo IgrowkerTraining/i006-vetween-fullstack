@@ -195,7 +195,7 @@ export default function ClinicalSummaryList() {
           <div className="mb-4">
             <SearchBar
               onSearch={setSearchQuery}
-              placeholder="Buscar paciente..."
+              placeholder="Buscar resumen clínico"
             />
           </div>
 

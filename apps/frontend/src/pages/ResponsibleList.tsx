@@ -218,7 +218,7 @@ export default function ResponsibleList() {
               <thead>
                 <tr className="bg-[#7ACBD9] text-black font-semibold">
                   <th
-                    className="px-6 py-3 cursor-pointer"
+                    className="px-6 py-3 font-semibold cursor-pointer"
                     onClick={() => handleSort("id")}
                   >
                     ID
@@ -231,7 +231,7 @@ export default function ResponsibleList() {
                     )}
                   </th>
                   <th
-                    className="px-6 py-3 cursor-pointer"
+                    className="px-6 py-3 font-semibold cursor-pointer"
                     onClick={() => handleSort("nombre")}
                   >
                     Nombre
@@ -244,7 +244,7 @@ export default function ResponsibleList() {
                     )}
                   </th>
                   <th
-                    className="px-6 py-3 cursor-pointer"
+                    className="px-6 py-3 font-semibold cursor-pointer"
                     onClick={() => handleSort("apellido")}
                   >
                     Apellido
@@ -256,10 +256,10 @@ export default function ResponsibleList() {
                       </span>
                     )}
                   </th>
-                  <th className="px-6 py-3">ID Mascota</th>
-                  <th className="px-6 py-3">Mascota</th>
-                  <th className="px-6 py-3">Email</th>
-                  <th className="px-6 py-3">Teléfono</th>
+                  <th className="px-6 py-3 font-semibold">ID Mascota</th>
+                  <th className="px-6 py-3 font-semibold">Mascota</th>
+                  <th className="px-6 py-3 font-semibold">Email</th>
+                  <th className="px-6 py-3 font-semibold">Teléfono</th>
                 </tr>
               </thead>
               {sortedResponsables.length > 0 && (
