@@ -7,23 +7,16 @@ import { Button } from "../components/common/Button";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
 
-const ANIMAL_TYPES_OPTIONS = [
-  "Perros",
-  "Gatos",
-  "Conejos",
-  "Hámster",
-  "Aves",
-  "Reptiles",
-  "Otro",
-];
+const ANIMAL_TYPES_OPTIONS = ["Caninos", "Felinos", "Peces", "Otro"];
 
-const SPECIALTIES_OPTIONS = [
-  "Compañía",
-  "Producción",
-  "Silvestre",
-  "Exóticos",
-  "Acuáticos",
-];
+  const SPECIALTIES_OPTIONS = [
+    "Clínica general",
+    "Medicina preventiva",
+    "Dermatología",
+    "Diagnóstico",
+    "Urgencias",
+    "Otra",
+  ];
 
 export default function ProfessionalProfile() {
   const navigate = useNavigate();
@@ -160,9 +153,9 @@ export default function ProfessionalProfile() {
       const updateData = {
         nombre: formData.nombre,
         apellido: formData.apellido,
-        email: formData.email,
-        matricula: parseInt(formData.matricula) || 0,
-        especialidad: formData.especialidad,
+        especialidad: formData.especialidad
+          ? [formData.especialidad.normalize("NFD").replace(/[\u0300-\u036f]/g, "")]
+          : [],
         tipos_animales: formData.tipos_animales,
         costo_consulta: parseFloat(formData.costo_consulta) || 0,
       };
@@ -300,6 +293,7 @@ export default function ProfessionalProfile() {
                     placeholder="nombre@email.com"
                     value={formData.email}
                     onChange={handleChange}
+                    disabled
                   />
                 </div>
 
@@ -311,6 +305,7 @@ export default function ProfessionalProfile() {
                     placeholder="Matrícula"
                     value={formData.matricula}
                     onChange={handleChange}
+                    disabled
                   />
                 </div>
 
@@ -339,7 +334,7 @@ export default function ProfessionalProfile() {
                   <button
                     type="button"
                     onClick={() => setAnimalTypesOpen((prev) => !prev)}
-                    className="w-full bg-background border border-input rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-vetween-teal/50 focus:border-vetween-teal transition-all duration-200 flex items-center justify-between"
+                    className={`w-full bg-white border rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none transition-all duration-200 flex items-center justify-between ${animalTypesOpen ? "border-indigo-500 ring-2 ring-indigo-500/50" : "border-slate-700 hover:border-indigo-500"}`}
                   >
                     <span className={formData.tipos_animales.length === 0 ? "text-muted-foreground" : "text-foreground truncate pr-2"}>
                       {formData.tipos_animales.length === 0
@@ -409,7 +404,7 @@ export default function ProfessionalProfile() {
                   <button
                     type="button"
                     onClick={() => setSpecialtiesOpen((prev) => !prev)}
-                    className="w-full bg-background border border-input rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-vetween-teal/50 focus:border-vetween-teal transition-all duration-200 flex items-center justify-between"
+                    className={`w-full bg-white border rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none transition-all duration-200 flex items-center justify-between ${specialtiesOpen ? "border-indigo-500 ring-2 ring-indigo-500/50" : "border-slate-700 hover:border-indigo-500"}`}
                   >
                     <span className={formData.especialidad === "" ? "text-muted-foreground" : "text-foreground truncate pr-2"}>
                       {formData.especialidad === "" ? "Seleccionar especialidad…" : formData.especialidad}

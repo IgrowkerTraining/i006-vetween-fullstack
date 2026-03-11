@@ -654,7 +654,7 @@ export const api = {
 
   async updateVeterinarian(
     id: number,
-    data: Partial<Veterinarian>,
+    data: { nombre?: string; apellido?: string; especialidad?: string[]; tipos_animales?: string[]; costo_consulta?: number },
     token: string,
   ): Promise<Veterinarian> {
     const response = await fetch(

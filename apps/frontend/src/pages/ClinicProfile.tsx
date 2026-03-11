@@ -122,11 +122,10 @@ export default function ClinicProfile() {
       // Preparar datos para actualizar
       const updateData = {
         nombre: formData.nombre,
-        num_habilitacion: formData.num_habilitacion,
         direccion_calle: formData.direccion_calle,
         direccion_numero: formData.direccion_numero,
         direccion_localidad: formData.direccion_localidad,
-        provincia: formData.provincia,
+        provincia: [formData.provincia],
         telefono: formData.telefono,
       };
 
@@ -228,6 +227,7 @@ export default function ClinicProfile() {
                     placeholder="Número de habilitación"
                     value={formData.num_habilitacion}
                     onChange={handleChange}
+                    disabled
                   />
                 </div>
 

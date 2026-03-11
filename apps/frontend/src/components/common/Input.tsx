@@ -48,6 +48,7 @@ export const Input: React.FC<InputProps> = (props) => {
     ${error
       ? "border border-red-500 focus:ring-red-500/50 focus:border-red-500"
       : "border border-slate-700 focus:ring-indigo-500/50 focus:border-indigo-500"}
+    disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed disabled:border-slate-300 disabled:opacity-70
     ${className}
   `;
 
