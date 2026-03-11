@@ -17,7 +17,6 @@ export interface Patient {
   nombre: string;
   especie: string;
   responsable: string;
-
   estado: string;
 }
 
