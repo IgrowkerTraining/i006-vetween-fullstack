@@ -8,6 +8,7 @@ import { SearchBar } from "../components/common/SearchBar";
 import { Modal } from "../components/common/Modal";
 import { EditPatientForm } from "../components/forms/EditPatientForm";
 import { api, ResponsibleListItem } from "../services/api";
+import { StatusPill } from "../components/common/StatusPill";
 import { sortArray } from "../utils/sort";
 import { useAuth } from "../hooks/useAuth";
 import { useEditPatient } from "../hooks/useEditPatient";
@@ -371,15 +372,7 @@ export default function PatientList() {
                       <td className="px-6 py-3">{patient.especie}</td>
                       <td className="px-6 py-3">{patient.responsable}</td>
                       <td className="px-6 py-3">
-                        <span
-                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            patient.estado === "Activo"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {patient.estado}
-                        </span>
+                        <StatusPill status={patient.estado} />
                       </td>
                       <td className="px-6 py-3">
                         <button

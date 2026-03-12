@@ -1,4 +1,5 @@
 import React from "react";
+import { StatusPill } from "../common/StatusPill";
 
 interface PatientCardProps {
   nombre: string;
@@ -39,15 +40,7 @@ const PatientCard: React.FC<PatientCardProps> = ({
         <h3 className="text-lg font-semibold text-foreground">{nombre}</h3>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Estado:</span>
-          <span
-            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-              estado === "Activo"
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {estado}
-          </span>
+          <StatusPill status={estado} />
         </div>
       </div>
     </div>

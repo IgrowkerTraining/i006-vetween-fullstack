@@ -12,6 +12,7 @@ import { api, ResponsibleListItem } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 import { useEditResponsible } from "../hooks/useEditResponsible";
 import { ROUTES } from "../constants/routes";
+import { StatusPill } from "../components/common/StatusPill";
 
 interface MascotaRef {
   id: string;
@@ -362,17 +363,7 @@ export default function ResponsibleList() {
                       <td className="px-6 py-3">{r.email}</td>
                       <td className="px-6 py-3">{r.telefono}</td>
                       <td className="px-6 py-3">
-                        <span
-                          className={`inline-flex w-20 items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            r.estado === "Activo"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : r.estado === "Inactivo"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-gray-100 text-gray-500"
-                          }`}
-                        >
-                          {r.estado}
-                        </span>
+                        <StatusPill status={r.estado} />
                       </td>
                       <td className="px-6 py-3">
                         <button
