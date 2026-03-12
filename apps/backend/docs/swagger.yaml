@@ -1,0 +1,1267 @@
+openapi: 3.0.0
+info:
+  title: Vetween API
+  version: 2.0.0
+  description: API para gestión clínica veterinaria con generación de resúmenes clínicos mediante IA.
+
+servers:
+  - url: https://backend-vetween.onrender.com/api
+    description: Servidor de pruebas
+  - url: https://backend-vetween-produccion.onrender.com/api
+    description: Servidor de producción
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    ErrorValidacion:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Error de validación
+        errors:
+          type: array
+          items:
+            type: string
+
+    ErrorSimple:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+paths:
+
+# =========================
+# AUTH
+# =========================
+
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Registrar veterinario y clínica
+      description: Registra un nuevo veterinario junto con su clínica.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              nombre: Pedro
+              apellido: Gomez
+              email: pedro.gomez@vet.com
+              password: Pass1234
+              matricula: 732026
+              especialidad:
+                - Dermatologia
+              tipos_animales:
+                - Caninos
+                - Felinos
+              costo_consulta: 17000
+              nombre_consultorio: Veterinaria de Pedro
+              num_habilitacion: HAB-2026-070326
+              direccion_calle: Av Colon
+              direccion_numero: 3478
+              direccion_localidad: Carlos Paz
+              provincia: Cordoba
+              telefono: 54 9 11 6547 9879
+
+      responses:
+
+        "201":
+          description: Clínica y Veterinario registrados exitosamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Clínica y Veterinario registrados exitosamente
+                data:
+                  veterinario:
+                    id_veterinario: 46
+                    nombre: Pedro
+                    apellido: Gomez
+                    email: pedro.gomez@vet.com
+                    contraseña: $2b$10$bqYsxvEWlD5.t3iZW2GMEuKAwxQn6kUlzIvhpBCv2BNHsNGL/ICnO
+                    matricula: 732026
+                    costo_consulta: 17000
+                    id_clinica: 67
+                    especialidad:
+                      - Dermatologia
+                    tipos_animales:
+                      - Caninos
+                      - Felinos
+                  clinica:
+                    id_clinica: 67
+                    nombre: Veterinaria de Pedro
+                    telefono: 54 9 11 6547 9879
+                    num_habilitacion: HAB-2026-070326
+                    fecha_creacion: 2026-03-07T19:48:44.113673
+                    direccion_calle: Av Colon
+                    direccion_numero: 3478
+                    direccion_localidad: Carlos Paz
+                    provincia: Cordoba
+
+
+        "400":
+          description: La calle solo puede contener letras y espacios
+          content:
+            application/json:
+              example:
+                success: false
+                message: Error de validación
+                errors:
+                  - La calle solo puede contener letras y espacios
+
+        "409":
+          description: El email o la matrícula ya están registrados
+          content:
+            application/json:
+              example:
+                success: false
+                message: El email o la matrícula ya están registrados
+
+        "500":
+          description: Ya existe una clínica registrada con ese número de habilitación.
+          content:
+            application/json:
+              example:
+                success: false
+                message: Ya existe una clínica registrada con ese número de habilitación.
+                error: Ya existe una clínica registrada con ese número de habilitación.
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login de veterinario
+      description: Autentica un veterinario y devuelve un token JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              email: pedro.gomez@vet.com
+              password: Pass1234
+
+      responses:
+
+        "200":
+          description: Login exitoso
+          content:
+            application/json:
+              example:
+                success: true
+                message: Login exitoso
+                data:
+                  token: JWT_TOKEN
+                  user:
+                    id_veterinario: 46
+                    nombre: Pedro
+                    apellido: Gomez
+                    email: pedro.gomez@vet.com
+                    matricula: 732026
+                    costo_consulta: 17000
+                    id_clinica: 67
+                    especialidad:
+                      - Dermatologia
+                    tipos_animales:
+                      - Caninos
+                      - Felinos
+
+# =========================
+# RESPONSABLES
+# =========================
+
+  /responsables:
+    post:
+      tags:
+        - Responsables
+      summary: Crear responsable
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              nombre: Maria
+              apellido: Gimenez
+              email: maria.gimenez@gmail.com
+              telefono: "3512412365"
+              direccion_calle: Colon
+              direccion_numero: 1425
+              direccion_localidad: Buenos Aires
+              provincia: Buenos Aires
+              relacion: Dueño/a
+
+      responses:
+
+        "201":
+          description: Responsable creado correctamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Responsable creado correctamente
+                data:
+                  id_responsables: 51
+                  nombre: Maria
+                  apellido: Gimenez
+                  email: maria.gimenez@gmail.com
+                  telefono: 3512412365
+                  relacion: Dueño/a
+                  direccion_calle: Colon
+                  direccion_numero: 1425
+                  direccion_localidad: Buenos Aires
+                  provincia: Buenos Aires
+                  id_clinica: 67
+                  fecha: 2026-03-07T20:37:15.574712+00:0
+
+        "400":
+          description: Error de validación
+          content:
+            application/json:
+              example:
+                success: false
+                message: Error de validación
+                errors:
+                  - Debes ingresar un formato de email válido
+                  - La calle solo puede contener letras y espacios
+                  - Debes seleccionar una provincia válida
+                  - Debes seleccionar una relación válida
+
+    get:
+      tags:
+        - Responsables
+      summary: Obtener responsables
+      security:
+        - bearerAuth: []
+      responses:
+
+        "200":
+          description: Responsables obtenidos correctamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Responsables obtenidos correctamente
+                data:
+                - 
+                  id_responsables: 51
+                  nombre: Maria
+                  apellido: Gimenez
+                  email: maria.gimenez@gmail.com
+                  telefono: 3512412365
+                  relacion: Dueño/a
+                  direccion_calle: Colon
+                  direccion_numero: 1425
+                  direccion_localidad: Buenos Aires
+                  provincia: Buenos Aires
+                  id_clinica: 67
+                  fecha: 2026-03-07T20:37:15.574712+00:0 -
+
+  /responsables/{id}:
+    get:
+      tags:
+        - Responsables
+      summary: Obtener responsable por ID
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+
+        "200":
+          description: Responsable obtenido correctamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Responsable obtenido correctamente
+                data:                
+                  id_responsables: 51
+                  nombre: Maria
+                  apellido: Gimenez
+                  email: maria.gimenez@gmail.com
+                  telefono: 3512412365
+                  relacion: Dueño/a
+                  direccion_calle: Colon
+                  direccion_numero: 1425
+                  direccion_localidad: Buenos Aires
+                  provincia: Buenos Aires
+                  id_clinica: 67
+                  fecha: 2026-03-07T20:37:15.574712+00:0
+        "404":
+          description: Responsable no encontrado
+          content:
+            application/json:
+              example:
+                success: false
+                message: Responsable no encontrado          
+
+    patch:
+      tags:
+        - Responsables
+      summary: Actualizar responsable
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              direccion_localidad: Cordoba
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Responsable actualizado correctamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Responsable actualizado correctamente
+                data:                
+                  id_responsables: 51
+                  nombre: Maria
+                  apellido: Gimenez
+                  email: maria.gimenez@gmail.com
+                  telefono: 3512412365
+                  relacion: Dueño/a
+                  direccion_calle: Colon
+                  direccion_numero: 5498
+                  direccion_localidad: Cordoba
+                  provincia: Buenos Aires
+                  id_clinica: 67
+                  fecha: 2026-03-07T20:37:15.574712+00:0
+
+        "404":
+          description: Responsable no encontrado
+          content:
+            application/json:
+              example:
+                success: false
+                message: Responsable no encontrado
+          
+
+    delete:
+      tags:
+        - Responsables
+      summary: Eliminar responsable
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+
+        "200":
+          description: Responsable eliminado correctamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Responsable eliminado correctamente
+
+        "404":
+          description: Responsable no encontrado
+          content:
+            application/json:
+              example:
+                success: false
+                message: Responsable no encontrado
+
+        "400":
+          description: No se puede eliminar un responsable con pacientes asociados
+          content:
+            application/json:
+              example:
+                success: false
+                message: No se puede eliminar un responsable con pacientes asociados
+
+# =========================
+# CLINICA
+# =========================
+
+  /clinica:
+    get:
+      tags:
+        - Clínica
+      summary: Obtener clínica
+      security:
+        - bearerAuth: []
+
+      responses:
+        "200":
+          description: Clínica obtenida exitosamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Clínica obtenida exitosamente
+                data:
+                  id_clinica: 67
+                  nombre: Veterinaria de Pedro
+                  telefono: 54 9 11 6547 9879
+                  email: maria.gimenez@gmail.com
+                  num_habilitacion: HAB-2026-070326
+                  fecha_creacion: 2026-03-07T19:48:44.113673
+                  direccion_calle: Av Colon
+                  direccion_numero: 3478
+                  direccion_localidad: Carlos Paz
+                  provincia: Cordoba
+
+
+    patch:
+      tags:
+        - Clínica
+      summary: Actualizar clínica
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              nombre: Veterinaria de Pedro
+              direccion_calle: Av Italia
+
+      responses:
+        "200":
+          description: Clínica actualizada exitosamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Clínica actualizada exitosamente
+                data:
+                  id_clinica: 67
+                  nombre: Veterinaria de Pedro
+                  telefono: 54 9 11 6547 9879
+                  num_habilitacion: HAB-2026-070326
+                  fecha_creacion: 2026-03-07T19:48:44.113673
+                  direccion_calle: Av Italia
+                  direccion_numero: 3478
+                  direccion_localidad: Carlos Paz
+                  provincia: Cordoba
+
+        "400":
+            description: La calle solo puede contener letras y espacios
+            content:
+              application/json:
+                example:
+                  success: false
+                  message: La calle solo puede contener letras y espacios
+                  errors:
+                    - La calle solo puede contener letras y espacios
+
+# =========================
+# PACIENTES
+# =========================
+
+  /pacientes:
+    post:
+      tags:
+        - Pacientes
+      summary: Crear paciente
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              nombre: Paco
+              especie: Caninos
+              edad: 5
+              color: negro
+              senia: ojos negros
+              sexo: Macho
+              raza: bulldog
+              peso: 18
+              esterilizado: true
+              tiene_microchip: false
+              id_responsable: 51
+
+      responses:
+        "201":
+          description: Paciente creado correctamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Paciente creado correctamente
+                data:
+                  id_pacientes: 80
+                  nombre: Paco
+                  edad: 5
+                  color: negro
+                  senia: ojos negros
+                  sexo: Macho
+                  raza: bulldog
+                  peso: 18
+                  esterilizado: true
+                  tiene_microchip: false
+                  num_microchip: null
+                  activo: false
+                  id_responsable: 51
+                  id_clinica: 67
+                  especie: Caninos
+                  fecha: 2026-03-07T21:45:05.434619+00:00
+
+        "400":
+          description: Error de validación
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: La calle solo puede contener letras y espacios
+                  errors:
+                    - La calle solo puede contener letras y espacios
+                    - El número de microchip debe enviarse entre comillas
+                    - El número de microchip solo puede contener números sin espacios
+                    - El número de microchip ingresado ya se encuentra registrado en otro paciente
+                    - El responsable ya tiene un paciente registrado con las mismas características (nombre, especie, edad).
+                    - El ID del responsable es obligatorio para registrar al paciente
+
+        "404":
+          description: El responsable indicado no existe
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: El responsable indicado no existe
+
+    get:
+      tags:
+        - Pacientes
+      summary: Obtener pacientes
+      security:
+        - bearerAuth: []
+
+      responses:
+        "200":
+          description: Pacientes obtenidos correctamente
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Pacientes obtenidos correctamente
+                  data:
+                    - id_pacientes: 80
+                      nombre: Paco
+                      edad: 5
+                      color: negro
+                      senia: ojos negros
+                      sexo: Macho
+                      raza: bulldog
+                      peso: 18
+                      esterilizado: true
+                      tiene_microchip: false
+                      num_microchip: null
+                      activo: false
+                      id_responsable: 51
+                      id_clinica: 67
+                      especie: Caninos
+                      fecha: 2026-03-07T21:45:05.434619+00:00
+
+                    - id_pacientes: 78
+                      nombre: Paco
+                      edad: 5
+                      color: negro
+                      senia: ojos negros
+                      sexo: Macho
+                      raza: bulldog
+                      peso: 18
+                      esterilizado: true
+                      tiene_microchip: false
+                      num_microchip: null
+                      activo: false
+                      id_responsable: 51
+                      id_clinica: 67
+                      especie: Caninos
+                      fecha: 2026-03-07T21:45:05.434619+00:00
+
+  /pacientes/{id}:
+    get:
+      tags:
+        - Pacientes
+      summary: Obtener paciente por ID
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Paciente obtenido correctamente
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Paciente obtenido correctamente
+                  data:
+                    id_pacientes: 80
+                    nombre: Paco
+                    edad: 5
+                    color: negro
+                    senia: ojos negros
+                    sexo: Macho
+                    raza: bulldog
+                    peso: 18
+                    esterilizado: true
+                    tiene_microchip: false
+                    num_microchip: null
+                    activo: false
+                    id_responsable: 51
+                    id_clinica: 67
+                    especie: Caninos
+                    fecha: 2026-03-07T21:45:05.434619+00:00
+
+        "404":
+          description: Paciente no encontrado
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: Paciente no encontrado
+
+    patch:
+      tags:
+        - Pacientes
+      summary: Actualizar paciente
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              edad: 8
+              senia: oreja derecha caida
+              peso: 15
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Paciente actualizado correctamente
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Paciente actualizado correctamente
+                  data:
+                    id_pacientes: 80
+                    nombre: Paco
+                    edad: 8
+                    color: negro
+                    senia: oreja derecha caida
+                    sexo: Macho
+                    raza: bulldog
+                    peso: 15
+                    esterilizado: true
+                    tiene_microchip: false
+                    num_microchip: null
+                    activo: false
+                    id_responsable: 51
+                    id_clinica: 67
+                    especie: Caninos
+                    fecha: 2026-03-07T21:45:05.434619+00:00
+
+        "404":
+          description: Paciente no encontrado
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: Paciente no encontrado
+
+    delete:
+      tags:
+        - Pacientes
+      summary: Eliminar paciente
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+
+        "200":
+          description: Paciente eliminado correctamente
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Paciente eliminado correctamente
+
+        "400":
+          description: No se puede eliminar un paciente con visitas registradas
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: No se puede eliminar un paciente con visitas registradas
+                  
+
+        "404":
+          description: Paciente no encontrado
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: Paciente no encontrado
+
+# =========================
+# VETERINARIO
+# =========================
+
+  /veterinario:
+    get:
+      tags:
+        - Veterinarios
+      summary: Obtener veterinario
+      security:
+        - bearerAuth: []
+
+      responses:
+        "200":
+          description: Datos del veterinario obtenidos exitosamente
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Datos del veterinario obtenidos exitosamente
+                  data:
+                    id_veterinario: 46
+                    nombre: Pedro
+                    apellido: Gomez
+                    email: pedro.gomez@vet.com
+                    matricula: 732026
+                    especialidad:
+                      - Dermatologia
+                    tipos_animales:
+                      - Caninos
+                      - Felinos
+                    costo_consulta: 17000
+                    id_clinica: 67
+
+    patch:
+      tags:
+        - Veterinarios
+      summary: Actualizar veterinario
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              costo_consulta: 32000
+
+      responses:
+        "200":
+          description: Veterinario actualizado exitosamente
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Veterinario actualizado exitosamente
+                  data: 
+                    id_veterinario: 46
+                    nombre: Pedro
+                    apellido: Gomez
+                    email: pedro.gomez@vet.com
+                    matricula: 732026
+                    especialidad:
+                      - Dermatologia
+                    tipos_animales:
+                      - Caninos
+                      - Felinos
+                    costo_consulta: 32000
+                    id_clinica: 67
+
+# =========================
+# VISITAS
+# =========================
+
+  /visitas:
+    post:
+      tags:
+        - Visitas
+      summary: Registrar visita
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              fecha: 2026-03-09
+              motivo_consulta: Control
+              historial_previo: false
+              id_paciente: 80
+
+      responses:
+        "200":
+          description: Visita clínica registrada con éxito
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Visita clínica registrada con éxito
+                  data:
+                    id_visitas: 39
+                    fecha: 2026-03-09
+                    motivo_consulta: Control
+                    diagnostico: null
+                    tratamiento: null
+                    observaciones: null
+                    estado: false
+                    id_paciente: 80
+                    historial_previo: false
+
+        "404":
+          description: El paciente no existe
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: El paciente no existe
+
+  /pacientes/{id}/visitas:
+    get:
+      tags:
+        - Visitas
+      summary: Historial de visitas
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Historial de visitas obtenido
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Historial de visitas obtenido
+                  data:
+                    -
+                      id_visitas: 39
+                      fecha: 2026-03-09
+                      motivo_consulta: Control
+                      diagnostico: null
+                      tratamiento: null
+                      observaciones: null
+                      estado: false
+                      id_paciente: 80
+                      historial_previo: false
+
+        "404":
+          description: No se encontró el paciente con el ID proporcionado
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: No se encontró el paciente con el ID proporcionado
+
+  /visitas/{id}/inactivar:
+    patch:
+      tags:
+        - Visitas
+      summary: Inactivar visita
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Visita marcada como inactiva
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Visita marcada como inactiva
+                  data:
+                    id_visitas: 39
+                    fecha: 2026-03-09
+                    motivo_consulta: Control
+                    diagnostico: null
+                    tratamiento: null
+                    observaciones: null
+                    estado: true
+                    id_paciente: 80
+                    historial_previo: false
+        
+        "404":
+          description: No se encontró la visita
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: No se encontró la visita
+
+# =========================
+# VACUNAS
+# =========================
+
+  /vacunas:
+    post:
+      tags:
+        - Vacunas
+      summary: Registrar vacuna
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              tipo: Primera dosis
+              nombre_cientifico: VCA + P
+              fecha_aplicacion: 2026-03-09
+              observacion: vacuna anual
+              id_paciente: 80
+
+      responses:
+        "201":
+          description: Vacuna aplicada registrada con éxito
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Vacuna aplicada registrada con éxito
+                  data:
+                    id_vacunas: 21
+                    tipo: Primera dosis
+                    nombre_cientifico: VCA + P
+                    fecha_aplicacion: 2026-03-09
+                    observacion: vacuna anual
+                    estado: false
+                    id_paciente: 80
+
+        "500":
+          description: PACIENTE_NO_ENCONTRADO
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: PACIENTE_NO_ENCONTRADO
+
+  /pacientes/{id}/vacunas:
+    get:
+      tags:
+        - Vacunas
+      summary: Historial de vacunas
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Historial de vacunas obtenido
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Historial de vacunas obtenido
+                  data:
+                    -
+                      id_vacunas: 21
+                      tipo: Primera dosis
+                      nombre_cientifico: VCA + P
+                      fecha_aplicacion: 2026-03-09
+                      observacion: vacuna anual
+                      estado: false
+                      id_paciente: 80
+
+        "404":
+          description: No se encontró el paciente con el ID proporcionado
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: No se encontró el paciente con el ID proporcionado
+
+  /vacunas/{id}/inactivar:
+    patch:
+      tags:
+        - Vacunas
+      summary: Inactivar vacuna
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Vacuna marcada como inactiva
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Vacuna marcada como inactiva
+                  data:
+                    id_vacunas: 21
+                    tipo: Primera dosis
+                    nombre_cientifico: VCA + P
+                    fecha_aplicacion: 2026-03-09
+                    observacion: vacuna anual
+                    estado: true
+                    id_paciente: 80
+
+        "404":
+          description: Vacuna no encontrada
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: Vacuna no encontrada
+
+# =========================
+# IA
+# =========================
+
+  /generar-resumen:
+    post:
+      tags:
+        - IA
+      summary: Generar resumen clínico con IA
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              id_paciente: 80
+
+      responses:
+
+        "201":
+          description: Resumen de IA generado y guardado correctamente
+          content:
+            application/json:
+              example:
+                success: true
+                message: Resumen de IA generado y guardado correctamente
+                data:
+                  id_resumenia: 3a2368b8-0cd4-4e50-9ac1-14babfab17c2
+                  id_paciente: 80
+                  resumen_completo: |
+                    Resumen clínico asistido por IA – Paco
+                    Estado general: estable
+                    Tipo de paciente: primera consulta
+                    Paco es un bulldog macho de 8 años, esterilizado, que consulta por primera vez para un control de rutina. El examen físico general se encuentra dentro de parámetros normales.
+                    Se aplicó la primera dosis de la vacuna VCA + P, completando así su esquema de vacunación anual.
+                    No se observan signos de enfermedad sistémica ni compromiso físico durante la consulta.
+                    Paco presenta un peso de 15 kg y una característica distintiva en su oreja derecha caída.
+                    No se han registrado antecedentes clínicos previos.
+
+                    Esquema de vacunación: al día
+                    Antecedentes clínicos: ausentes
+
+                    Puntos clave para próximas consultas:
+                    - Control de peso y condición corporal
+                    - Seguimiento preventivo general
+                  resumen_estructurado:
+                    tipo_paciente: primera consulta
+                    estado_general: estable
+                    factores_riesgo: []
+                    sintesis_visitas:
+                      -
+                        fecha: 2026-03-09
+                        motivo: Control
+                        diagnostico: ""
+                        tratamiento: ""
+                    historial_vacunas:
+                      -
+                        estado: AL_DIA
+                        nombre: Primera dosis
+                        fecha_aplocacion: 2026-03-09
+                    descripcion_clinica: Paciente canino sin signos de enfermedad sistémica
+                    tratamiento_indicado: Control y seguimiento preventivo
+                    puntos_clave_proximas_consultas:
+                      - Control de peso y condición corporal
+                      - Seguimiento preventivo general
+                  modelo: meta/llama-3.3-70b-instruct
+                  fecha_generacion: 2026-03-09T18:09:49.229792
+                         
+                      
+
+        "400":
+          description: El body solo debe contener el campo id_paciente
+          content:
+            application/json:
+              example:
+                success: false
+                message: Error de validación
+                errors:
+                  - El body solo debe contener el campo id_paciente
+
+        "409":
+          description: No se generó un nuevo resumen porque los datos clínicos, visitas y vacunas del paciente no han sufrido modificaciones desde la última generación.
+          content:
+            application/json:
+              example:
+                success: false
+                message: No se generó un nuevo resumen porque los datos clínicos, visitas y vacunas del paciente no han sufrido modificaciones desde la última generación.
+
+        "422":
+          description: No se puede generar un resumen para un paciente inactivo.
+          content:
+            application/json:
+              example:
+                success: false
+                message: No se puede generar un resumen para un paciente inactivo.
+
+        "500":
+          description: Paciente no encontrado
+          content:
+            application/json:
+              example:
+                success: false
+                message: Paciente no encontrado
+
+  /pacientes/{id}/ia:
+    get:
+      tags:
+        - IA
+      summary: Obtener resumen de IA de un paciente
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Historial de vacunas obtenido
+          content:
+              application/json:
+                example:
+                  success: true
+                  message: Resúmenes obtenidos correctamente
+                  data:
+                    id_resumenia: 3a2368b8-0cd4-4e50-9ac1-14babfab17c2
+                  id_paciente: 80
+                  resumen_completo: |
+                    Resumen clínico asistido por IA – Paco
+                    Estado general: estable
+                    Tipo de paciente: primera consulta
+                    Paco es un bulldog macho de 8 años, esterilizado, que consulta por primera vez para un control de rutina. El examen físico general se encuentra dentro de parámetros normales.
+                    Se aplicó la primera dosis de la vacuna VCA + P, completando así su esquema de vacunación anual.
+                    No se observan signos de enfermedad sistémica ni compromiso físico durante la consulta.
+                    Paco presenta un peso de 15 kg y una característica distintiva en su oreja derecha caída.
+                    No se han registrado antecedentes clínicos previos.
+
+                    Esquema de vacunación: al día
+                    Antecedentes clínicos: ausentes
+
+                    Puntos clave para próximas consultas:
+                    - Control de peso y condición corporal
+                    - Seguimiento preventivo general
+                  resumen_estructurado:
+                    tipo_paciente: primera consulta
+                    estado_general: estable
+                    factores_riesgo: []
+                    sintesis_visitas:
+                      -
+                        fecha: 2026-03-09
+                        motivo: Control
+                        diagnostico: ""
+                        tratamiento: ""
+                    historial_vacunas:
+                      -
+                        estado: AL_DIA
+                        nombre: Primera dosis
+                        fecha_aplocacion: 2026-03-09
+                    descripcion_clinica: Paciente canino sin signos de enfermedad sistémica
+                    tratamiento_indicado: Control y seguimiento preventivo
+                    puntos_clave_proximas_consultas:
+                      - Control de peso y condición corporal
+                      - Seguimiento preventivo general
+                  modelo: meta/llama-3.3-70b-instruct
+                  fecha_generacion: 2026-03-09T18:09:49.229792
+
+        "404":
+          description: Paciente no encontrado
+          content:
+              application/json:
+                example:
+                  success: false
+                  message: Paciente no encontrado

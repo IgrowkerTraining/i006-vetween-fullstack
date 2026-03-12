@@ -4,8 +4,14 @@ const apiRoutes = require("./src/routes");
 const config = require("./src/config");
 const aiRoutes = require("./src/routes/AIReport");
 require("dotenv").config();
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
 
 const app = express();
+
+const swaggerDocument = YAML.load("./docs/swagger.yaml");
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 setupMiddleware(app);
 
