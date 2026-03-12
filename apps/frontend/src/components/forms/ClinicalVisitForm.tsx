@@ -40,12 +40,47 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
   const [formData, setFormData] = useState<ClinicalVisitFormData>(
     initialData ?? initialFormData,
   );
+  const [fieldErrors, setFieldErrors] = useState<{
+    date?: string;
+    reason?: string;
+    diagnosis?: string;
+    treatments?: string;
+    observaciones?: string;
+  }>({});
+
+  const LETTERS_SPACES_RE = /^[A-Za-z\u00C0-\u00FF\s]*$/;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "date") {
+      let err: string | undefined;
+      if (!value) err = "La fecha es requerida";
+      else if (value > new Date().toISOString().slice(0, 10))
+        err = "La fecha de la visita no puede ser futura";
+      setFieldErrors((prev) => ({ ...prev, date: err }));
+    }
+
+    if (name === "reason") {
+      let err: string | undefined;
+      if (!value.trim()) err = "El motivo de consulta es requerido";
+      else if (value.trim().length < 2) err = "El motivo debe tener al menos 2 caracteres";
+      else if (value.length > 200) err = "El motivo no puede superar los 200 caracteres";
+      setFieldErrors((prev) => ({ ...prev, reason: err }));
+    }
+
+    if (["diagnosis", "treatments", "observaciones"].includes(name)) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]:
+          value && !LETTERS_SPACES_RE.test(value)
+            ? "Solo puede contener letras y espacios"
+            : undefined,
+      }));
+    }
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,11 +95,25 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const errors: typeof fieldErrors = {};
+    if (!formData.date) errors.date = "La fecha es requerida";
+    else if (formData.date > new Date().toISOString().slice(0, 10))
+      errors.date = "La fecha de la visita no puede ser futura";
+    if (!formData.reason.trim()) errors.reason = "El motivo de consulta es requerido";
+    else if (formData.reason.trim().length < 2) errors.reason = "El motivo debe tener al menos 2 caracteres";
+    else if (formData.reason.length > 200) errors.reason = "El motivo no puede superar los 200 caracteres";
+    if (fieldErrors.diagnosis) errors.diagnosis = fieldErrors.diagnosis;
+    if (fieldErrors.treatments) errors.treatments = fieldErrors.treatments;
+    if (fieldErrors.observaciones) errors.observaciones = fieldErrors.observaciones;
+    if (Object.values(errors).some(Boolean)) {
+      setFieldErrors(errors);
+      return;
+    }
     onSubmit(formData);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {/* Fecha */}
       <Input
         type="date"
@@ -72,7 +121,7 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
         name="date"
         value={formData.date}
         onChange={handleChange}
-        required
+        error={fieldErrors.date}
       />
 
       {/* Motivo de consulta */}
@@ -84,7 +133,7 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
         placeholder="Describe el motivo de la consulta..."
         value={formData.reason}
         onChange={handleChange}
-        required
+        error={fieldErrors.reason}
       />
 
       {/* Diagnóstico */}
@@ -96,7 +145,7 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
         placeholder="Diagnóstico realizado..."
         value={formData.diagnosis}
         onChange={handleChange}
-        required
+        error={fieldErrors.diagnosis}
       />
 
       {/* Tratamientos */}
@@ -108,6 +157,7 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
         placeholder="Tratamientos prescritos..."
         value={formData.treatments}
         onChange={handleChange}
+        error={fieldErrors.treatments}
       />
 
       {/* Observaciones */}
@@ -119,6 +169,7 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
         placeholder="Observaciones adicionales..."
         value={formData.observaciones}
         onChange={handleChange}
+        error={fieldErrors.observaciones}
       />
 
       {/* Historial previo - Checkbox condicional */}

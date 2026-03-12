@@ -463,8 +463,11 @@ export const api = {
     return result as ResponsableDetailResponse;
   },
 
-  async getVisitasByPatientId(id: string): Promise<
-    {
+  async getVisitasByPatientId(
+    id: string,
+    page: number = 1,
+  ): Promise<{
+    data: {
       id_visitas: number;
       fecha: string;
       motivo_consulta: string;
@@ -474,10 +477,13 @@ export const api = {
       estado: boolean;
       historial_previo: boolean;
       id_paciente: number;
-    }[]
-  > {
+    }[];
+    total: number;
+    pagina: number;
+    ultimaPagina: number;
+  }> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/pacientes/${id}/visitas`,
+      `https://backend-vetween.onrender.com/api/pacientes/${id}/visitas?page=${page}`,
       {
         method: "GET",
         headers: getRequestHeaders(true),
@@ -491,13 +497,23 @@ export const api = {
           "Error al obtener el historial de visitas",
       );
     }
-    if (Array.isArray(result)) return result;
-    if (Array.isArray(result?.data)) return result.data;
-    return [];
+    if (result?.data?.data) {
+      return {
+        data: result.data.data,
+        total: result.data.total ?? 0,
+        pagina: result.data.pagina ?? 1,
+        ultimaPagina: result.data.ultimaPagina ?? 1,
+      };
+    }
+    const flat = Array.isArray(result) ? result : Array.isArray(result?.data) ? result.data : [];
+    return { data: flat, total: flat.length, pagina: 1, ultimaPagina: 1 };
   },
 
-  async getVacunasByPatientId(id: string): Promise<
-    {
+  async getVacunasByPatientId(
+    id: string,
+    page: number = 1,
+  ): Promise<{
+    data: {
       id_vacunas: number;
       tipo: string;
       nombre_cientifico: string;
@@ -505,10 +521,13 @@ export const api = {
       observacion: string;
       estado: boolean;
       id_paciente: number;
-    }[]
-  > {
+    }[];
+    total: number | null;
+    pagina: number;
+    ultimaPagina: number;
+  }> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/pacientes/${id}/vacunas`,
+      `https://backend-vetween.onrender.com/api/pacientes/${id}/vacunas?page=${page}`,
       {
         method: "GET",
         headers: getRequestHeaders(true),
@@ -522,9 +541,16 @@ export const api = {
           "Error al obtener el historial de vacunas",
       );
     }
-    if (Array.isArray(result)) return result;
-    if (Array.isArray(result?.data)) return result.data;
-    return [];
+    if (result?.data?.data) {
+      return {
+        data: result.data.data,
+        total: result.data.total ?? null,
+        pagina: result.data.pagina ?? 1,
+        ultimaPagina: result.data.ultimaPagina || 1,
+      };
+    }
+    const flat = Array.isArray(result) ? result : Array.isArray(result?.data) ? result.data : [];
+    return { data: flat, total: flat.length, pagina: 1, ultimaPagina: 1 };
   },
 
   async createVaccine(data: {
@@ -581,6 +607,21 @@ export const api = {
           result?.message ||
           "Error al registrar la visita",
       );
+    }
+    return result;
+  },
+
+  async inactivarVisita(idVisita: string | number): Promise<unknown> {
+    const response = await fetch(
+      `https://backend-vetween.onrender.com/api/visitas/${idVisita}/inactivar`,
+      {
+        method: "PATCH",
+        headers: getRequestHeaders(true),
+      },
+    );
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result?.error || result?.message || "Error al inactivar la visita");
     }
     return result;
   },

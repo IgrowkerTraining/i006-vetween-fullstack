@@ -10,6 +10,7 @@ export interface VisitaClinica {
   motivoConsulta: string;
   expandido?: boolean;
   historialPrevio?: boolean;
+  inactiva?: boolean;
   // Campos adicionales para el detalle
   estado?: "Corregido" | "Original" | "Pendiente";
   diagnostico?: string;
@@ -19,7 +20,7 @@ export interface VisitaClinica {
 
 interface ClinicalVisitTimelineProps {
   visitas: VisitaClinica[];
-  onCorregirRegistro?: (id: string) => void;
+  onDesactivarVisita?: (id: string) => void;
   onVerDetalle?: (id: string) => void;
   onExpandir?: (id: string) => void;
 }
@@ -37,7 +38,7 @@ const getDetalleVisita = (visita: VisitaClinica): DetalleVisita => ({
 
 const ClinicalVisitTimeline: React.FC<ClinicalVisitTimelineProps> = ({
   visitas,
-  onCorregirRegistro,
+  onDesactivarVisita,
   onVerDetalle,
   onExpandir,
 }) => {
@@ -136,15 +137,21 @@ const ClinicalVisitTimeline: React.FC<ClinicalVisitTimelineProps> = ({
 
                 {/* Contenido de la visita */}
                 {visita.expandido ? (
-                  <div className="flex-1 rounded-lg border border-border bg-white p-4 shadow-sm">
+                  <div className={`flex-1 rounded-lg border p-4 shadow-sm ${
+                    visita.inactiva
+                      ? "border-gray-500 bg-[#808080] text-gray-700"
+                      : "border-border bg-white"
+                  }`}>
                     <div className="flex items-start justify-between mb-1">
-                      <p className="text-sm text-foreground">
+                      <p className={`text-sm ${visita.inactiva ? "text-gray-300" : "text-foreground"}`}>
                         <span className="font-semibold">Fecha de visita:</span>{" "}
                         {visita.fechaVisita}
                       </p>
                       <button
                         onClick={() => onExpandir?.(visita.id)}
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-lg font-medium text-foreground hover:bg-gray-100 flex-shrink-0 ml-2"
+                        className={`flex h-6 w-6 items-center justify-center rounded-full text-lg font-medium flex-shrink-0 ml-2 ${
+                          visita.inactiva ? "text-gray-300 hover:bg-gray-600" : "text-foreground hover:bg-gray-100"
+                        }`}
                       >
                         −
                       </button>
@@ -155,34 +162,42 @@ const ClinicalVisitTimeline: React.FC<ClinicalVisitTimelineProps> = ({
                         {visita.fechaCorregido}
                       </p>
                     )}
-                    <p className="mb-4 text-sm text-foreground">
+                    <p className={`mb-4 text-sm ${visita.inactiva ? "text-gray-300" : "text-foreground"}`}>
                       <span className="font-semibold">Motivo de consulta:</span>{" "}
                       {visita.motivoConsulta}
                     </p>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => onCorregirRegistro?.(visita.id)}
-                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+                        onClick={() => !visita.inactiva && onDesactivarVisita?.(visita.id)}
+                        disabled={visita.inactiva}
+                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        Corregir registro
+                        Desactivar visita
                       </button>
                       <button
-                        onClick={() => handleVerDetalle(visita)}
-                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+                        onClick={() => !visita.inactiva && handleVerDetalle(visita)}
+                        disabled={visita.inactiva}
+                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         Ver detalle
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-1 items-center justify-between rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
-                    <p className="text-sm text-foreground">
+                  <div className={`flex flex-1 items-center justify-between rounded-lg border px-4 py-3 shadow-sm ${
+                    visita.inactiva
+                      ? "border-gray-500 bg-[#808080]"
+                      : "border-border bg-white"
+                  }`}>
+                    <p className={`text-sm ${visita.inactiva ? "text-gray-300" : "text-foreground"}`}>
                       <span className="font-semibold">Fecha de visita:</span>{" "}
                       {visita.fechaVisita}
                     </p>
                     <button
                       onClick={() => onExpandir?.(visita.id)}
-                      className="flex h-6 w-6 items-center justify-center rounded-full text-lg font-medium text-foreground hover:bg-gray-100"
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-lg font-medium ${
+                        visita.inactiva ? "text-gray-300 hover:bg-gray-600" : "text-foreground hover:bg-gray-100"
+                      }`}
                     >
                       +
                     </button>

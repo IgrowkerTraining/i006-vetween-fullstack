@@ -61,14 +61,35 @@ const ResponsibleAndPatientRegister: React.FC = () => {
 
   // Carga la lista de responsables al montar (para la pestaña "existente")
   useEffect(() => {
+    const extractPage = (res: unknown): { items: any[]; ultimaPagina: number } => {
+      if (Array.isArray(res)) return { items: res, ultimaPagina: 1 };
+      const r = res as any;
+      if (Array.isArray(r?.data?.data))
+        return { items: r.data.data, ultimaPagina: r.data.ultimaPagina || 1 };
+      if (Array.isArray(r?.data))
+        return { items: r.data, ultimaPagina: 1 };
+      if (Array.isArray(r?.responsables))
+        return { items: r.responsables, ultimaPagina: 1 };
+      return { items: [], ultimaPagina: 1 };
+    };
+
     const load = async () => {
       setLoadingResponsables(true);
       try {
-        const res = await api.getResponsables();
-        const arr = Array.isArray(res)
-          ? res
-          : ((res as any).data ?? (res as any).responsables ?? []);
-        setResponsablesList(arr);
+        const first = await api.getResponsables(1);
+        const { items: page1, ultimaPagina } = extractPage(first);
+
+        let all = [...page1];
+
+        if (ultimaPagina > 1) {
+          const pageNumbers = Array.from({ length: ultimaPagina - 1 }, (_, i) => i + 2);
+          const rest = await Promise.all(pageNumbers.map((p) => api.getResponsables(p)));
+          rest.forEach((res) => {
+            all = all.concat(extractPage(res).items);
+          });
+        }
+
+        setResponsablesList(all);
       } catch {
         // no-op: el buscador simplemente no mostrará resultados
       } finally {
@@ -432,7 +453,7 @@ const ResponsibleAndPatientRegister: React.FC = () => {
                               className="flex-1"
                               onClick={handleAnadirPacienteExistente}
                             >
-                              Añadir paciente
+                              Seleccionar paciente
                             </Button>
                           </div>
                         </div>

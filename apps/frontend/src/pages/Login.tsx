@@ -19,9 +19,20 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errors: { email?: string; password?: string } = {};
+    if (!email.trim()) errors.email = "El email es requerido";
+    else if (!email.includes("@")) errors.email = "El email debe contener un @";
+    if (!password) errors.password = "La contraseña es requerida";
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+    setFieldErrors({});
     setIsLoading(true);
 
     try {
@@ -56,18 +67,18 @@ const Login: React.FC = () => {
               <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4">
                 <img src={onlylogo} alt="vetween logo" />
               </div>
-              <h1 className="text-3xl font-bold text-[#0b1001] mb-1">Iniciar Sesión</h1>
+              <h1 className="text-3xl font-bold text-[#0b1001] mb-1">Iniciar sesión</h1>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <Input
                 label="Email"
                 placeholder="nombre@email.com"
                 type="email"
-                required
                 disabled={isLoading}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: undefined })); }}
+                error={fieldErrors.email}
                 icon={
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -90,10 +101,10 @@ const Login: React.FC = () => {
                 label="Contraseña"
                 placeholder="••••••••"
                 type={showPassword ? "text" : "password"}
-                required
                 disabled={isLoading}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: undefined })); }}
+                error={fieldErrors.password}
                 icon={
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -179,12 +190,12 @@ const Login: React.FC = () => {
 
             <div className="mt-8 pt-6 border-t border-slate-800 text-center">
               <p className="text-slate-600 text-sm">
-                ¿No tenés cuenta?{" "}
+                ¿No tienes cuenta?{" "}
                 <Link
                   to="/register"
                   className="text-indigo-700 hover:text-indigo-400 font-semibold transition-colors"
                 >
-                  Registrate
+                  Regístrate
                 </Link>
               </p>
             </div>

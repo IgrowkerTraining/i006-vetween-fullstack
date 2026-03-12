@@ -11,7 +11,7 @@ interface AntecedentesPrevios {
 interface ClinicalHistoryProps {
   visitas: VisitaClinica[];
   antecedentesPrevios?: AntecedentesPrevios;
-  onCorregirRegistro?: (id: string) => void;
+  onDesactivarVisita?: (id: string) => void;
   onVerDetalle?: (id: string) => void;
   onExpandir?: (id: string) => void;
 }
@@ -19,7 +19,7 @@ interface ClinicalHistoryProps {
 const ClinicalHistory: React.FC<ClinicalHistoryProps> = ({
   visitas,
   antecedentesPrevios,
-  onCorregirRegistro,
+  onDesactivarVisita,
   onVerDetalle,
   onExpandir,
 }) => {
@@ -39,7 +39,7 @@ const ClinicalHistory: React.FC<ClinicalHistoryProps> = ({
       {tieneVisitas ? (
         <ClinicalVisitTimeline
           visitas={visitas}
-          onCorregirRegistro={onCorregirRegistro}
+          onDesactivarVisita={onDesactivarVisita}
           onVerDetalle={onVerDetalle}
           onExpandir={onExpandir}
         />

@@ -25,11 +25,13 @@ import {
 import { VaccineForm, VaccineFormData } from "../components/forms/VaccineForm";
 import { useAuth } from "../hooks/useAuth";
 import { useEditPatient } from "../hooks/useEditPatient";
+import { useToast } from "../context/ToastContext";
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const rawName =
     user?.nombre || user?.name || user?.email?.split("@")[0] || "usuario";
   const firstName = rawName.trim().split(/[\s._-]+/)[0] || "usuario";
@@ -44,6 +46,12 @@ const PatientDetail: React.FC = () => {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [visitas, setVisitas] = useState<VisitaClinica[]>([]);
   const [vacunas, setVacunas] = useState<Vacuna[]>([]);
+  const [visitasPagina, setVisitasPagina] = useState(1);
+  const [visitasUltimaPagina, setVisitasUltimaPagina] = useState(1);
+  const [isVisitasLoading, setIsVisitasLoading] = useState(false);
+  const [vacunasPagina, setVacunasPagina] = useState(1);
+  const [vacunasUltimaPagina, setVacunasUltimaPagina] = useState(1);
+  const [isVacunasLoading, setIsVacunasLoading] = useState(false);
   const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
   const [isVisitFormLoading, setIsVisitFormLoading] = useState(false);
   const [isVaccineModalOpen, setIsVaccineModalOpen] = useState(false);
@@ -68,12 +76,15 @@ const PatientDetail: React.FC = () => {
     const fetchPatient = async () => {
       try {
         setIsLoading(true);
-        const [data, visitasData, vacunasData] = await Promise.all([
+        const [data, visitasResult, vacunasResult] = await Promise.all([
           api.getPatientById(id),
-          api.getVisitasByPatientId(id),
-          api.getVacunasByPatientId(id),
+          api.getVisitasByPatientId(id, 1),
+          api.getVacunasByPatientId(id, 1),
         ]);
         setPatientData(data);
+        setVisitasPagina(1);
+        setVisitasUltimaPagina(visitasResult.ultimaPagina);
+        const visitasData = visitasResult.data;
         const responsableId =
           data.id_responsable ?? data.responsables?.id_responsable;
         if (responsableId) {
@@ -118,12 +129,13 @@ const PatientDetail: React.FC = () => {
               visit.observaciones_generales,
             ),
             estado: visit.estado ? "Corregido" : "Original",
+            inactiva: Boolean(visit.estado),
             expandido: index === 0,
           };
         });
         mappedVisitas.sort((a, b) => Number(b.historialPrevio) - Number(a.historialPrevio));
         setVisitas(mappedVisitas);
-        const mappedVacunas: Vacuna[] = vacunasData.map((v, index) => ({
+        const mappedVacunas: Vacuna[] = vacunasResult.data.map((v, index) => ({
           id: String(v.id_vacunas),
           fechaAplicacion: v.fecha_aplicacion,
           nombreCientifico: v.nombre_cientifico,
@@ -131,6 +143,8 @@ const PatientDetail: React.FC = () => {
           observacion: v.observacion,
           expandido: index === 0,
         }));
+        setVacunasPagina(1);
+        setVacunasUltimaPagina(vacunasResult.ultimaPagina);
         setVacunas(mappedVacunas);
       } catch (err: any) {
         setFetchError(err?.message || "No se pudo cargar el paciente.");
@@ -234,6 +248,59 @@ const PatientDetail: React.FC = () => {
     );
   };
 
+  const handleDesactivarVisita = async (visitaId: string) => {
+    const confirmed = window.confirm(
+      "¿Deséas desactivar esta visita? Esta acción no se puede deshacer.",
+    );
+    if (!confirmed) return;
+    try {
+      await api.inactivarVisita(visitaId);
+      setVisitas((prev) =>
+        prev.map((v) => (v.id === visitaId ? { ...v, inactiva: true } : v)),
+      );
+      showToast("Visita marcada como inactiva", "success");
+    } catch (err: any) {
+      showToast(err.message || "Error al desactivar la visita", "error");
+    }
+  };
+
+  const handleVisitasPageChange = async (newPage: number) => {
+    if (!id || newPage < 1 || newPage > visitasUltimaPagina) return;
+    setIsVisitasLoading(true);
+    try {
+      const result = await api.getVisitasByPatientId(id, newPage);
+      const pickText = (...values: unknown[]): string => {
+        const found = values.find(
+          (value) => typeof value === "string" && value.trim().length > 0,
+        ) as string | undefined;
+        return found ?? "-";
+      };
+      const mapped: VisitaClinica[] = result.data.map((v, index) => {
+        const visit = v as Record<string, unknown>;
+        return {
+          id: String(visit.id_visitas ?? visit.id_visita ?? visit.id ?? "-"),
+          fechaVisita: pickText(visit.fecha, visit.fecha_visita),
+          historialPrevio: Boolean(visit.historial_previo),
+          motivoConsulta: pickText(visit.motivo_consulta, visit.motivoConsulta, visit.motivo),
+          diagnostico: pickText(visit.diagnostico, visit.diagnosis, visit.diagnostico_visita),
+          tratamiento: pickText(visit.tratamiento, visit.treatments, visit.tratamiento_indicado),
+          observaciones: pickText(visit.observaciones, visit.observacion, visit.observaciones_generales),
+          estado: visit.estado ? "Corregido" : "Original",
+          inactiva: Boolean(visit.estado),
+          expandido: index === 0,
+        };
+      });
+      mapped.sort((a, b) => Number(b.historialPrevio) - Number(a.historialPrevio));
+      setVisitas(mapped);
+      setVisitasPagina(newPage);
+      setVisitasUltimaPagina(result.ultimaPagina);
+    } catch (err: any) {
+      console.error("Error al cargar visitas:", err.message);
+    } finally {
+      setIsVisitasLoading(false);
+    }
+  };
+
   const handleExpandirVacuna = (id: string) => {
     setVacunas((prev) =>
       prev.map((v) => ({
@@ -241,6 +308,29 @@ const PatientDetail: React.FC = () => {
         expandido: v.id === id ? !v.expandido : v.expandido,
       })),
     );
+  };
+
+  const handleVacunasPageChange = async (newPage: number) => {
+    if (!id || newPage < 1 || newPage > vacunasUltimaPagina) return;
+    setIsVacunasLoading(true);
+    try {
+      const result = await api.getVacunasByPatientId(id, newPage);
+      const mapped: Vacuna[] = result.data.map((v, index) => ({
+        id: String(v.id_vacunas),
+        fechaAplicacion: v.fecha_aplicacion,
+        nombreCientifico: v.nombre_cientifico,
+        tipoVacuna: v.tipo,
+        observacion: v.observacion,
+        expandido: index === 0,
+      }));
+      setVacunas(mapped);
+      setVacunasPagina(newPage);
+      setVacunasUltimaPagina(result.ultimaPagina);
+    } catch (err: any) {
+      console.error("Error al cargar vacunas:", err.message);
+    } finally {
+      setIsVacunasLoading(false);
+    }
   };
 
   const handleVisitSubmit = async (data: ClinicalVisitFormData) => {
@@ -367,15 +457,21 @@ const PatientDetail: React.FC = () => {
         id_paciente: patientId,
       });
 
-      const newVacuna: Vacuna = {
-        id: String(Date.now()),
-        fechaAplicacion: data.fecha,
-        nombreCientifico: data.nombre,
-        tipoVacuna: data.tipoVacuna,
-        observacion: data.observaciones,
-        expandido: true,
-      };
-      setVacunas((prev) => [newVacuna, ...prev]);
+      // Re-fetch page 1 so the list reflects the real order from the backend.
+      // (backend returns ultimaPagina: 0 regardless of actual page count, so we
+      // can't rely on it for pagination — at least keep page 1 accurate.)
+      const freshResult = await api.getVacunasByPatientId(String(patientId), 1);
+      const freshMapped: Vacuna[] = freshResult.data.map((v, index) => ({
+        id: String(v.id_vacunas),
+        fechaAplicacion: v.fecha_aplicacion,
+        nombreCientifico: v.nombre_cientifico,
+        tipoVacuna: v.tipo,
+        observacion: v.observacion,
+        expandido: index === 0,
+      }));
+      setVacunas(freshMapped);
+      setVacunasPagina(1);
+      setVacunasUltimaPagina(freshResult.ultimaPagina);
       setIsVaccineModalOpen(false);
     } catch (err: any) {
       console.error("Error al registrar vacuna:", err.message);
@@ -431,19 +527,73 @@ const PatientDetail: React.FC = () => {
       id: "historial-clinico",
       label: "Historial clínico",
       content: (
-        <ClinicalHistory
-          visitas={visitas}
-          onCorregirRegistro={() => {}}
-          onVerDetalle={() => {}}
-          onExpandir={handleExpandir}
-        />
+        <div>
+          <ClinicalHistory
+            visitas={visitas}
+            onDesactivarVisita={handleDesactivarVisita}
+            onVerDetalle={() => {}}
+            onExpandir={handleExpandir}
+          />
+          {visitasUltimaPagina > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-4 select-none">
+              <button
+                onClick={() => handleVisitasPageChange(visitasPagina - 1)}
+                disabled={visitasPagina === 1 || isVisitasLoading}
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-border text-muted-foreground hover:bg-vetween-teal/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="text-sm text-muted-foreground">
+                Página {visitasPagina} de {visitasUltimaPagina}
+              </span>
+              <button
+                onClick={() => handleVisitasPageChange(visitasPagina + 1)}
+                disabled={visitasPagina === visitasUltimaPagina || isVisitasLoading}
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-border text-muted-foreground hover:bg-vetween-teal/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
       ),
     },
     {
       id: "vacunas",
       label: "Vacunas",
       content: (
-        <VaccineHistory vacunas={vacunas} onExpandir={handleExpandirVacuna} />
+        <div>
+          <VaccineHistory vacunas={vacunas} onExpandir={handleExpandirVacuna} />
+          {vacunasUltimaPagina > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-4 select-none">
+              <button
+                onClick={() => handleVacunasPageChange(vacunasPagina - 1)}
+                disabled={vacunasPagina === 1 || isVacunasLoading}
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-border text-muted-foreground hover:bg-vetween-teal/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="text-sm text-muted-foreground">
+                Página {vacunasPagina} de {vacunasUltimaPagina}
+              </span>
+              <button
+                onClick={() => handleVacunasPageChange(vacunasPagina + 1)}
+                disabled={vacunasPagina === vacunasUltimaPagina || isVacunasLoading}
+                className="flex items-center justify-center h-8 w-8 rounded-md border border-border text-muted-foreground hover:bg-vetween-teal/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
       ),
     },
   ];

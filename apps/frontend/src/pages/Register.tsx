@@ -901,12 +901,12 @@ const Register: React.FC = () => {
 
             <div className="mt-8 pt-6 border-t border-slate-800 text-center">
               <p className="text-slate-400 text-sm">
-                ¿Ya tenés cuenta?{" "}
+                ¿Ya tienes cuenta?{" "}
                 <Link
                   to="/login"
                   className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
                 >
-                  Iniciá sesión
+                  Iniciar sesión
                 </Link>
               </p>
             </div>
