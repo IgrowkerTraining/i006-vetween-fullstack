@@ -381,10 +381,10 @@ export default function ResponsibleList() {
                         <button
                           onClick={() => handleDeleteResponsable(r.id)}
                           disabled={
-                            deletingId === r.id || r.estado === "Activo"
+                            deletingId === r.id || r.mascotas.length > 0
                           }
                           className={`transition-colors ${
-                            r.estado === "Activo" || deletingId === r.id
+                            r.mascotas.length > 0 || deletingId === r.id
                               ? "cursor-not-allowed text-red-300"
                               : "text-red-500 hover:text-red-700"
                           }`}
