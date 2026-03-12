@@ -20,12 +20,13 @@ const ANIMAL_TYPES_OPTIONS = ["Caninos", "Felinos", "Peces", "Otro"];
 
 export default function ProfessionalProfile() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ nombre?: string; apellido?: string; costo_consulta?: string; tipos_animales?: string }>({});
   const [clinicName, setClinicName] = useState("Nombre de la clínica");
 
   // Datos del usuario provenientes del auth (del login)
@@ -55,7 +56,7 @@ export default function ProfessionalProfile() {
     apellido: user?.apellido || "",
     email: user?.email || "",
     matricula: user?.matricula?.toString() || "",
-    especialidad: user?.especialidad || "",
+    especialidad: Array.isArray(user?.especialidad) ? user.especialidad[0] || "" : user?.especialidad || "",
     tipos_animales: user?.tipos_animales || [] as string[],
     costo_consulta: user?.costo_consulta?.toString() || "",
   });
@@ -68,7 +69,7 @@ export default function ProfessionalProfile() {
         apellido: user.apellido || "",
         email: user.email || "",
         matricula: user.matricula?.toString() || "",
-        especialidad: user.especialidad || "",
+        especialidad: Array.isArray(user.especialidad) ? user.especialidad[0] || "" : user.especialidad || "",
         tipos_animales: user.tipos_animales || [],
         costo_consulta: user.costo_consulta?.toString() || "",
       });
@@ -112,17 +113,37 @@ export default function ProfessionalProfile() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "nombre" || name === "apellido") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: value && !/^[A-Za-z\u00C0-\u00FF\s]*$/.test(value)
+          ? `El ${name} solo puede contener letras y espacios`
+          : undefined,
+      }));
+    }
+
+    if (name === "costo_consulta") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        costo_consulta: value !== "" && parseFloat(value) < 0
+          ? "El costo de consulta debe ser mayor o igual a 0"
+          : undefined,
+      }));
+    }
   };
 
   const handleAnimalTypeChange = (value: string) => {
     setFormData((prev) => {
       const already = prev.tipos_animales.includes(value);
-      return {
-        ...prev,
-        tipos_animales: already
-          ? prev.tipos_animales.filter((item) => item !== value)
-          : [...prev.tipos_animales, value],
-      };
+      const updated = already
+        ? prev.tipos_animales.filter((item) => item !== value)
+        : [...prev.tipos_animales, value];
+      setFieldErrors((fe) => ({
+        ...fe,
+        tipos_animales: updated.length === 0 ? "Seleccioná al menos un tipo de animal" : undefined,
+      }));
+      return { ...prev, tipos_animales: updated };
     });
   };
 
@@ -144,6 +165,17 @@ export default function ProfessionalProfile() {
       return;
     }
 
+    if (fieldErrors.nombre || fieldErrors.apellido || fieldErrors.costo_consulta || fieldErrors.tipos_animales) {
+      setError("Por favor, corregí los errores antes de guardar.");
+      return;
+    }
+
+    if (formData.tipos_animales.length === 0) {
+      setFieldErrors((prev) => ({ ...prev, tipos_animales: "Seleccioná al menos un tipo de animal" }));
+      setError("Por favor, corregí los errores antes de guardar.");
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -160,7 +192,8 @@ export default function ProfessionalProfile() {
         costo_consulta: parseFloat(formData.costo_consulta) || 0,
       };
 
-      await api.updateVeterinarian(idVeterinario, updateData, token);
+      const updatedVet = await api.updateVeterinarian(idVeterinario, updateData, token);
+      login({ ...user!, ...updatedVet });
       setSuccessMessage("Datos actualizados correctamente");
     } catch (err: any) {
       setError(err.message || "Error al guardar los cambios");
@@ -270,6 +303,7 @@ export default function ProfessionalProfile() {
                     placeholder="Nombre"
                     value={formData.nombre}
                     onChange={handleChange}
+                    error={fieldErrors.nombre}
                   />
                 </div>
 
@@ -281,6 +315,7 @@ export default function ProfessionalProfile() {
                     placeholder="Apellido"
                     value={formData.apellido}
                     onChange={handleChange}
+                    error={fieldErrors.apellido}
                   />
                 </div>
 
@@ -318,6 +353,7 @@ export default function ProfessionalProfile() {
                     placeholder="5000"
                     value={formData.costo_consulta}
                     onChange={handleChange}
+                    error={fieldErrors.costo_consulta}
                   />
                 </div>
 
@@ -380,7 +416,10 @@ export default function ProfessionalProfile() {
                           </span>
                           <button
                             type="button"
-                            onClick={() => setFormData((prev) => ({ ...prev, tipos_animales: [] }))}
+                            onClick={() => {
+                              setFormData((prev) => ({ ...prev, tipos_animales: [] }));
+                              setFieldErrors((prev) => ({ ...prev, tipos_animales: "Seleccioná al menos un tipo de animal" }));
+                            }}
                             className="text-xs text-red-500 hover:text-red-600 transition-colors"
                           >
                             Limpiar
@@ -388,6 +427,9 @@ export default function ProfessionalProfile() {
                         </div>
                       )}
                     </div>
+                  )}
+                  {fieldErrors.tipos_animales && (
+                    <p className="mt-1 text-xs text-red-500">{fieldErrors.tipos_animales}</p>
                   )}
                 </div>
 

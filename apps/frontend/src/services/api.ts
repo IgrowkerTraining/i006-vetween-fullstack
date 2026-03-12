@@ -674,7 +674,7 @@ export const api = {
         result.error || "Error al actualizar datos del veterinario",
       );
     }
-    return result;
+    return result.data ?? result;
   },
 
   async updateClinic(data: { nombre?: string; direccion_calle?: string; direccion_numero?: string; direccion_localidad?: string; provincia?: string; telefono?: string }, token: string): Promise<Clinic> {
