@@ -28,6 +28,7 @@ import { VaccineForm, VaccineFormData } from "../components/forms/VaccineForm";
 import { useAuth } from "../hooks/useAuth";
 import { useEditPatient } from "../hooks/useEditPatient";
 import { useToast } from "../context/ToastContext";
+import { PatientDetailSkeleton } from "../components/common/Skeleton";
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -526,9 +527,7 @@ const PatientDetail: React.FC = () => {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="flex flex-1 items-center justify-center py-24">
-          <p className="text-sm text-muted-foreground">Cargando paciente...</p>
-        </div>
+        <PatientDetailSkeleton />
       </MainLayout>
     );
   }

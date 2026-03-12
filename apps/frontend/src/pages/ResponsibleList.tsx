@@ -16,6 +16,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useEditResponsible } from "../hooks/useEditResponsible";
 import { ROUTES } from "../constants/routes";
 import { StatusPill } from "../components/common/StatusPill";
+import { TableSkeleton, PageHeaderSkeleton, SearchBarSkeleton } from "../components/common/Skeleton";
 
 interface MascotaRef {
   id: string;
@@ -101,6 +102,7 @@ export default function ResponsibleList() {
   const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [activePatientCount, setActivePatientCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const {
     isEditModalOpen,
@@ -123,6 +125,7 @@ export default function ResponsibleList() {
   const [totalPages, setTotalPages] = useState(1);
 
   const loadData = async (page = 1) => {
+    setIsLoading(true);
     try {
       const [firstResponsablesResponse, firstPatientsResponse] =
         await Promise.all([api.getResponsables(page), api.getPatients(1)]);
@@ -208,6 +211,8 @@ export default function ResponsibleList() {
     } catch (err: any) {
       console.error("Error al obtener responsables:", err.message);
       setLoadError(err?.message || "No se pudieron cargar los responsables.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -269,211 +274,237 @@ export default function ResponsibleList() {
   return (
     <MainLayout>
       <section className="flex flex-1 flex-col overflow-y-auto">
-        <PageHeader
-          subtitle={`Hola, ${userDisplayName}`}
-          title="Responsables"
-          actions={
-            <button
-              onClick={handleAddResponsible}
-              className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
-                activePatientCount >= 50
-                  ? "bg-[#5451FF]/40 text-white/60"
-                  : "bg-[#5451FF] text-white hover:bg-[#5451FF]/85"
-              }`}
-            >
-              <img
-                src={addResponsibleIcon}
-                alt="Paw Icon Add"
-                className="size-7"
-              />
-              {"Añadir responsable"}
-            </button>
-          }
-        />
+        {isLoading ? (
+          <PageHeaderSkeleton showSubtitle showActions />
+        ) : (
+          <PageHeader
+            subtitle={`Hola, ${userDisplayName}`}
+            title="Responsables"
+            actions={
+              <button
+                onClick={handleAddResponsible}
+                className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
+                  activePatientCount >= 50
+                    ? "bg-[#5451FF]/40 text-white/60"
+                    : "bg-[#5451FF] text-white hover:bg-[#5451FF]/85"
+                }`}
+              >
+                <img
+                  src={addResponsibleIcon}
+                  alt="Paw Icon Add"
+                  className="size-7"
+                />
+                {"Añadir responsable"}
+              </button>
+            }
+          />
+        )}
 
         <section
           className="flex-1 px-8 py-6"
           aria-label="Lista de responsables"
         >
-          {loadError && (
+          {loadError && !isLoading && (
             <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
               {loadError}
             </div>
           )}
 
           <div className="mb-4">
-            <SearchBar
-              onSearch={setSearchQuery}
-              placeholder="Buscar por nombre"
-            />
-          </div>
-
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="bg-[#7ACBD9] text-black font-semibold">
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("id")}
-                  >
-                    ID
-                    {sortConfig?.key === "id" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
-                      >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("nombre")}
-                  >
-                    Nombre
-                    {sortConfig?.key === "nombre" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
-                      >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("apellido")}
-                  >
-                    Apellido
-                    {sortConfig?.key === "apellido" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
-                      >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th className="px-6 py-3 font-semibold">Mascota</th>
-                  <th className="px-6 py-3 font-semibold">Email</th>
-                  <th className="px-6 py-3 font-semibold">Teléfono</th>
-                  <th className="px-6 py-3 font-semibold">Estado</th>
-                  <th className="px-6 py-3 font-semibold">Editar</th>
-                  <th className="px-6 py-3 font-semibold">Eliminar</th>
-                </tr>
-              </thead>
-              {sortedResponsables.length > 0 && (
-                <tbody>
-                  {sortedResponsables.map((r) => (
-                    <tr
-                      key={r.id}
-                      className={`border-t border-border transition-colors ${
-                        r.estado === "Activo"
-                          ? "text-black hover:bg-muted/60"
-                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-                      }`}
-                    >
-                      <td className="px-6 py-3 font-medium">{r.id}</td>
-                      <td className="px-6 py-3">{r.nombre}</td>
-                      <td className="px-6 py-3">{r.apellido}</td>
-                      <td className="px-6 py-3">
-                        {r.mascotas.length > 0
-                          ? r.mascotas.map((m, i) => (
-                              <React.Fragment key={m.id}>
-                                {i > 0 && <span className="mr-1">,</span>}
-                                <button
-                                  onClick={() =>
-                                    navigate(`${ROUTES.PATIENT}/${m.id}`)
-                                  }
-                                  className={`font-semibold underline-offset-2 hover:underline ${
-                                    r.estado === "Activo"
-                                      ? "text-indigo-600"
-                                      : "text-gray-400 hover:text-gray-600"
-                                  }`}
-                                >
-                                  {m.nombre}
-                                </button>
-                              </React.Fragment>
-                            ))
-                          : "-"}
-                      </td>
-                      <td className="px-6 py-3">{r.email}</td>
-                      <td className="px-6 py-3">{r.telefono}</td>
-                      <td className="px-6 py-3">
-                        <StatusPill status={r.estado} />
-                      </td>
-                      <td className="px-6 py-3">
-                        <button
-                          onClick={() => openEdit(r.id)}
-                          className="transition-opacity hover:opacity-70"
-                        >
-                          <img
-                            src={editIcon}
-                            alt="Editar"
-                            className="h-5 w-5"
-                          />
-                        </button>
-                      </td>
-                      <td className="px-6 py-3">
-                        <button
-                          onClick={() => handleOpenDeleteModal(r.id)}
-                          disabled={
-                            deletingId === r.id || r.mascotas.length > 0
-                          }
-                          className={`transition-colors ${
-                            r.mascotas.length > 0 || deletingId === r.id
-                              ? "cursor-not-allowed text-red-300"
-                              : "text-red-500 hover:text-red-700"
-                          }`}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              fill="currentColor"
-                              d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zm2-4h2V8H9zm4 0h2V8h-2z"
-                            />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              )}
-            </table>
-
-            {filteredResponsables.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16">
-                <h3 className="text-lg font-semibold text-foreground">
-                  No hay responsables registrados aún
-                </h3>
-                <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                  Los responsables asociados a tus pacientes aparecerán aquí.
-                </p>
-              </div>
+            {isLoading ? <SearchBarSkeleton /> : (
+              <SearchBar
+                onSearch={setSearchQuery}
+                placeholder="Buscar por nombre"
+              />
             )}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 py-4">
-              <button
-                onClick={() => loadData(currentPage - 1)}
-                disabled={currentPage <= 1}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                ← Anterior
-              </button>
-              <span className="text-sm text-muted-foreground">
-                Página {currentPage} de {totalPages}
-              </span>
-              <button
-                onClick={() => loadData(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Siguiente →
-              </button>
-            </div>
+          {isLoading ? (
+            <TableSkeleton 
+              rows={5} 
+              columns={[
+                { width: 'w-16', type: 'text' },
+                { width: 'w-32', type: 'text' },
+                { width: 'w-32', type: 'text' },
+                { width: 'flex-1', type: 'multi' },
+                { width: 'w-56', type: 'text' },
+                { width: 'w-32', type: 'text' },
+                { width: 'w-24', type: 'badge' },
+                { width: 'w-20', type: 'action' },
+                { width: 'w-24', type: 'action' },
+              ]} 
+              showHeader 
+            />
+          ) : (
+            <>
+              <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-[#7ACBD9] text-black font-semibold">
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("id")}
+                      >
+                        ID
+                        {sortConfig?.key === "id" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("nombre")}
+                      >
+                        Nombre
+                        {sortConfig?.key === "nombre" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("apellido")}
+                      >
+                        Apellido
+                        {sortConfig?.key === "apellido" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th className="px-6 py-3 font-semibold">Mascota</th>
+                      <th className="px-6 py-3 font-semibold">Email</th>
+                      <th className="px-6 py-3 font-semibold">Teléfono</th>
+                      <th className="px-6 py-3 font-semibold">Estado</th>
+                      <th className="px-6 py-3 font-semibold">Editar</th>
+                      <th className="px-6 py-3 font-semibold">Eliminar</th>
+                    </tr>
+                  </thead>
+                  {sortedResponsables.length > 0 && (
+                    <tbody>
+                      {sortedResponsables.map((r) => (
+                        <tr
+                          key={r.id}
+                          className={`border-t border-border transition-colors ${
+                            r.estado === "Activo"
+                              ? "text-black hover:bg-muted/60"
+                              : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                          }`}
+                        >
+                          <td className="px-6 py-3 font-medium">{r.id}</td>
+                          <td className="px-6 py-3">{r.nombre}</td>
+                          <td className="px-6 py-3">{r.apellido}</td>
+                          <td className="px-6 py-3">
+                            {r.mascotas.length > 0
+                              ? r.mascotas.map((m, i) => (
+                                  <React.Fragment key={m.id}>
+                                    {i > 0 && <span className="mr-1">,</span>}
+                                    <button
+                                      onClick={() =>
+                                        navigate(`${ROUTES.PATIENT}/${m.id}`)
+                                      }
+                                      className={`font-semibold underline-offset-2 hover:underline ${
+                                        r.estado === "Activo"
+                                          ? "text-indigo-600"
+                                          : "text-gray-400 hover:text-gray-600"
+                                      }`}
+                                    >
+                                      {m.nombre}
+                                    </button>
+                                  </React.Fragment>
+                                ))
+                              : "-"}
+                          </td>
+                          <td className="px-6 py-3">{r.email}</td>
+                          <td className="px-6 py-3">{r.telefono}</td>
+                          <td className="px-6 py-3">
+                            <StatusPill status={r.estado} />
+                          </td>
+                          <td className="px-6 py-3">
+                            <button
+                              onClick={() => openEdit(r.id)}
+                              className="transition-opacity hover:opacity-70"
+                            >
+                              <img
+                                src={editIcon}
+                                alt="Editar"
+                                className="h-5 w-5"
+                              />
+                            </button>
+                          </td>
+                          <td className="px-6 py-3">
+                            <button
+                              onClick={() => handleOpenDeleteModal(r.id)}
+                              disabled={
+                                deletingId === r.id || r.mascotas.length > 0
+                              }
+                              className={`transition-colors ${
+                                r.mascotas.length > 0 || deletingId === r.id
+                                  ? "cursor-not-allowed text-red-300"
+                                  : "text-red-500 hover:text-red-700"
+                              }`}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  fill="currentColor"
+                                  d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zm2-4h2V8H9zm4 0h2V8h-2z"
+                                />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  )}
+                </table>
+
+                {filteredResponsables.length === 0 && !isLoading && (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      No hay responsables registrados aún
+                    </h3>
+                    <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
+                      Los responsables asociados a tus pacientes aparecerán aquí.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 py-4">
+                  <button
+                    onClick={() => loadData(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    ← Anterior
+                  </button>
+                  <span className="text-sm text-muted-foreground">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => loadData(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </section>

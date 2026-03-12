@@ -8,6 +8,7 @@ import { SearchBar } from "../components/common/SearchBar";
 import { api, ResponsibleListItem } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 import { ROUTES } from "../constants/routes";
+import { TableSkeleton, PageHeaderSkeleton, SearchBarSkeleton } from "../components/common/Skeleton";
 
 interface PatientSummaryRow {
   id: string;
@@ -74,6 +75,7 @@ export default function ClinicalSummaryList() {
   const [patients, setPatients] = useState<PatientSummaryRow[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof PatientSummaryRow;
     direction: "asc" | "desc";
@@ -82,6 +84,7 @@ export default function ClinicalSummaryList() {
   const [totalPages, setTotalPages] = useState(1);
 
   const loadData = async (page = 1) => {
+    setIsLoading(true);
     try {
       const [patientsResponse, firstResponsablesResponse] = await Promise.all([
         api.getPatients(page),
@@ -137,6 +140,8 @@ export default function ClinicalSummaryList() {
     } catch (err: any) {
       console.error("Error al obtener resúmenes clínicos:", err.message);
       setLoadError(err?.message || "No se pudieron cargar los datos.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -180,26 +185,45 @@ export default function ClinicalSummaryList() {
   return (
     <MainLayout>
       <section className="flex flex-1 flex-col overflow-y-auto">
-        <PageHeader
-          subtitle={`Hola, ${userDisplayName}`}
-          title="Resumen clínico"
-        />
+        {isLoading ? (
+          <PageHeaderSkeleton showSubtitle={false} showActions={false} />
+        ) : (
+          <PageHeader
+            subtitle={`Hola, ${userDisplayName}`}
+            title="Resumen clínico"
+          />
+        )}
 
         <section className="flex-1 px-8 py-6" aria-label="Resúmenes clínicos">
-          {loadError && (
+          {loadError && !isLoading && (
             <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
               {loadError}
             </div>
           )}
 
           <div className="mb-4">
-            <SearchBar
-              onSearch={setSearchQuery}
-              placeholder="Buscar resumen clínico"
-            />
+            {isLoading ? <SearchBarSkeleton /> : (
+              <SearchBar
+                onSearch={setSearchQuery}
+                placeholder="Buscar resumen clínico"
+              />
+            )}
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          {isLoading ? (
+            <TableSkeleton 
+              rows={5} 
+              columns={[
+                { width: 'w-16', type: 'text' },
+                { width: 'w-32', type: 'text' },
+                { width: 'flex-1', type: 'text' },
+                { width: 'w-32', type: 'action' },
+              ]} 
+              showHeader 
+            />
+          ) : (
+            <>
+            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="bg-[#7ACBD9] text-black font-semibold">
@@ -310,6 +334,8 @@ export default function ClinicalSummaryList() {
                 Siguiente →
               </button>
             </div>
+          )}
+            </>
           )}
         </section>
       </section>
