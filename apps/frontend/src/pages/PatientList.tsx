@@ -11,6 +11,7 @@ import { sortArray } from "../utils/sort";
 import { useAuth } from "../hooks/useAuth";
 import { useEditPatient } from "../hooks/useEditPatient";
 import { ROUTES } from "../constants/routes";
+import { TableSkeleton, PageHeaderSkeleton, SearchBarSkeleton } from "../components/common/Skeleton";
 
 export interface Patient {
   id: string;
@@ -27,6 +28,7 @@ export default function PatientList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [patientsError, setPatientsError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const {
     isEditModalOpen,
     isEditFormLoading,
@@ -144,6 +146,7 @@ export default function PatientList() {
   };
 
   const loadPatients = async (page = 1) => {
+    setIsLoading(true);
     try {
       const [patientsResponse, firstResponsablesResponse] = await Promise.all([
         api.getPatients(page),
@@ -209,6 +212,8 @@ export default function PatientList() {
     } catch (err: any) {
       console.error("Error al obtener pacientes:", err.message);
       setPatientsError(err?.message || "No se pudieron cargar los pacientes.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -260,163 +265,188 @@ export default function PatientList() {
     <MainLayout>
       {/* Main content */}
       <section className="flex flex-1 flex-col overflow-y-auto">
-        <PageHeader subtitle={`Hola, ${userDisplayName}`} title="Pacientes" />
+        {isLoading ? (
+          <PageHeaderSkeleton showSubtitle={false} showActions={false} />
+        ) : (
+          <PageHeader subtitle={`Hola, ${userDisplayName}`} title="Pacientes" />
+        )}
 
         <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
-          {patientsError && (
+          {patientsError && !isLoading && (
             <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
               {patientsError}
             </div>
           )}
           <div className="mb-4">
-            <SearchBar
-              onSearch={setSearchQuery}
-              placeholder="Buscar paciente"
-            />
-          </div>
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="bg-[#7ACBD9] text-black font-semibold">
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("id")}
-                  >
-                    ID
-                    {sortConfig?.key === "id" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
-                      >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("nombre")}
-                  >
-                    Nombre
-                    {sortConfig?.key === "nombre" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
-                      >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th className="px-6 py-3 font-semibold">Especie</th>
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("responsable")}
-                  >
-                    Responsable
-                    {sortConfig?.key === "responsable" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
-                      >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th className="px-6 py-3 font-semibold">Estado</th>
-                  <th className="px-6 py-3 font-semibold">Editar</th>
-                  <th className="px-6 py-3 font-semibold">Eliminar</th>
-                </tr>
-              </thead>
-              {sortedPatients.length > 0 && (
-                <tbody>
-                  {sortedPatients.map((patient) => (
-                    <tr
-                      key={patient.id}
-                      className="text-black border-t border-border transition-colors hover:bg-muted/60"
-                    >
-                      <td className="px-6 py-3 font-medium">
-                        <button
-                          onClick={() => handlePatientClick(patient.id)}
-                          className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
-                        >
-                          {patient.id}
-                        </button>
-                      </td>
-                      <td className="px-6 py-3 font-medium">
-                        <button
-                          onClick={() => handlePatientClick(patient.id)}
-                          className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
-                        >
-                          {patient.nombre}
-                        </button>
-                      </td>
-                      <td className="px-6 py-3">{patient.especie}</td>
-                      <td className="px-6 py-3">{patient.responsable}</td>
-                      <td className="px-6 py-3">
-                        <span
-                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            patient.estado === "Activo"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {patient.estado}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3">
-                        <button
-                          onClick={() => openEdit(patient.id)}
-                          className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo"
-                        >
-                          Editar
-                        </button>
-                      </td>
-                      <td className="px-6 py-3">
-                        <button
-                          onClick={() => handleDeletePatient(patient.id)}
-                          disabled={deletingId === patient.id}
-                          className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {deletingId === patient.id
-                            ? "Eliminando..."
-                            : "Eliminar"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              )}
-            </table>
-
-            {filteredPatients.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16">
-                <img src={pawIcon} alt="paw icon" />
-                <h3 className="mt-4 text-lg font-semibold text-foreground">
-                  No hay pacientes registrados aún
-                </h3>
-                <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                  {"Agrega uno nuevo haciendo clic en el botón superior."}
-                </p>
-              </div>
+            {isLoading ? <SearchBarSkeleton /> : (
+              <SearchBar
+                onSearch={setSearchQuery}
+                placeholder="Buscar paciente"
+              />
             )}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 py-4">
-              <button
-                onClick={() => loadPatients(currentPage - 1)}
-                disabled={currentPage <= 1}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                ← Anterior
-              </button>
-              <span className="text-sm text-muted-foreground">
-                Página {currentPage} de {totalPages}
-              </span>
-              <button
-                onClick={() => loadPatients(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Siguiente →
-              </button>
-            </div>
+          {isLoading ? (
+            <TableSkeleton 
+              rows={5} 
+              columns={[
+                { width: 'w-16', type: 'text' },
+                { width: 'w-32', type: 'text' },
+                { width: 'w-24', type: 'text' },
+                { width: 'flex-1', type: 'text' },
+                { width: 'w-24', type: 'badge' },
+                { width: 'w-20', type: 'action' },
+                { width: 'w-24', type: 'action' },
+              ]} 
+              showHeader 
+            />
+          ) : (
+            <>
+              <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-[#7ACBD9] text-black font-semibold">
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("id")}
+                      >
+                        ID
+                        {sortConfig?.key === "id" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("nombre")}
+                      >
+                        Nombre
+                        {sortConfig?.key === "nombre" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th className="px-6 py-3 font-semibold">Especie</th>
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("responsable")}
+                      >
+                        Responsable
+                        {sortConfig?.key === "responsable" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th className="px-6 py-3 font-semibold">Estado</th>
+                      <th className="px-6 py-3 font-semibold">Editar</th>
+                      <th className="px-6 py-3 font-semibold">Eliminar</th>
+                    </tr>
+                  </thead>
+                  {sortedPatients.length > 0 && (
+                    <tbody>
+                      {sortedPatients.map((patient) => (
+                        <tr
+                          key={patient.id}
+                          className="text-black border-t border-border transition-colors hover:bg-muted/60"
+                        >
+                          <td className="px-6 py-3 font-medium">
+                            <button
+                              onClick={() => handlePatientClick(patient.id)}
+                              className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
+                            >
+                              {patient.id}
+                            </button>
+                          </td>
+                          <td className="px-6 py-3 font-medium">
+                            <button
+                              onClick={() => handlePatientClick(patient.id)}
+                              className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
+                            >
+                              {patient.nombre}
+                            </button>
+                          </td>
+                          <td className="px-6 py-3">{patient.especie}</td>
+                          <td className="px-6 py-3">{patient.responsable}</td>
+                          <td className="px-6 py-3">
+                            <span
+                              className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                patient.estado === "Activo"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {patient.estado}
+                            </span>
+                          </td>
+                          <td className="px-6 py-3">
+                            <button
+                              onClick={() => openEdit(patient.id)}
+                              className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo"
+                            >
+                              Editar
+                            </button>
+                          </td>
+                          <td className="px-6 py-3">
+                            <button
+                              onClick={() => handleDeletePatient(patient.id)}
+                              disabled={deletingId === patient.id}
+                              className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {deletingId === patient.id
+                                ? "Eliminando..."
+                                : "Eliminar"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  )}
+                </table>
+
+                {filteredPatients.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <img src={pawIcon} alt="paw icon" />
+                    <h3 className="mt-4 text-lg font-semibold text-foreground">
+                      No hay pacientes registrados aún
+                    </h3>
+                    <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
+                      {"Agrega uno nuevo haciendo clic en el botón superior."}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 py-4">
+                  <button
+                    onClick={() => loadPatients(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    ← Anterior
+                  </button>
+                  <span className="text-sm text-muted-foreground">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => loadPatients(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </section>

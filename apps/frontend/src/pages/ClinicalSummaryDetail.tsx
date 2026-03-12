@@ -4,6 +4,7 @@ import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../services/api";
+import { ClinicalSummarySkeleton } from "../components/common/Skeleton";
 
 // ---------------------------------------------------------------------------
 // Types matching the API response
@@ -85,9 +86,7 @@ export default function ClinicalSummaryDetail() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="flex flex-1 items-center justify-center py-24">
-          <p className="text-sm text-muted-foreground">Cargando resumen clínico...</p>
-        </div>
+        <ClinicalSummarySkeleton />
       </MainLayout>
     );
   }
