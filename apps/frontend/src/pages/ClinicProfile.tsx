@@ -6,11 +6,14 @@ import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
+import { useToast } from "../context/ToastContext";
 
 export default function ClinicProfile() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ nombre?: string; direccion_calle?: string; direccion_numero?: string }>({});
 
   // Estado del formulario y nombre de la clínica
   const [clinicName, setClinicName] = useState("Nombre de la clínica");
@@ -87,6 +90,32 @@ export default function ClinicProfile() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "nombre") {
+      const hasInvalidChars = value && !/^[A-Za-z\u00C0-\u00FF\s]*$/.test(value);
+      setFieldErrors((prev) => ({
+        ...prev,
+        nombre: hasInvalidChars ? "El nombre solo puede contener letras y espacios" : undefined,
+      }));
+    }
+
+    if (name === "direccion_calle") {
+      const hasInvalidChars = value && !/^[A-Za-z\u00C0-\u00FF0-9\s,-]*$/.test(value);
+      setFieldErrors((prev) => ({
+        ...prev,
+        direccion_calle: hasInvalidChars
+          ? "La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)"
+          : undefined,
+      }));
+    }
+
+    if (name === "direccion_numero") {
+      const hasInvalidChars = value && !/^[0-9]*$/.test(value);
+      setFieldErrors((prev) => ({
+        ...prev,
+        direccion_numero: hasInvalidChars ? "El número de dirección solo puede contener dígitos" : undefined,
+      }));
+    }
   };
 
   const handleProvinceChange = (value: string) => {
@@ -112,7 +141,17 @@ export default function ClinicProfile() {
     const token = storage.getToken();
 
     if (!token) {
-      alert("No hay sesión activa");
+      showToast("No hay sesión activa", "error");
+      return;
+    }
+
+    if (fieldErrors.nombre || fieldErrors.direccion_calle || fieldErrors.direccion_numero) {
+      showToast("Por favor, corregí los errores antes de guardar.", "error");
+      return;
+    }
+
+    if (formData.direccion_calle && !/[A-Za-z\u00C0-\u00FF]/.test(formData.direccion_calle)) {
+      setFieldErrors((prev) => ({ ...prev, direccion_calle: "La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)" }));
       return;
     }
 
@@ -125,14 +164,14 @@ export default function ClinicProfile() {
         direccion_calle: formData.direccion_calle,
         direccion_numero: formData.direccion_numero,
         direccion_localidad: formData.direccion_localidad,
-        provincia: [formData.provincia],
+        provincia: formData.provincia,
         telefono: formData.telefono,
       };
 
       await api.updateClinic(updateData, token);
-      alert("Datos de la clínica actualizados correctamente");
+      showToast("Datos de la clínica actualizados correctamente", "success");
     } catch (error: any) {
-      alert(error.message || "Error al guardar los cambios");
+      showToast(error.message || "Error al guardar los cambios", "error");
     } finally {
       setIsLoading(false);
     }
@@ -216,6 +255,7 @@ export default function ClinicProfile() {
                     placeholder="Nombre de la clínica"
                     value={formData.nombre}
                     onChange={handleChange}
+                    error={fieldErrors.nombre}
                   />
                 </div>
 
@@ -239,6 +279,7 @@ export default function ClinicProfile() {
                     placeholder="Av. San Martín"
                     value={formData.direccion_calle}
                     onChange={handleChange}
+                    error={fieldErrors.direccion_calle}
                   />
                 </div>
 
@@ -250,6 +291,7 @@ export default function ClinicProfile() {
                     placeholder="1234"
                     value={formData.direccion_numero}
                     onChange={handleChange}
+                    error={fieldErrors.direccion_numero}
                   />
                 </div>
 
@@ -330,7 +372,7 @@ export default function ClinicProfile() {
                 <Button
                   type="button"
                   onClick={handleCancel}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600"
+                  className="flex-1 bg-[#808080] hover:bg-[#A49D9D] text-white border-red-500 hover:border-red-600"
                 >
                   Cancelar
                 </Button>
