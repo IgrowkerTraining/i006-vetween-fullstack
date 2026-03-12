@@ -29,6 +29,7 @@ export function useEditResponsible(onSuccess: () => Promise<void>) {
   const [editInitialData, setEditInitialData] = useState<
     ResponsibleData | undefined
   >(undefined);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const openEdit = async (responsableId: string) => {
     setEditApiError(null);
@@ -66,6 +67,7 @@ export function useEditResponsible(onSuccess: () => Promise<void>) {
       });
       await onSuccess();
       setIsEditModalOpen(false);
+      setShowSuccessModal(true);
     } catch (err: any) {
       setEditApiError(err?.message || "Ocurrió un error inesperado.");
     } finally {
@@ -81,5 +83,7 @@ export function useEditResponsible(onSuccess: () => Promise<void>) {
     openEdit,
     closeEdit,
     submitEdit,
+    showSuccessModal,
+    closeSuccessModal: () => setShowSuccessModal(false),
   };
 }

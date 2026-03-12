@@ -18,6 +18,8 @@ import {
 } from "../services/api";
 import { ROUTES } from "../constants/routes";
 import { Modal } from "../components/common/Modal";
+import { SuccessModal } from "../components/common/SuccessModal";
+import { DangerConfirmModal } from "../components/common/DangerConfirmModal";
 import {
   ClinicalVisitForm,
   ClinicalVisitFormData,
@@ -63,6 +65,8 @@ const PatientDetail: React.FC = () => {
     openEdit,
     closeEdit,
     submitEdit,
+    showSuccessModal,
+    closeSuccessModal,
   } = useEditPatient(async (patientId) => {
     const updated = await api.getPatientById(patientId);
     setPatientData(updated);
@@ -70,6 +74,16 @@ const PatientDetail: React.FC = () => {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summarySuccess, setSummarySuccess] = useState(false);
+  const [showVisitSuccessModal, setShowVisitSuccessModal] = useState(false);
+  const [showVaccineSuccessModal, setShowVaccineSuccessModal] = useState(false);
+  const [showDeactivateVisitModal, setShowDeactivateVisitModal] =
+    useState(false);
+  const [visitToDeactivateId, setVisitToDeactivateId] = useState<string | null>(
+    null,
+  );
+  const [isDeactivatingVisit, setIsDeactivatingVisit] = useState(false);
+  const [showDeactivateVisitSuccessModal, setShowDeactivateVisitSuccessModal] =
+    useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -133,7 +147,9 @@ const PatientDetail: React.FC = () => {
             expandido: index === 0,
           };
         });
-        mappedVisitas.sort((a, b) => Number(b.historialPrevio) - Number(a.historialPrevio));
+        mappedVisitas.sort(
+          (a, b) => Number(b.historialPrevio) - Number(a.historialPrevio),
+        );
         setVisitas(mappedVisitas);
         const mappedVacunas: Vacuna[] = vacunasResult.data.map((v, index) => ({
           id: String(v.id_vacunas),
@@ -248,19 +264,28 @@ const PatientDetail: React.FC = () => {
     );
   };
 
-  const handleDesactivarVisita = async (visitaId: string) => {
-    const confirmed = window.confirm(
-      "¿Deséas desactivar esta visita? Esta acción no se puede deshacer.",
-    );
-    if (!confirmed) return;
+  const handleDesactivarVisita = (visitaId: string) => {
+    setVisitToDeactivateId(visitaId);
+    setShowDeactivateVisitModal(true);
+  };
+
+  const handleConfirmDesactivarVisita = async () => {
+    if (!visitToDeactivateId) return;
+    setIsDeactivatingVisit(true);
     try {
-      await api.inactivarVisita(visitaId);
+      await api.inactivarVisita(visitToDeactivateId);
       setVisitas((prev) =>
-        prev.map((v) => (v.id === visitaId ? { ...v, inactiva: true } : v)),
+        prev.map((v) =>
+          v.id === visitToDeactivateId ? { ...v, inactiva: true } : v,
+        ),
       );
-      showToast("Visita marcada como inactiva", "success");
+      setShowDeactivateVisitModal(false);
+      setVisitToDeactivateId(null);
+      setShowDeactivateVisitSuccessModal(true);
     } catch (err: any) {
       showToast(err.message || "Error al desactivar la visita", "error");
+    } finally {
+      setIsDeactivatingVisit(false);
     }
   };
 
@@ -281,16 +306,34 @@ const PatientDetail: React.FC = () => {
           id: String(visit.id_visitas ?? visit.id_visita ?? visit.id ?? "-"),
           fechaVisita: pickText(visit.fecha, visit.fecha_visita),
           historialPrevio: Boolean(visit.historial_previo),
-          motivoConsulta: pickText(visit.motivo_consulta, visit.motivoConsulta, visit.motivo),
-          diagnostico: pickText(visit.diagnostico, visit.diagnosis, visit.diagnostico_visita),
-          tratamiento: pickText(visit.tratamiento, visit.treatments, visit.tratamiento_indicado),
-          observaciones: pickText(visit.observaciones, visit.observacion, visit.observaciones_generales),
+          motivoConsulta: pickText(
+            visit.motivo_consulta,
+            visit.motivoConsulta,
+            visit.motivo,
+          ),
+          diagnostico: pickText(
+            visit.diagnostico,
+            visit.diagnosis,
+            visit.diagnostico_visita,
+          ),
+          tratamiento: pickText(
+            visit.tratamiento,
+            visit.treatments,
+            visit.tratamiento_indicado,
+          ),
+          observaciones: pickText(
+            visit.observaciones,
+            visit.observacion,
+            visit.observaciones_generales,
+          ),
           estado: visit.estado ? "Corregido" : "Original",
           inactiva: Boolean(visit.estado),
           expandido: index === 0,
         };
       });
-      mapped.sort((a, b) => Number(b.historialPrevio) - Number(a.historialPrevio));
+      mapped.sort(
+        (a, b) => Number(b.historialPrevio) - Number(a.historialPrevio),
+      );
       setVisitas(mapped);
       setVisitasPagina(newPage);
       setVisitasUltimaPagina(result.ultimaPagina);
@@ -372,6 +415,7 @@ const PatientDetail: React.FC = () => {
       };
       setVisitas((prev) => [newVisita, ...prev]);
       setIsVisitModalOpen(false);
+      setShowVisitSuccessModal(true);
     } catch (err: any) {
       console.error("Error al registrar visita:", err.message);
     } finally {
@@ -473,6 +517,7 @@ const PatientDetail: React.FC = () => {
       setVacunasPagina(1);
       setVacunasUltimaPagina(freshResult.ultimaPagina);
       setIsVaccineModalOpen(false);
+      setShowVaccineSuccessModal(true);
     } catch (err: any) {
       console.error("Error al registrar vacuna:", err.message);
     }
@@ -541,8 +586,19 @@ const PatientDetail: React.FC = () => {
                 disabled={visitasPagina === 1 || isVisitasLoading}
                 className="flex items-center justify-center h-8 w-8 rounded-md border border-border text-muted-foreground hover:bg-vetween-teal/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
               </button>
               <span className="text-sm text-muted-foreground">
@@ -550,11 +606,24 @@ const PatientDetail: React.FC = () => {
               </span>
               <button
                 onClick={() => handleVisitasPageChange(visitasPagina + 1)}
-                disabled={visitasPagina === visitasUltimaPagina || isVisitasLoading}
+                disabled={
+                  visitasPagina === visitasUltimaPagina || isVisitasLoading
+                }
                 className="flex items-center justify-center h-8 w-8 rounded-md border border-border text-muted-foreground hover:bg-vetween-teal/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </button>
             </div>
@@ -575,8 +644,19 @@ const PatientDetail: React.FC = () => {
                 disabled={vacunasPagina === 1 || isVacunasLoading}
                 className="flex items-center justify-center h-8 w-8 rounded-md border border-border text-muted-foreground hover:bg-vetween-teal/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
               </button>
               <span className="text-sm text-muted-foreground">
@@ -584,11 +664,24 @@ const PatientDetail: React.FC = () => {
               </span>
               <button
                 onClick={() => handleVacunasPageChange(vacunasPagina + 1)}
-                disabled={vacunasPagina === vacunasUltimaPagina || isVacunasLoading}
+                disabled={
+                  vacunasPagina === vacunasUltimaPagina || isVacunasLoading
+                }
                 className="flex items-center justify-center h-8 w-8 rounded-md border border-border text-muted-foreground hover:bg-vetween-teal/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </button>
             </div>
@@ -612,6 +705,36 @@ const PatientDetail: React.FC = () => {
         />
       </Modal>
 
+      <SuccessModal
+        isOpen={showSuccessModal}
+        message="Los datos se actualizaron correctamente"
+        onAccept={closeSuccessModal}
+      />
+      <SuccessModal
+        isOpen={showVisitSuccessModal}
+        message="Se registró nueva visita clínica exitosamente"
+        onAccept={() => setShowVisitSuccessModal(false)}
+      />
+      <SuccessModal
+        isOpen={showVaccineSuccessModal}
+        message="Se registró nueva vacuna exitosamente"
+        onAccept={() => setShowVaccineSuccessModal(false)}
+      />
+      <SuccessModal
+        isOpen={showDeactivateVisitSuccessModal}
+        message="El registro de visita se canceló con éxito"
+        onAccept={() => setShowDeactivateVisitSuccessModal(false)}
+      />
+      <DangerConfirmModal
+        isOpen={showDeactivateVisitModal}
+        question="¿Estás seguro de que querés cancelar el registro de visita?"
+        onCancel={() => {
+          setShowDeactivateVisitModal(false);
+          setVisitToDeactivateId(null);
+        }}
+        onConfirm={handleConfirmDesactivarVisita}
+        isConfirmLoading={isDeactivatingVisit}
+      />
       <Modal
         isOpen={isEditModalOpen}
         onClose={closeEdit}

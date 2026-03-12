@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import addResponsibleIcon from "../assets/addResponsibleIcon.svg";
+import pawRedIcon from "../assets/huella-roja.svg";
 import editIcon from "../assets/edit.svg";
 import { sortArray } from "../utils/sort";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { SearchBar } from "../components/common/SearchBar";
 import { Modal } from "../components/common/Modal";
+import { SuccessModal } from "../components/common/SuccessModal";
+import { DangerConfirmModal } from "../components/common/DangerConfirmModal";
 import { EditResponsibleForm } from "../components/forms/EditResponsibleForm";
 import { api, ResponsibleListItem } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
@@ -94,6 +97,10 @@ export default function ResponsibleList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [activePatientCount, setActivePatientCount] = useState(0);
 
   const {
     isEditModalOpen,
@@ -103,6 +110,8 @@ export default function ResponsibleList() {
     openEdit,
     closeEdit,
     submitEdit,
+    showSuccessModal,
+    closeSuccessModal,
   } = useEditResponsible(async () => {
     await loadData(currentPage);
   });
@@ -133,6 +142,18 @@ export default function ResponsibleList() {
         ...extractPatientsArray(firstPatientsResponse),
         ...extraPatientResponses.flatMap((r) => extractPatientsArray(r)),
       ];
+
+      // Contar pacientes activos
+      const activePatientsCount = allPatients.filter(
+        (p: any) =>
+          p.estado === true ||
+          p.estado === "true" ||
+          p.estado === 1 ||
+          p.activo === true ||
+          p.activo === "true" ||
+          p.activo === 1,
+      ).length;
+      setActivePatientCount(activePatientsCount);
 
       // Build map: responsable id → [{ id, nombre, estado }]
       const mascotasByResponsable = new Map<string, MascotaRef[]>();
@@ -217,16 +238,19 @@ export default function ResponsibleList() {
     setSortConfig({ key, direction });
   };
 
-  const handleDeleteResponsable = async (id: string) => {
-    const confirmed = window.confirm(
-      "¿Seguro que deseas eliminar este responsable?",
-    );
-    if (!confirmed) return;
+  const handleOpenDeleteModal = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const handleDeleteResponsable = async () => {
+    if (!deleteTargetId) return;
     try {
-      setDeletingId(id);
-      await api.deleteResponsable(id);
-      setResponsables((prev) => prev.filter((r) => r.id !== id));
+      setDeletingId(deleteTargetId);
+      await api.deleteResponsable(deleteTargetId);
+      setResponsables((prev) => prev.filter((r) => r.id !== deleteTargetId));
       setLoadError(null);
+      setDeleteTargetId(null);
+      setShowDeleteSuccessModal(true);
     } catch (err: any) {
       setLoadError(err?.message || "No se pudo eliminar el responsable.");
     } finally {
@@ -234,7 +258,13 @@ export default function ResponsibleList() {
     }
   };
 
-  const handleAddResponsible = () => navigate(ROUTES.REGISTER_PATIENT);
+  const handleAddResponsible = () => {
+    if (activePatientCount >= 50) {
+      setShowLimitModal(true);
+      return;
+    }
+    navigate(ROUTES.REGISTER_PATIENT);
+  };
 
   return (
     <MainLayout>
@@ -245,7 +275,11 @@ export default function ResponsibleList() {
           actions={
             <button
               onClick={handleAddResponsible}
-              className="flex items-center gap-2 rounded-lg bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
+              className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
+                activePatientCount >= 50
+                  ? "bg-[#5451FF]/40 text-white/60"
+                  : "bg-[#5451FF] text-white hover:bg-[#5451FF]/85"
+              }`}
             >
               <img
                 src={addResponsibleIcon}
@@ -379,7 +413,7 @@ export default function ResponsibleList() {
                       </td>
                       <td className="px-6 py-3">
                         <button
-                          onClick={() => handleDeleteResponsable(r.id)}
+                          onClick={() => handleOpenDeleteModal(r.id)}
                           disabled={
                             deletingId === r.id || r.mascotas.length > 0
                           }
@@ -443,6 +477,30 @@ export default function ResponsibleList() {
           )}
         </section>
       </section>
+      <SuccessModal
+        isOpen={showSuccessModal}
+        message="Los datos se actualizaron correctamente"
+        onAccept={closeSuccessModal}
+      />
+      <SuccessModal
+        isOpen={showLimitModal}
+        message="Alcanzaste el límite de 50 pacientes registrados"
+        onAccept={() => setShowLimitModal(false)}
+        icon={pawRedIcon}
+      />
+      <SuccessModal
+        isOpen={showDeleteSuccessModal}
+        message="El responsable se eliminó con éxito"
+        onAccept={() => setShowDeleteSuccessModal(false)}
+      />
+      <DangerConfirmModal
+        isOpen={deleteTargetId !== null}
+        question="¿Estás seguro de que querés eliminar este responsable?"
+        message="Este responsable no registra mascotas asociadas. Podrás eliminarlo definitivamente."
+        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={handleDeleteResponsable}
+        isConfirmLoading={deletingId !== null}
+      />
       <Modal
         isOpen={isEditModalOpen}
         onClose={closeEdit}

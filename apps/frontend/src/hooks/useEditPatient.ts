@@ -38,6 +38,7 @@ export function useEditPatient(
   const [editInitialData, setEditInitialData] = useState<
     PatientData | undefined
   >(undefined);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const openEdit = async (patientId: string) => {
     setEditApiError(null);
@@ -79,6 +80,7 @@ export function useEditPatient(
       });
       await onSuccess(editingPatientId);
       setIsEditModalOpen(false);
+      setShowSuccessModal(true);
     } catch (err: any) {
       setEditApiError(err?.message || "Ocurrió un error inesperado.");
     } finally {
@@ -94,5 +96,7 @@ export function useEditPatient(
     openEdit,
     closeEdit,
     submitEdit,
+    showSuccessModal,
+    closeSuccessModal: () => setShowSuccessModal(false),
   };
 }

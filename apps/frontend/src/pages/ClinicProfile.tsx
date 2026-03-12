@@ -4,6 +4,7 @@ import Sidebar from "../components/layout/Sidebar";
 import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
+import { SuccessModal } from "../components/common/SuccessModal";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
 import { useToast } from "../context/ToastContext";
@@ -13,7 +14,12 @@ export default function ClinicProfile() {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<{ nombre?: string; direccion_calle?: string; direccion_numero?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{
+    nombre?: string;
+    direccion_calle?: string;
+    direccion_numero?: string;
+  }>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Estado del formulario y nombre de la clínica
   const [clinicName, setClinicName] = useState("Nombre de la clínica");
@@ -61,7 +67,7 @@ export default function ClinicProfile() {
   useEffect(() => {
     const loadClinicData = async () => {
       const token = storage.getToken();
-      
+
       if (token) {
         try {
           setIsLoading(true);
@@ -92,15 +98,19 @@ export default function ClinicProfile() {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (name === "nombre") {
-      const hasInvalidChars = value && !/^[A-Za-z\u00C0-\u00FF\s]*$/.test(value);
+      const hasInvalidChars =
+        value && !/^[A-Za-z\u00C0-\u00FF\s]*$/.test(value);
       setFieldErrors((prev) => ({
         ...prev,
-        nombre: hasInvalidChars ? "El nombre solo puede contener letras y espacios" : undefined,
+        nombre: hasInvalidChars
+          ? "El nombre solo puede contener letras y espacios"
+          : undefined,
       }));
     }
 
     if (name === "direccion_calle") {
-      const hasInvalidChars = value && !/^[A-Za-z\u00C0-\u00FF0-9\s,-]*$/.test(value);
+      const hasInvalidChars =
+        value && !/^[A-Za-z\u00C0-\u00FF0-9\s,-]*$/.test(value);
       setFieldErrors((prev) => ({
         ...prev,
         direccion_calle: hasInvalidChars
@@ -113,7 +123,9 @@ export default function ClinicProfile() {
       const hasInvalidChars = value && !/^[0-9]*$/.test(value);
       setFieldErrors((prev) => ({
         ...prev,
-        direccion_numero: hasInvalidChars ? "El número de dirección solo puede contener dígitos" : undefined,
+        direccion_numero: hasInvalidChars
+          ? "El número de dirección solo puede contener dígitos"
+          : undefined,
       }));
     }
   };
@@ -125,7 +137,10 @@ export default function ClinicProfile() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (provinceRef.current && !provinceRef.current.contains(e.target as Node)) {
+      if (
+        provinceRef.current &&
+        !provinceRef.current.contains(e.target as Node)
+      ) {
         setProvinceOpen(false);
       }
     };
@@ -145,13 +160,24 @@ export default function ClinicProfile() {
       return;
     }
 
-    if (fieldErrors.nombre || fieldErrors.direccion_calle || fieldErrors.direccion_numero) {
+    if (
+      fieldErrors.nombre ||
+      fieldErrors.direccion_calle ||
+      fieldErrors.direccion_numero
+    ) {
       showToast("Por favor, corregí los errores antes de guardar.", "error");
       return;
     }
 
-    if (formData.direccion_calle && !/[A-Za-z\u00C0-\u00FF]/.test(formData.direccion_calle)) {
-      setFieldErrors((prev) => ({ ...prev, direccion_calle: "La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)" }));
+    if (
+      formData.direccion_calle &&
+      !/[A-Za-z\u00C0-\u00FF]/.test(formData.direccion_calle)
+    ) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        direccion_calle:
+          "La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)",
+      }));
       return;
     }
 
@@ -169,7 +195,7 @@ export default function ClinicProfile() {
       };
 
       await api.updateClinic(updateData, token);
-      showToast("Datos de la clínica actualizados correctamente", "success");
+      setShowSuccessModal(true);
     } catch (error: any) {
       showToast(error.message || "Error al guardar los cambios", "error");
     } finally {
@@ -178,217 +204,236 @@ export default function ClinicProfile() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
+    <>
+      <SuccessModal
+        isOpen={showSuccessModal}
+        message="Los datos de la clínica se guardaron correctamente"
+        onAccept={() => setShowSuccessModal(false)}
+      />
+      <div className="flex h-screen bg-background">
+        <Sidebar />
 
-      <main className="flex flex-1 flex-col overflow-y-auto">
-        {/* Header */}
-        <header className="border-b border-border px-8 py-5">
-          <p className="text-sm text-muted-foreground">Hola</p>
-          <h1 className="text-2xl font-bold text-foreground">Mi Cuenta</h1>
-        </header>
+        <main className="flex flex-1 flex-col overflow-y-auto">
+          {/* Header */}
+          <header className="border-b border-border px-8 py-5">
+            <p className="text-sm text-muted-foreground">Hola</p>
+            <h1 className="text-2xl font-bold text-foreground">Mi Cuenta</h1>
+          </header>
 
-        {/* Breadcrumb */}
-        <div className="border-b border-border px-8 py-3">
-          <nav className="flex items-center gap-2 text-sm">
-            <button
-              onClick={() => navigate("/mi-cuenta")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Mi cuenta
-            </button>
-            <span className="text-muted-foreground">›</span>
-            <span className="text-foreground font-medium">Clínica</span>
-          </nav>
-        </div>
+          {/* Breadcrumb */}
+          <div className="border-b border-border px-8 py-3">
+            <nav className="flex items-center gap-2 text-sm">
+              <button
+                onClick={() => navigate("/mi-cuenta")}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Mi cuenta
+              </button>
+              <span className="text-muted-foreground">›</span>
+              <span className="text-foreground font-medium">Clínica</span>
+            </nav>
+          </div>
 
-        {/* Contenido Centrado */}
-        <div className="flex-1 flex items-start justify-center p-6 md:p-10 overflow-y-auto">
-          <div className="w-full max-w-md">
-            {/* Clinic Info Section */}
-            <section className="bg-vetween-teal/5 border border-border rounded-2xl p-6 mb-6">
-              <div className="flex items-center gap-4">
-                {/* Clinic Icon */}
-                <div className="h-24 w-24 flex items-center justify-center rounded-full bg-vetween-teal">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-12 w-12 text-white"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-                    />
-                  </svg>
-                </div>
-
-                {/* Clinic Details */}
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">
-                    {clinicName}
-                  </h2>
-                  <p className="text-muted-foreground">Datos de la clínica</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Form Section */}
-            <section className="bg-vetween-teal/5 border border-border rounded-2xl p-6">
-              {/* Label */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Datos de la clínica
-                </h3>
-              </div>
-
-              {/* Form */}
-              <div className="grid grid-cols-1 gap-4">
-                {/* Nombre de la Clínica */}
-                <div>
-                  <Input
-                    label="Nombre"
-                    name="nombre"
-                    placeholder="Nombre de la clínica"
-                    value={formData.nombre}
-                    onChange={handleChange}
-                    error={fieldErrors.nombre}
-                  />
-                </div>
-
-                {/* Número de Habilitación */}
-                <div>
-                  <Input
-                    label="Número de Habilitación"
-                    name="num_habilitacion"
-                    placeholder="Número de habilitación"
-                    value={formData.num_habilitacion}
-                    onChange={handleChange}
-                    disabled
-                  />
-                </div>
-
-                {/* Calle */}
-                <div>
-                  <Input
-                    label="Calle"
-                    name="direccion_calle"
-                    placeholder="Av. San Martín"
-                    value={formData.direccion_calle}
-                    onChange={handleChange}
-                    error={fieldErrors.direccion_calle}
-                  />
-                </div>
-
-                {/* Número */}
-                <div>
-                  <Input
-                    label="Número"
-                    name="direccion_numero"
-                    placeholder="1234"
-                    value={formData.direccion_numero}
-                    onChange={handleChange}
-                    error={fieldErrors.direccion_numero}
-                  />
-                </div>
-
-                {/* Localidad */}
-                <div>
-                  <Input
-                    label="Localidad"
-                    name="direccion_localidad"
-                    placeholder="Ciudad"
-                    value={formData.direccion_localidad}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                {/* Provincia */}
-                <div ref={provinceRef}>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    Provincia
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setProvinceOpen((prev) => !prev)}
-                    className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-vetween-teal/50 focus:border-vetween-teal transition-all duration-200 flex items-center justify-between"
-                  >
-                    <span className={formData.provincia === "" ? "text-muted-foreground" : "text-foreground truncate pr-2"}>
-                      {formData.provincia === "" ? "Seleccionar provincia…" : formData.provincia}
-                    </span>
+          {/* Contenido Centrado */}
+          <div className="flex-1 flex items-start justify-center p-6 md:p-10 overflow-y-auto">
+            <div className="w-full max-w-md">
+              {/* Clinic Info Section */}
+              <section className="bg-vetween-teal/5 border border-border rounded-2xl p-6 mb-6">
+                <div className="flex items-center gap-4">
+                  {/* Clinic Icon */}
+                  <div className="h-24 w-24 flex items-center justify-center rounded-full bg-vetween-teal">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${provinceOpen ? "rotate-180" : ""}`}
                       fill="none"
                       viewBox="0 0 24 24"
-                      strokeWidth={2}
+                      strokeWidth={1.5}
                       stroke="currentColor"
+                      className="h-12 w-12 text-white"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                      />
                     </svg>
-                  </button>
-                  {provinceOpen && (
-                    <div className="mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-10 overflow-hidden max-h-48 overflow-y-auto">
-                      <div className="p-2 grid grid-cols-1 gap-1">
-                        {PROVINCE_OPTIONS.map((prov) => (
-                          <label
-                            key={prov}
-                            className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-vetween-teal/10 cursor-pointer text-sm text-foreground select-none"
-                          >
-                            <input
-                              type="radio"
-                              name="provincia"
-                              value={prov}
-                              checked={formData.provincia === prov}
-                              onChange={() => handleProvinceChange(prov)}
-                              className="w-4 h-4 accent-vetween-teal flex-shrink-0"
-                            />
-                            {prov}
-                          </label>
-                        ))}
+                  </div>
+
+                  {/* Clinic Details */}
+                  <div>
+                    <h2 className="text-xl font-semibold text-foreground">
+                      {clinicName}
+                    </h2>
+                    <p className="text-muted-foreground">Datos de la clínica</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Form Section */}
+              <section className="bg-vetween-teal/5 border border-border rounded-2xl p-6">
+                {/* Label */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Datos de la clínica
+                  </h3>
+                </div>
+
+                {/* Form */}
+                <div className="grid grid-cols-1 gap-4">
+                  {/* Nombre de la Clínica */}
+                  <div>
+                    <Input
+                      label="Nombre"
+                      name="nombre"
+                      placeholder="Nombre de la clínica"
+                      value={formData.nombre}
+                      onChange={handleChange}
+                      error={fieldErrors.nombre}
+                    />
+                  </div>
+
+                  {/* Número de Habilitación */}
+                  <div>
+                    <Input
+                      label="Número de Habilitación"
+                      name="num_habilitacion"
+                      placeholder="Número de habilitación"
+                      value={formData.num_habilitacion}
+                      onChange={handleChange}
+                      disabled
+                    />
+                  </div>
+
+                  {/* Calle */}
+                  <div>
+                    <Input
+                      label="Calle"
+                      name="direccion_calle"
+                      placeholder="Av. San Martín"
+                      value={formData.direccion_calle}
+                      onChange={handleChange}
+                      error={fieldErrors.direccion_calle}
+                    />
+                  </div>
+
+                  {/* Número */}
+                  <div>
+                    <Input
+                      label="Número"
+                      name="direccion_numero"
+                      placeholder="1234"
+                      value={formData.direccion_numero}
+                      onChange={handleChange}
+                      error={fieldErrors.direccion_numero}
+                    />
+                  </div>
+
+                  {/* Localidad */}
+                  <div>
+                    <Input
+                      label="Localidad"
+                      name="direccion_localidad"
+                      placeholder="Ciudad"
+                      value={formData.direccion_localidad}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Provincia */}
+                  <div ref={provinceRef}>
+                    <label className="block text-sm font-medium text-foreground mb-1">
+                      Provincia
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setProvinceOpen((prev) => !prev)}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-vetween-teal/50 focus:border-vetween-teal transition-all duration-200 flex items-center justify-between"
+                    >
+                      <span
+                        className={
+                          formData.provincia === ""
+                            ? "text-muted-foreground"
+                            : "text-foreground truncate pr-2"
+                        }
+                      >
+                        {formData.provincia === ""
+                          ? "Seleccionar provincia…"
+                          : formData.provincia}
+                      </span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${provinceOpen ? "rotate-180" : ""}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m19 9-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                    {provinceOpen && (
+                      <div className="mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-10 overflow-hidden max-h-48 overflow-y-auto">
+                        <div className="p-2 grid grid-cols-1 gap-1">
+                          {PROVINCE_OPTIONS.map((prov) => (
+                            <label
+                              key={prov}
+                              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-vetween-teal/10 cursor-pointer text-sm text-foreground select-none"
+                            >
+                              <input
+                                type="radio"
+                                name="provincia"
+                                value={prov}
+                                checked={formData.provincia === prov}
+                                onChange={() => handleProvinceChange(prov)}
+                                className="w-4 h-4 accent-vetween-teal flex-shrink-0"
+                              />
+                              {prov}
+                            </label>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+
+                  {/* Número de Teléfono */}
+                  <div>
+                    <Input
+                      label="Número de teléfono"
+                      name="telefono"
+                      type="tel"
+                      placeholder="(011) 999-9999"
+                      value={formData.telefono}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
 
-                {/* Número de Teléfono */}
-                <div>
-                  <Input
-                    label="Número de teléfono"
-                    name="telefono"
-                    type="tel"
-                    placeholder="(011) 999-9999"
-                    value={formData.telefono}
-                    onChange={handleChange}
-                  />
+                {/* Buttons */}
+                <div className="flex gap-4 mt-8">
+                  <Button
+                    type="button"
+                    onClick={handleCancel}
+                    className="flex-1 bg-[#808080] hover:bg-[#A49D9D] text-white border-red-500 hover:border-red-600"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSave}
+                    className="flex-1"
+                    isLoading={isLoading}
+                  >
+                    Guardar cambios
+                  </Button>
                 </div>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-4 mt-8">
-                <Button
-                  type="button"
-                  onClick={handleCancel}
-                  className="flex-1 bg-[#808080] hover:bg-[#A49D9D] text-white border-red-500 hover:border-red-600"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleSave}
-                  className="flex-1"
-                  isLoading={isLoading}
-                >
-                  Guardar cambios
-                </Button>
-              </div>
-            </section>
+              </section>
+            </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }

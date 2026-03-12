@@ -6,6 +6,8 @@ import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { SearchBar } from "../components/common/SearchBar";
 import { Modal } from "../components/common/Modal";
+import { SuccessModal } from "../components/common/SuccessModal";
+import { DangerConfirmModal } from "../components/common/DangerConfirmModal";
 import { EditPatientForm } from "../components/forms/EditPatientForm";
 import { api, ResponsibleListItem } from "../services/api";
 import { StatusPill } from "../components/common/StatusPill";
@@ -28,6 +30,8 @@ export default function PatientList() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
   const [patientsError, setPatientsError] = useState<string | null>(null);
   const {
     isEditModalOpen,
@@ -37,6 +41,8 @@ export default function PatientList() {
     openEdit,
     closeEdit,
     submitEdit,
+    showSuccessModal,
+    closeSuccessModal,
   } = useEditPatient(async () => {
     await loadPatients();
   });
@@ -227,17 +233,19 @@ export default function PatientList() {
     loadPatients(1);
   }, []);
 
-  const handleDeletePatient = async (patientId: string) => {
-    const confirmed = window.confirm(
-      "¿Seguro que deseas eliminar este paciente?",
-    );
-    if (!confirmed) return;
+  const handleOpenDeleteModal = (patientId: string) => {
+    setDeleteTargetId(patientId);
+  };
 
+  const handleDeletePatient = async () => {
+    if (!deleteTargetId) return;
     try {
-      setDeletingId(patientId);
-      await api.deletePatient(patientId);
-      setPatients((prev) => prev.filter((p) => p.id !== patientId));
+      setDeletingId(deleteTargetId);
+      await api.deletePatient(deleteTargetId);
+      setPatients((prev) => prev.filter((p) => p.id !== deleteTargetId));
       setPatientsError(null);
+      setDeleteTargetId(null);
+      setShowDeleteSuccessModal(true);
     } catch (err: any) {
       console.error("Error al eliminar paciente:", err.message);
       setPatientsError(err?.message || "No se pudo eliminar el paciente.");
@@ -388,7 +396,7 @@ export default function PatientList() {
                       </td>
                       <td className="px-6 py-3">
                         <button
-                          onClick={() => handleDeletePatient(patient.id)}
+                          onClick={() => handleOpenDeleteModal(patient.id)}
                           disabled={
                             deletingId === patient.id ||
                             patient.estado === "Activo"
@@ -455,6 +463,24 @@ export default function PatientList() {
           )}
         </section>
       </section>
+      <SuccessModal
+        isOpen={showSuccessModal}
+        message="Los datos se actualizaron correctamente"
+        onAccept={closeSuccessModal}
+      />
+      <SuccessModal
+        isOpen={showDeleteSuccessModal}
+        message="El paciente se eliminó con éxito"
+        onAccept={() => setShowDeleteSuccessModal(false)}
+      />
+      <DangerConfirmModal
+        isOpen={deleteTargetId !== null}
+        question="¿Estás seguro de que querés eliminar este paciente?"
+        message="Este paciente está inactivo. Podrás eliminarlo definitivamente."
+        onCancel={() => setDeleteTargetId(null)}
+        onConfirm={handleDeletePatient}
+        isConfirmLoading={deletingId !== null}
+      />
       <Modal
         isOpen={isEditModalOpen}
         onClose={closeEdit}

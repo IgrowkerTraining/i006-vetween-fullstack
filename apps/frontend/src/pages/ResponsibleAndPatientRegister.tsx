@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { Button } from "../components/common/Button";
+import { SuccessModal } from "../components/common/SuccessModal";
+import { DangerConfirmModal } from "../components/common/DangerConfirmModal";
 import {
   ResponsibleFormFields,
   ResponsibleData,
@@ -58,16 +60,23 @@ const ResponsibleAndPatientRegister: React.FC = () => {
   // ─── UI state ─────────────────────────────────────────────────────────────
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [showCancelPatientModal, setShowCancelPatientModal] = useState(false);
+  const [isCancellingPatient, setIsCancellingPatient] = useState(false);
+  const [successModal, setSuccessModal] = useState<{
+    message: string;
+    onAccept: () => void;
+  } | null>(null);
 
   // Carga la lista de responsables al montar (para la pestaña "existente")
   useEffect(() => {
-    const extractPage = (res: unknown): { items: any[]; ultimaPagina: number } => {
+    const extractPage = (
+      res: unknown,
+    ): { items: any[]; ultimaPagina: number } => {
       if (Array.isArray(res)) return { items: res, ultimaPagina: 1 };
       const r = res as any;
       if (Array.isArray(r?.data?.data))
         return { items: r.data.data, ultimaPagina: r.data.ultimaPagina || 1 };
-      if (Array.isArray(r?.data))
-        return { items: r.data, ultimaPagina: 1 };
+      if (Array.isArray(r?.data)) return { items: r.data, ultimaPagina: 1 };
       if (Array.isArray(r?.responsables))
         return { items: r.responsables, ultimaPagina: 1 };
       return { items: [], ultimaPagina: 1 };
@@ -82,8 +91,13 @@ const ResponsibleAndPatientRegister: React.FC = () => {
         let all = [...page1];
 
         if (ultimaPagina > 1) {
-          const pageNumbers = Array.from({ length: ultimaPagina - 1 }, (_, i) => i + 2);
-          const rest = await Promise.all(pageNumbers.map((p) => api.getResponsables(p)));
+          const pageNumbers = Array.from(
+            { length: ultimaPagina - 1 },
+            (_, i) => i + 2,
+          );
+          const rest = await Promise.all(
+            pageNumbers.map((p) => api.getResponsables(p)),
+          );
           rest.forEach((res) => {
             all = all.concat(extractPage(res).items);
           });
@@ -152,7 +166,13 @@ const ResponsibleAndPatientRegister: React.FC = () => {
       if (!id) throw new Error("No se recibió el ID del responsable creado.");
 
       setResolvedResponsable({ id, isNew: true });
-      setStage("paciente");
+      setSuccessModal({
+        message: "El responsable fue registrado correctamente.",
+        onAccept: () => {
+          setSuccessModal(null);
+          setStage("paciente");
+        },
+      });
     } catch (err: any) {
       setApiError(err?.message || "Error al crear el responsable.");
     } finally {
@@ -225,7 +245,13 @@ const ResponsibleAndPatientRegister: React.FC = () => {
         id_responsable: resolvedResponsable.id,
       };
       await api.createPatient(payload);
-      navigate(ROUTES.DASHBOARD);
+      setSuccessModal({
+        message: "El paciente fue registrado correctamente.",
+        onAccept: () => {
+          setSuccessModal(null);
+          navigate(ROUTES.DASHBOARD);
+        },
+      });
     } catch (err: any) {
       setApiError(err?.message || "Error al crear el paciente.");
     } finally {
@@ -233,17 +259,28 @@ const ResponsibleAndPatientRegister: React.FC = () => {
     }
   };
 
-  // Cancelar en step paciente: elimina el responsable si fue creado en esta sesión
-  const handleCancelarPaciente = async () => {
+  // Confirmar cancelación en step paciente: elimina el responsable solo si fue creado en esta sesión
+  const handleConfirmCancelarPaciente = async () => {
+    setIsCancellingPatient(true);
     if (resolvedResponsable?.isNew) {
       try {
         await api.deleteResponsable(resolvedResponsable.id);
       } catch {
-        // no-op: si el delete falla igual se navega al dashboard
+        // no-op: si el delete falla igual continúa el flujo de cancelación
       }
     }
-    navigate(ROUTES.DASHBOARD);
+    setShowCancelPatientModal(false);
+    setSuccessModal({
+      message: "El registro se canceló con éxito",
+      onAccept: () => {
+        setSuccessModal(null);
+        navigate(ROUTES.DASHBOARD);
+      },
+    });
+    setIsCancellingPatient(false);
   };
+
+  const handleCancelarPaciente = () => setShowCancelPatientModal(true);
 
   const handleCancelarResponsable = () => navigate(ROUTES.DASHBOARD);
 
@@ -258,6 +295,21 @@ const ResponsibleAndPatientRegister: React.FC = () => {
 
   return (
     <MainLayout>
+      <DangerConfirmModal
+        isOpen={showCancelPatientModal}
+        question="¿Cancelar registro?"
+        message={
+          "¿Estás seguro de que querés cancelar el registro?\nSe perderán todos los datos ingresados."
+        }
+        onCancel={() => setShowCancelPatientModal(false)}
+        onConfirm={handleConfirmCancelarPaciente}
+        isConfirmLoading={isCancellingPatient}
+      />
+      <SuccessModal
+        isOpen={successModal !== null}
+        message={successModal?.message ?? ""}
+        onAccept={() => successModal?.onAccept()}
+      />
       <section className="flex flex-1 flex-col overflow-y-auto">
         <PageHeader title={pageTitle} />
 
