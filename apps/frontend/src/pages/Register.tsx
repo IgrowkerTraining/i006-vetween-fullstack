@@ -186,7 +186,7 @@ const Register: React.FC = () => {
       newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
     const cost = parseFloat(formData.consultationCost);
     if (!formData.consultationCost || isNaN(cost) || cost < 0)
-      newErrors.consultationCost = "El costo de consulta no puede ser negativo";
+      newErrors.consultationCost = "El costo de consulta debe ser mayor o igual a 0";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -231,7 +231,7 @@ const Register: React.FC = () => {
       newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
     const cost = parseFloat(formData.consultationCost);
     if (!formData.consultationCost || isNaN(cost) || cost < 0)
-      newErrors.consultationCost = "El costo de consulta no puede ser negativo";
+      newErrors.consultationCost = "El costo de consulta debe ser mayor o igual a 0";
 
     // Datos del consultorio
     if (!formData.consultancy.trim() || formData.consultancy.trim().length < 2)
@@ -240,8 +240,10 @@ const Register: React.FC = () => {
       newErrors.habilitation = "El número de habilitación debe tener al menos 5 caracteres";
     if (formData.addressStreet.trim() && formData.addressStreet.trim().length < 2)
       newErrors.addressStreet = "La calle debe tener al menos 2 caracteres";
-    if (formData.addressStreet.trim() && !/^[A-Za-zA-ZÀ-ÖØ-öø-ÿ\s]+$/.test(formData.addressStreet.trim()))
-      newErrors.addressStreet = "La calle solo puede contener letras y espacios";
+    if (formData.addressStreet.trim() && !/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s]+$/.test(formData.addressStreet.trim()))
+      newErrors.addressStreet = "La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)";
+    if (formData.addressStreet.trim() && /^[^A-Za-zÀ-ÖØ-öø-ÿ]+$/.test(formData.addressStreet.trim()))
+      newErrors.addressStreet = "La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)";
     if (formData.addressLocality.trim() && formData.addressLocality.trim().length < 2)
       newErrors.addressLocality = "La ciudad / localidad debe tener al menos 2 caracteres";
     if (!formData.province)
