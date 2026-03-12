@@ -1,6 +1,23 @@
 const supabase = require('../config/supabaseClient');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { encriptarDato, desencriptarDato } = require("../utils/encryption");
+
+/*
+    Función auxiliar para limpiar (desencriptar) los datos sensibles de la clínica antes de enviarlos al frontend. 
+    Esto se puede usar en cualquier endpoint que devuelva datos de la clínica, para asegurarnos de que el frontend 
+    siempre reciba los datos desencriptados y listos para mostrar.
+*/
+const descifrarClinica = (clinica) => {
+    if (!clinica) return clinica;
+    return {
+        ...clinica,
+        telefono: desencriptarDato(clinica.telefono),
+        direccion_calle: desencriptarDato(clinica.direccion_calle),
+        direccion_localidad: desencriptarDato(clinica.direccion_localidad)
+    };
+};
+
 
 const registerUser = async (userData) => {
     try {
@@ -22,11 +39,11 @@ const registerUser = async (userData) => {
         const nuevaClinica = {
             nombre: userData.nombre_consultorio,
             num_habilitacion: userData.num_habilitacion,
-            direccion_calle: userData.direccion_calle,
+            direccion_calle: encriptarDato(userData.direccion_calle),
             direccion_numero: userData.direccion_numero,
-            direccion_localidad: userData.direccion_localidad,
+            direccion_localidad: encriptarDato(userData.direccion_localidad),
             provincia: userData.provincia,
-            telefono: userData.telefono
+            telefono: encriptarDato(userData.telefono)
         };
 
         const { data: clinicaCreada, error: errorClinica } = await supabase
@@ -68,7 +85,7 @@ const registerUser = async (userData) => {
             throw new Error('Error al registrar al veterinario: ' + errorVet.message);
         }
 
-        return { veterinario: veterinarioCreado, clinica: clinicaCreada };
+        return { veterinario: veterinarioCreado, clinica: descifrarClinica(clinicaCreada) };
 
     } catch (error) {
         throw error;

@@ -104,7 +104,7 @@ const getVaccineByPatientId = async (idPaciente, idClinicaFromToken, pagina = 1,
     // Luego obtener las vacunas del paciente
     const { data, error, count } = await supabase
         .from('vacunas')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('id_paciente', idPaciente)
         .order('fecha_aplicacion', { ascending: false }) // Ordena de la mas reciente a la mas antigua
         .range(from, to);
