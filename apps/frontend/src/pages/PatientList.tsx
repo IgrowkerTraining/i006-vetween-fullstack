@@ -388,10 +388,10 @@ export default function PatientList() {
               <div className="flex flex-col items-center justify-center py-16">
                 <img src={pawIcon} alt="paw icon" />
                 <h3 className="mt-4 text-lg font-semibold text-foreground">
-                  No hay pacientes registrados aun
+                  No hay pacientes registrados aún
                 </h3>
                 <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                  {"Agrega uno nuevo haciendo click en el boton superior."}
+                  {"Agrega uno nuevo haciendo clic en el botón superior."}
                 </p>
               </div>
             )}

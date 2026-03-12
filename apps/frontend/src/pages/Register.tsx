@@ -382,7 +382,7 @@ const Register: React.FC = () => {
                 onSubmit={handleStep1Submit}
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
-                <h2 className="font-bold text-[#0b1001] mb-1">Datos Básicos</h2>
+                <h2 className="font-bold text-[#0b1001] mb-1">Datos básicos</h2>
                 <div className="md:col-span-2">
                   <Input
                     label="Nombre"
@@ -475,7 +475,7 @@ const Register: React.FC = () => {
                   }
                 />
                 <Input
-                  label="Confirmar Contraseña"
+                  label="Confirmar contraseña"
                   name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="••••••••"
@@ -533,7 +533,7 @@ const Register: React.FC = () => {
                 />
                 <div className="md:col-span-2">
                   <Input
-                    label="Número de Matrícula"
+                    label="Número de matrícula"
                     name="registration"
                     placeholder="Matrícula"
                     required
@@ -756,7 +756,7 @@ const Register: React.FC = () => {
                 </div>
                 <div className="md:col-span-2">
                   <Input
-                    label="Número Habilitación"
+                    label="Número habilitación"
                     name="habilitation"
                     placeholder="Número Habilitación"
                     required
@@ -893,7 +893,7 @@ const Register: React.FC = () => {
                     className="w-full"
                     isLoading={isLoading}
                   >
-                    Crear Cuenta
+                    Crear cuenta
                   </Button>
                 </div>
               </form>

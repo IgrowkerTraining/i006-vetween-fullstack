@@ -291,7 +291,7 @@ export default function SecurityProfile() {
                 <Button
                   type="button"
                   onClick={handleCancel}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600"
+                  className="flex-1 bg-[#808080] hover:bg-[#A49D9D] text-white border-red-500 hover:border-red-600"
                 >
                   Cancelar
                 </Button>
@@ -301,7 +301,7 @@ export default function SecurityProfile() {
                   className="flex-1"
                   isLoading={isLoading}
                 >
-                  Guardar Cambios
+                  Guardar cambios
                 </Button>
               </div>
             </section>

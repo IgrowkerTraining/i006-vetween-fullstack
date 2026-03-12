@@ -7,6 +7,7 @@ import { storage } from "../utils/storage";
 import stethoscopeIcon from "../assets/stethoscope.svg";
 import keyIcon from "../assets/key.svg";
 import lockIcon from "../assets/lock.svg";
+import PageHeader from "../components/common/PageHeader";
 
 interface MenuCardProps {
   icon: string;
@@ -92,11 +93,7 @@ export default function MyAccount() {
       <Sidebar />
 
       <main className="flex flex-1 flex-col overflow-y-auto">
-        {/* Header */}
-        <header className="border-b border-border px-8 py-5">
-          <p className="text-sm text-muted-foreground">Hola, {firstName}</p>
-          <h1 className="text-2xl font-bold text-foreground">Mi Cuenta</h1>
-        </header>
+        <PageHeader subtitle={`Hola, ${firstName}`} title="Mi cuenta" />
 
         {/* User Info Section */}
         <section className="border-b border-border px-8 py-6">

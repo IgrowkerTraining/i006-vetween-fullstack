@@ -7,7 +7,7 @@ const navItems = [
   { label: "Responsables", id: "historial", path: "/responsables" },
   { label: "Pacientes", id: "pacientes", path: "/lista-pacientes" },
   { label: "Resumen clínico", id: "resumen", path: "/resumen-clinico" },
-  { label: "Mi Cuenta", id: "mi-cuenta", path: "/mi-cuenta" },
+  { label: "Mi cuenta", id: "mi-cuenta", path: "/mi-cuenta" },
 ];
 
 const Sidebar: React.FC = () => {

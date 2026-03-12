@@ -382,7 +382,7 @@ export default function ClinicProfile() {
                   className="flex-1"
                   isLoading={isLoading}
                 >
-                  Guardar Cambios
+                  Guardar cambios
                 </Button>
               </div>
             </section>
