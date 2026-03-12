@@ -43,8 +43,9 @@ const getPatientVaccines = async (req, res) => {
         // el parámetro "id" en la URL del swagger corresponde al paciente
         const idPaciente = req.params.id; 
         const idClinica = req.user.id_clinica; // viene del JWT
+        const { page, limit } = req.query;
 
-        const vacunas = await vaccineService.getVaccineByPatientId(idPaciente, idClinica);
+        const vacunas = await vaccineService.getVaccineByPatientId(idPaciente, idClinica, parseInt(page) || 1, parseInt(limit) || 4);
         
         return ResponseHelper.success(res, vacunas, 'Historial de vacunas obtenido');
     } catch (error) {

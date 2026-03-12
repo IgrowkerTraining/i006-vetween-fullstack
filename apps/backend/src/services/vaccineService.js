@@ -81,7 +81,7 @@ const inactivateVaccine = async (idVacuna, idClinicaFromToken) => {
     return data;
 };
 
-const getVaccineByPatientId = async (idPaciente, idClinicaFromToken) => {
+const getVaccineByPatientId = async (idPaciente, idClinicaFromToken, pagina = 1, limitePagina = 4) => {
 
     // Primero verificar que el paciente exista
     const { data: paciente, error: patientError } = await supabase
@@ -98,16 +98,25 @@ const getVaccineByPatientId = async (idPaciente, idClinicaFromToken) => {
         throw new Error('PACIENTE_NO_PERTENECE_A_LA_CLINICA');
     }
 
+    const from = (pagina - 1) * limitePagina;
+    const to = from + limitePagina - 1;
+
     // Luego obtener las vacunas del paciente
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
         .from('vacunas')
         .select('*')
         .eq('id_paciente', idPaciente)
         .order('fecha_aplicacion', { ascending: false }) // Ordena de la mas reciente a la mas antigua
+        .range(from, to);
 
     if (error) throw new Error(`Error al obtener las vacunas del paciente: ${error.message}`);
 
-    return data;
+    return {
+        data,
+        total: count,
+        pagina: parseInt(pagina),
+        ultimaPagina: Math.ceil(count / limitePagina)
+    };
 };
 
 module.exports = {

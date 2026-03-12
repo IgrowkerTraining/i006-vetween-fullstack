@@ -23,10 +23,10 @@ const createSummary = async (req, res) => {
             );
         }
 
-        if (error.message.includes("Resumen ya existe")) {
+        if (error.message.includes("DATOS_SIN_CAMBIOS")) {
             return ResponseHelper.conflict(
                 res,
-                "Este paciente ya tiene un resumen generado."
+                "No se generó un nuevo resumen porque los datos clínicos, visitas y vacunas del paciente no han sufrido modificaciones desde la última generación."
             );
         }
 

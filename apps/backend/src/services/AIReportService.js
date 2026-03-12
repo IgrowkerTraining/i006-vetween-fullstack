@@ -1,7 +1,13 @@
 const supabase = require("../config/supabaseClient");
 const axios = require("axios");
+const cripto = require("crypto");
 
 const AI_URL = process.env.AI_URL;
+
+// Función auxiliar para generar un hash de los datos clínicos del paciente, para evitar generar resúmenes duplicados si los datos no han cambiado
+const generarHashDatos = (datos) => {
+    return cripto.createHash('sha256').update(JSON.stringify(datos)).digest('hex');
+};
 
 // Función auxiliar para validar que el paciente pertenece a la clínica que hace la petición
 const validarPacienteClinica = async (id_paciente, id_clinica) => {
@@ -52,17 +58,6 @@ const generateSummary = async (id_paciente, id_clinica) => {
         throw new Error("Paciente inactivo");
     }
 
-    const { data: resumenExistente, error: resumenError } = await supabase
-    .from("resumen_ia")
-    .select("id_resumenia")
-    .eq("id_paciente", id_paciente);
-
-    if (resumenError) throw resumenError;
-
-    if (resumenExistente.length > 0) {
-        throw new Error("Resumen ya existe para este paciente");
-    }
-
     // Obtener visitas
     const { data: visitas, error: visitasError } = await supabase
         .from("visitas")
@@ -79,24 +74,43 @@ const generateSummary = async (id_paciente, id_clinica) => {
 
     if (vacunasError) throw vacunasError;
     
-    try {
+    // Prepara los datos actuales
+    const datosClinicos = {
+        paciente,
+        visitas,
+        vacunas
+    };
 
-	const bodyIA ={ 
-        id_paciente,
-        datos_clinicos: {
-            paciente,
-            visitas,
-            vacunas
-        }
-    };	
+    // Genera el Hash de la información actual
+    const hashActual = generarHashDatos(datosClinicos);
 
-        // Solicitar resumen a la IA
+    // Busca el ultimo resumen generado para este paciente
+    const { data: ultimoResumen, error: resumenError } = await supabase
+        .from("resumen_ia")
+        .select("hash_datos")
+        .eq("id_paciente", id_paciente)
+        .order("fecha_generacion", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (resumenError) throw resumenError;
+
+    // Valida si los datos han cambiado
+    if (ultimoResumen && ultimoResumen.hash_datos === hashActual) {
+        throw new Error("DATOS_SIN_CAMBIOS");
+    }
+
+	try {
+        const bodyIA = { 
+            id_paciente,
+            datos_clinicos: datosClinicos
+        };  
+
         const { data: resumen } = await axios.post(
             `${AI_URL}/api/v1/informes/resumenia`,
             bodyIA
         );        
         
-        // Guardar en Supabase
         const { data, error } = await supabase
             .from("resumen_ia")
             .insert([{
@@ -105,7 +119,8 @@ const generateSummary = async (id_paciente, id_clinica) => {
                 resumen_completo: resumen.resumen_completo,
                 resumen_estructurado: resumen.resumen_estructurado,
                 modelo: resumen.modelo,
-                fecha_generacion: resumen.fecha_generacion
+                fecha_generacion: resumen.fecha_generacion,
+                hash_datos: hashActual // Guarda el hash de los datos clínicos en la base de datos para hacer comparaciones
             }])
             .select()
             .maybeSingle();
