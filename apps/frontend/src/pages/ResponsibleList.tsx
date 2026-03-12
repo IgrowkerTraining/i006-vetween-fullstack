@@ -5,13 +5,17 @@ import { sortArray } from "../utils/sort";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { SearchBar } from "../components/common/SearchBar";
+import { Modal } from "../components/common/Modal";
+import { EditResponsibleForm } from "../components/forms/EditResponsibleForm";
 import { api, ResponsibleListItem } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
+import { useEditResponsible } from "../hooks/useEditResponsible";
 import { ROUTES } from "../constants/routes";
 
 interface MascotaRef {
   id: string;
   nombre: string;
+  estado: string;
 }
 
 interface ResponsableRow {
@@ -21,6 +25,7 @@ interface ResponsableRow {
   mascotas: MascotaRef[];
   email: string;
   telefono: string;
+  estado: string;
 }
 
 const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
@@ -82,6 +87,17 @@ export default function ResponsibleList() {
   const [responsables, setResponsables] = useState<ResponsableRow[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const {
+    isEditModalOpen,
+    isEditFormLoading,
+    editApiError,
+    editInitialData,
+    openEdit,
+    closeEdit,
+    submitEdit,
+  } = useEditResponsible(async () => { await loadData(currentPage); });
   const [sortConfig, setSortConfig] = useState<{
     key: keyof ResponsableRow;
     direction: "asc" | "desc";
@@ -110,7 +126,7 @@ export default function ResponsibleList() {
         ...extraPatientResponses.flatMap((r) => extractPatientsArray(r)),
       ];
 
-      // Build map: responsable id → [{ id, nombre }]
+      // Build map: responsable id → [{ id, nombre, estado }]
       const mascotasByResponsable = new Map<string, MascotaRef[]>();
       allPatients.forEach((p: any) => {
         const responsableId = String(
@@ -119,12 +135,19 @@ export default function ResponsibleList() {
         if (!responsableId) return;
         const petId = String(p.id_pacientes ?? p.id_paciente ?? p.id ?? "");
         const petName: string = p.nombre ?? p.nombre_paciente ?? "-";
+        const petEstadoRaw = p.estado ?? p.activo;
+        const petEstado =
+          petEstadoRaw === true || petEstadoRaw === "true" || petEstadoRaw === 1
+            ? "Activo"
+            : petEstadoRaw === false || petEstadoRaw === "false" || petEstadoRaw === 0
+            ? "Inactivo"
+            : "-";
         if (!mascotasByResponsable.has(responsableId)) {
           mascotasByResponsable.set(responsableId, []);
         }
         mascotasByResponsable
           .get(responsableId)!
-          .push({ id: petId, nombre: petName });
+          .push({ id: petId, nombre: petName, estado: petEstado });
       });
 
       const mapped: ResponsableRow[] = rows.map((item) => {
@@ -132,6 +155,11 @@ export default function ResponsibleList() {
           item.id_responsable ?? item.id_responsables ?? (item as any).id ?? "",
         );
         const mascotas = mascotasByResponsable.get(rid) ?? [];
+        const estado = mascotas.length === 0
+          ? "-"
+          : mascotas.some((m) => m.estado === "Activo")
+          ? "Activo"
+          : "Inactivo";
         return {
           id: rid || "-",
           nombre: item.nombre ?? "-",
@@ -139,6 +167,7 @@ export default function ResponsibleList() {
           mascotas,
           email: item.email ?? "-",
           telefono: item.telefono ?? "-",
+          estado,
         };
       });
 
@@ -175,6 +204,21 @@ export default function ResponsibleList() {
       direction = sortConfig.direction === "asc" ? "desc" : "asc";
     }
     setSortConfig({ key, direction });
+  };
+
+  const handleDeleteResponsable = async (id: string) => {
+    const confirmed = window.confirm("¿Seguro que deseas eliminar este responsable?");
+    if (!confirmed) return;
+    try {
+      setDeletingId(id);
+      await api.deleteResponsable(id);
+      setResponsables((prev) => prev.filter((r) => r.id !== id));
+      setLoadError(null);
+    } catch (err: any) {
+      setLoadError(err?.message || "No se pudo eliminar el responsable.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleAddResponsible = () => navigate(ROUTES.REGISTER_PATIENT);
@@ -256,10 +300,12 @@ export default function ResponsibleList() {
                       </span>
                     )}
                   </th>
-                  <th className="px-6 py-3 font-semibold">ID Mascota</th>
                   <th className="px-6 py-3 font-semibold">Mascota</th>
                   <th className="px-6 py-3 font-semibold">Email</th>
                   <th className="px-6 py-3 font-semibold">Teléfono</th>
+                  <th className="px-6 py-3 font-semibold">Estado</th>
+                  <th className="px-6 py-3 font-semibold">Editar</th>
+                  <th className="px-6 py-3 font-semibold">Eliminar</th>
                 </tr>
               </thead>
               {sortedResponsables.length > 0 && (
@@ -272,16 +318,6 @@ export default function ResponsibleList() {
                       <td className="px-6 py-3 font-medium">{r.id}</td>
                       <td className="px-6 py-3">{r.nombre}</td>
                       <td className="px-6 py-3">{r.apellido}</td>
-                      <td className="px-6 py-3">
-                        {r.mascotas.length > 0
-                          ? r.mascotas.map((m, i) => (
-                              <React.Fragment key={`id-${m.id}`}>
-                                {i > 0 && <span className="mr-1">,</span>}
-                                <span>{m.id}</span>
-                              </React.Fragment>
-                            ))
-                          : "-"}
-                      </td>
                       <td className="px-6 py-3">
                         {r.mascotas.length > 0
                           ? r.mascotas.map((m, i) => (
@@ -301,6 +337,36 @@ export default function ResponsibleList() {
                       </td>
                       <td className="px-6 py-3">{r.email}</td>
                       <td className="px-6 py-3">{r.telefono}</td>
+                      <td className="px-6 py-3">
+                        <span
+                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            r.estado === "Activo"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : r.estado === "Inactivo"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
+                          {r.estado}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3">
+                        <button
+                          onClick={() => openEdit(r.id)}
+                          className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo"
+                        >
+                          Editar
+                        </button>
+                      </td>
+                      <td className="px-6 py-3">
+                        <button
+                          onClick={() => handleDeleteResponsable(r.id)}
+                          disabled={deletingId === r.id}
+                          className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {deletingId === r.id ? "Eliminando..." : "Eliminar"}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -342,6 +408,31 @@ export default function ResponsibleList() {
           )}
         </section>
       </section>
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={closeEdit}
+        title="Editar responsable"
+        size="lg"
+      >
+        {editApiError && (
+          <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            {editApiError}
+          </div>
+        )}
+        {!editInitialData && !editApiError && (
+          <div className="flex justify-center py-8 text-sm text-slate-400">
+            Cargando...
+          </div>
+        )}
+        {editInitialData && (
+          <EditResponsibleForm
+            onSubmit={submitEdit}
+            onCancel={closeEdit}
+            isLoading={isEditFormLoading}
+            initialData={editInitialData}
+          />
+        )}
+      </Modal>
     </MainLayout>
   );
 }
