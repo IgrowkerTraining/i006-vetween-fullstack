@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import pawIcon from "../assets/pawIcon.svg";
+import editIcon from "../assets/edit.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { SearchBar } from "../components/common/SearchBar";
@@ -123,10 +124,13 @@ export default function PatientList() {
         !Array.isArray(asRecord.data)
       ) {
         const inner = asRecord.data as Record<string, unknown>;
-        if (Array.isArray(inner.data)) return inner.data as ResponsibleListItem[];
+        if (Array.isArray(inner.data))
+          return inner.data as ResponsibleListItem[];
       }
-      if (Array.isArray(asRecord.data)) return asRecord.data as ResponsibleListItem[];
-      if (Array.isArray(asRecord.responsables)) return asRecord.responsables as ResponsibleListItem[];
+      if (Array.isArray(asRecord.data))
+        return asRecord.data as ResponsibleListItem[];
+      if (Array.isArray(asRecord.responsables))
+        return asRecord.responsables as ResponsibleListItem[];
     }
     return [];
   };
@@ -135,7 +139,9 @@ export default function PatientList() {
     if (payload && typeof payload === "object") {
       const asRecord = payload as Record<string, unknown>;
       const inner =
-        asRecord.data && typeof asRecord.data === "object" && !Array.isArray(asRecord.data)
+        asRecord.data &&
+        typeof asRecord.data === "object" &&
+        !Array.isArray(asRecord.data)
           ? (asRecord.data as Record<string, unknown>)
           : asRecord;
       if (typeof inner.ultimaPagina === "number") return inner.ultimaPagina;
@@ -158,7 +164,9 @@ export default function PatientList() {
       }
 
       // Fetch remaining responsable pages in parallel so the map is complete
-      const totalResponsablePages = extractResponsablesTotalPages(firstResponsablesResponse);
+      const totalResponsablePages = extractResponsablesTotalPages(
+        firstResponsablesResponse,
+      );
       const remainingPages = Array.from(
         { length: totalResponsablePages - 1 },
         (_, i) => api.getResponsables(i + 2),
@@ -166,7 +174,9 @@ export default function PatientList() {
       const extraResponsablesResponses = await Promise.all(remainingPages);
       const allResponsables: ResponsibleListItem[] = [
         ...extractResponsablesArray(firstResponsablesResponse),
-        ...extraResponsablesResponses.flatMap((r) => extractResponsablesArray(r)),
+        ...extraResponsablesResponses.flatMap((r) =>
+          extractResponsablesArray(r),
+        ),
       ];
 
       const responsablesById = new Map<string, ResponsibleListItem>();
@@ -328,12 +338,20 @@ export default function PatientList() {
                   {sortedPatients.map((patient) => (
                     <tr
                       key={patient.id}
-                      className="text-black border-t border-border transition-colors hover:bg-muted/60"
+                      className={`border-t border-border transition-colors ${
+                        patient.estado === "Activo"
+                          ? "text-black hover:bg-muted/60"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                      }`}
                     >
                       <td className="px-6 py-3 font-medium">
                         <button
                           onClick={() => handlePatientClick(patient.id)}
-                          className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
+                          className={`font-semibold underline-offset-2 hover:underline ${
+                            patient.estado === "Activo"
+                              ? "text-indigo-600"
+                              : "text-gray-400 hover:text-gray-600"
+                          }`}
                         >
                           {patient.id}
                         </button>
@@ -341,7 +359,11 @@ export default function PatientList() {
                       <td className="px-6 py-3 font-medium">
                         <button
                           onClick={() => handlePatientClick(patient.id)}
-                          className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
+                          className={`font-semibold underline-offset-2 hover:underline ${
+                            patient.estado === "Activo"
+                              ? "text-indigo-600"
+                              : "text-gray-400 hover:text-gray-600"
+                          }`}
                         >
                           {patient.nombre}
                         </button>
@@ -362,20 +384,40 @@ export default function PatientList() {
                       <td className="px-6 py-3">
                         <button
                           onClick={() => openEdit(patient.id)}
-                          className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo"
+                          className="transition-opacity hover:opacity-70"
                         >
-                          Editar
+                          <img
+                            src={editIcon}
+                            alt="Editar"
+                            className="h-5 w-5"
+                          />
                         </button>
                       </td>
                       <td className="px-6 py-3">
                         <button
                           onClick={() => handleDeletePatient(patient.id)}
-                          disabled={deletingId === patient.id}
-                          className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          disabled={
+                            deletingId === patient.id ||
+                            patient.estado === "Activo"
+                          }
+                          className={`transition-colors ${
+                            patient.estado === "Activo" ||
+                            deletingId === patient.id
+                              ? "cursor-not-allowed text-red-300"
+                              : "text-red-500 hover:text-red-700"
+                          }`}
                         >
-                          {deletingId === patient.id
-                            ? "Eliminando..."
-                            : "Eliminar"}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              fill="currentColor"
+                              d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zm2-4h2V8H9zm4 0h2V8h-2z"
+                            />
+                          </svg>
                         </button>
                       </td>
                     </tr>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import addResponsibleIcon from "../assets/addResponsibleIcon.svg";
+import editIcon from "../assets/edit.svg";
 import { sortArray } from "../utils/sort";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
@@ -40,8 +41,10 @@ const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
       const inner = asRecord.data as Record<string, unknown>;
       if (Array.isArray(inner.data)) return inner.data as ResponsibleListItem[];
     }
-    if (Array.isArray(asRecord.data)) return asRecord.data as ResponsibleListItem[];
-    if (Array.isArray(asRecord.responsables)) return asRecord.responsables as ResponsibleListItem[];
+    if (Array.isArray(asRecord.data))
+      return asRecord.data as ResponsibleListItem[];
+    if (Array.isArray(asRecord.responsables))
+      return asRecord.responsables as ResponsibleListItem[];
   }
   return [];
 };
@@ -50,7 +53,9 @@ const extractTotalPages = (payload: unknown): number => {
   if (payload && typeof payload === "object") {
     const asRecord = payload as Record<string, unknown>;
     const inner =
-      asRecord.data && typeof asRecord.data === "object" && !Array.isArray(asRecord.data)
+      asRecord.data &&
+      typeof asRecord.data === "object" &&
+      !Array.isArray(asRecord.data)
         ? (asRecord.data as Record<string, unknown>)
         : asRecord;
     if (typeof inner.ultimaPagina === "number") return inner.ultimaPagina;
@@ -97,7 +102,9 @@ export default function ResponsibleList() {
     openEdit,
     closeEdit,
     submitEdit,
-  } = useEditResponsible(async () => { await loadData(currentPage); });
+  } = useEditResponsible(async () => {
+    await loadData(currentPage);
+  });
   const [sortConfig, setSortConfig] = useState<{
     key: keyof ResponsableRow;
     direction: "asc" | "desc";
@@ -107,10 +114,8 @@ export default function ResponsibleList() {
 
   const loadData = async (page = 1) => {
     try {
-      const [firstResponsablesResponse, firstPatientsResponse] = await Promise.all([
-        api.getResponsables(page),
-        api.getPatients(1),
-      ]);
+      const [firstResponsablesResponse, firstPatientsResponse] =
+        await Promise.all([api.getResponsables(page), api.getPatients(1)]);
 
       const rows = extractResponsablesArray(firstResponsablesResponse);
       setCurrentPage(page);
@@ -119,7 +124,9 @@ export default function ResponsibleList() {
       // Fetch all patient pages to build complete mascota map
       const totalPatientPages = extractTotalPages(firstPatientsResponse);
       const extraPatientResponses = await Promise.all(
-        Array.from({ length: totalPatientPages - 1 }, (_, i) => api.getPatients(i + 2)),
+        Array.from({ length: totalPatientPages - 1 }, (_, i) =>
+          api.getPatients(i + 2),
+        ),
       );
       const allPatients: any[] = [
         ...extractPatientsArray(firstPatientsResponse),
@@ -139,9 +146,11 @@ export default function ResponsibleList() {
         const petEstado =
           petEstadoRaw === true || petEstadoRaw === "true" || petEstadoRaw === 1
             ? "Activo"
-            : petEstadoRaw === false || petEstadoRaw === "false" || petEstadoRaw === 0
-            ? "Inactivo"
-            : "-";
+            : petEstadoRaw === false ||
+                petEstadoRaw === "false" ||
+                petEstadoRaw === 0
+              ? "Inactivo"
+              : "-";
         if (!mascotasByResponsable.has(responsableId)) {
           mascotasByResponsable.set(responsableId, []);
         }
@@ -155,11 +164,12 @@ export default function ResponsibleList() {
           item.id_responsable ?? item.id_responsables ?? (item as any).id ?? "",
         );
         const mascotas = mascotasByResponsable.get(rid) ?? [];
-        const estado = mascotas.length === 0
-          ? "-"
-          : mascotas.some((m) => m.estado === "Activo")
-          ? "Activo"
-          : "Inactivo";
+        const estado =
+          mascotas.length === 0
+            ? "-"
+            : mascotas.some((m) => m.estado === "Activo")
+              ? "Activo"
+              : "Inactivo";
         return {
           id: rid || "-",
           nombre: item.nombre ?? "-",
@@ -207,7 +217,9 @@ export default function ResponsibleList() {
   };
 
   const handleDeleteResponsable = async (id: string) => {
-    const confirmed = window.confirm("¿Seguro que deseas eliminar este responsable?");
+    const confirmed = window.confirm(
+      "¿Seguro que deseas eliminar este responsable?",
+    );
     if (!confirmed) return;
     try {
       setDeletingId(id);
@@ -234,7 +246,11 @@ export default function ResponsibleList() {
               onClick={handleAddResponsible}
               className="flex items-center gap-2 rounded-lg bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
             >
-              <img src={addResponsibleIcon} alt="Paw Icon Add" className="size-7" />
+              <img
+                src={addResponsibleIcon}
+                alt="Paw Icon Add"
+                className="size-7"
+              />
               {"Añadir responsable"}
             </button>
           }
@@ -313,7 +329,11 @@ export default function ResponsibleList() {
                   {sortedResponsables.map((r) => (
                     <tr
                       key={r.id}
-                      className="border-t border-border text-black transition-colors hover:bg-muted/60"
+                      className={`border-t border-border transition-colors ${
+                        r.estado === "Activo"
+                          ? "text-black hover:bg-muted/60"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                      }`}
                     >
                       <td className="px-6 py-3 font-medium">{r.id}</td>
                       <td className="px-6 py-3">{r.nombre}</td>
@@ -327,7 +347,11 @@ export default function ResponsibleList() {
                                   onClick={() =>
                                     navigate(`${ROUTES.PATIENT}/${m.id}`)
                                   }
-                                  className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
+                                  className={`font-semibold underline-offset-2 hover:underline ${
+                                    r.estado === "Activo"
+                                      ? "text-indigo-600"
+                                      : "text-gray-400 hover:text-gray-600"
+                                  }`}
                                 >
                                   {m.nombre}
                                 </button>
@@ -339,12 +363,12 @@ export default function ResponsibleList() {
                       <td className="px-6 py-3">{r.telefono}</td>
                       <td className="px-6 py-3">
                         <span
-                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          className={`inline-flex w-20 items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                             r.estado === "Activo"
                               ? "bg-emerald-100 text-emerald-700"
                               : r.estado === "Inactivo"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-gray-100 text-gray-500"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-500"
                           }`}
                         >
                           {r.estado}
@@ -353,18 +377,38 @@ export default function ResponsibleList() {
                       <td className="px-6 py-3">
                         <button
                           onClick={() => openEdit(r.id)}
-                          className="text-sm font-medium text-vetween-blue transition-colors hover:text-vetween-indigo"
+                          className="transition-opacity hover:opacity-70"
                         >
-                          Editar
+                          <img
+                            src={editIcon}
+                            alt="Editar"
+                            className="h-5 w-5"
+                          />
                         </button>
                       </td>
                       <td className="px-6 py-3">
                         <button
                           onClick={() => handleDeleteResponsable(r.id)}
-                          disabled={deletingId === r.id}
-                          className="text-sm font-medium text-red-500 transition-colors hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          disabled={
+                            deletingId === r.id || r.estado === "Activo"
+                          }
+                          className={`transition-colors ${
+                            r.estado === "Activo" || deletingId === r.id
+                              ? "cursor-not-allowed text-red-300"
+                              : "text-red-500 hover:text-red-700"
+                          }`}
                         >
-                          {deletingId === r.id ? "Eliminando..." : "Eliminar"}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              fill="currentColor"
+                              d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zm2-4h2V8H9zm4 0h2V8h-2z"
+                            />
+                          </svg>
                         </button>
                       </td>
                     </tr>
