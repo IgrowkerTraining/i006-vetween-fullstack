@@ -248,10 +248,9 @@ export const api = {
     const url = `https://backend-vetween.onrender.com/api/pacientes?page=${page}`;
     console.log("[getPatients] fetching:", url);
     const response = await fetch(url, {
-        method: "GET",
-        headers: getRequestHeaders(true),
-      },
-    );
+      method: "GET",
+      headers: getRequestHeaders(true),
+    });
 
     const result = await response.json();
     console.log("[getPatients] page", page, "raw response:", result);
@@ -505,7 +504,11 @@ export const api = {
         ultimaPagina: result.data.ultimaPagina ?? 1,
       };
     }
-    const flat = Array.isArray(result) ? result : Array.isArray(result?.data) ? result.data : [];
+    const flat = Array.isArray(result)
+      ? result
+      : Array.isArray(result?.data)
+        ? result.data
+        : [];
     return { data: flat, total: flat.length, pagina: 1, ultimaPagina: 1 };
   },
 
@@ -549,7 +552,11 @@ export const api = {
         ultimaPagina: result.data.ultimaPagina || 1,
       };
     }
-    const flat = Array.isArray(result) ? result : Array.isArray(result?.data) ? result.data : [];
+    const flat = Array.isArray(result)
+      ? result
+      : Array.isArray(result?.data)
+        ? result.data
+        : [];
     return { data: flat, total: flat.length, pagina: 1, ultimaPagina: 1 };
   },
 
@@ -621,7 +628,9 @@ export const api = {
     );
     const result = await response.json();
     if (!response.ok) {
-      throw new Error(result?.error || result?.message || "Error al inactivar la visita");
+      throw new Error(
+        result?.error || result?.message || "Error al inactivar la visita",
+      );
     }
     return result;
   },
@@ -695,7 +704,13 @@ export const api = {
 
   async updateVeterinarian(
     id: number,
-    data: { nombre?: string; apellido?: string; especialidad?: string[]; tipos_animales?: string[]; costo_consulta?: number },
+    data: {
+      nombre?: string;
+      apellido?: string;
+      especialidad?: string[];
+      tipos_animales?: string[];
+      costo_consulta?: number;
+    },
     token: string,
   ): Promise<Veterinarian> {
     const response = await fetch(
@@ -718,7 +733,17 @@ export const api = {
     return result.data ?? result;
   },
 
-  async updateClinic(data: { nombre?: string; direccion_calle?: string; direccion_numero?: string; direccion_localidad?: string; provincia?: string; telefono?: string }, token: string): Promise<Clinic> {
+  async updateClinic(
+    data: {
+      nombre?: string;
+      direccion_calle?: string;
+      direccion_numero?: string;
+      direccion_localidad?: string;
+      provincia?: string;
+      telefono?: string;
+    },
+    token: string,
+  ): Promise<Clinic> {
     const response = await fetch(
       `https://backend-vetween.onrender.com/api/clinica`,
       {

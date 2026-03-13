@@ -27,7 +27,9 @@ export interface Patient {
   nombre: string;
   especie: string;
   responsable: string;
+  activo: boolean;
   estado: string;
+  hasClinicalRecord: boolean;
 }
 
 export default function PatientList() {
@@ -40,6 +42,12 @@ export default function PatientList() {
   const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
   const [patientsError, setPatientsError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [togglingPatientId, setTogglingPatientId] = useState<string | null>(
+    null,
+  );
+  const [patientClinicalRecordMap, setPatientClinicalRecordMap] = useState<
+    Record<string, boolean>
+  >({});
   const {
     isEditModalOpen,
     isEditFormLoading,
@@ -70,15 +78,78 @@ export default function PatientList() {
   const userDisplayName =
     firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
-  const mapStateLabel = (value: unknown): string => {
-    if (typeof value === "boolean") return value ? "Activo" : "Inactivo";
+  const mapIsActive = (value: unknown): boolean => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value === 1;
     if (typeof value === "string") {
       const normalized = value.toLowerCase();
-      if (normalized === "true" || normalized === "activo") return "Activo";
-      if (normalized === "false" || normalized === "inactivo")
-        return "Inactivo";
+      return (
+        normalized === "true" || normalized === "activo" || normalized === "1"
+      );
     }
-    return "Inactivo";
+    return false;
+  };
+
+  const mapStateLabel = (isActive: boolean): string => {
+    return isActive ? "Activo" : "Inactivo";
+  };
+
+  const extractClinicalRecordFlag = (
+    item: Record<string, unknown>,
+  ): boolean | null => {
+    const boolKeys = [
+      "tiene_registro_clinico",
+      "tieneRegistroClinico",
+      "has_clinical_record",
+      "hasClinicalRecord",
+      "registro_clinico",
+      "registroClinico",
+    ];
+    for (const key of boolKeys) {
+      if (key in item) {
+        const raw = item[key];
+        if (typeof raw === "boolean") return raw;
+        if (typeof raw === "number") return raw > 0;
+        if (typeof raw === "string") {
+          const normalized = raw.toLowerCase();
+          if (["true", "1", "si", "sí", "yes"].includes(normalized))
+            return true;
+          if (["false", "0", "no"].includes(normalized)) return false;
+        }
+      }
+    }
+
+    const numericKeys = [
+      "cantidad_visitas",
+      "cantidadVisitas",
+      "visitas_count",
+      "visitasCount",
+      "total_visitas",
+      "totalVisitas",
+      "cantidad_registros_clinicos",
+      "cantidadRegistrosClinicos",
+    ];
+    for (const key of numericKeys) {
+      if (key in item) {
+        const value = Number(item[key]);
+        if (!Number.isNaN(value)) return value > 0;
+      }
+    }
+
+    if (Array.isArray(item.visitas)) {
+      return item.visitas.length > 0;
+    }
+
+    if (
+      item.id_ultima_visita !== undefined ||
+      item.idUltimaVisita !== undefined ||
+      item.ultima_visita !== undefined ||
+      item.ultimaVisita !== undefined
+    ) {
+      return true;
+    }
+
+    return null;
   };
 
   const extractPatientsArray = (payload: unknown): any[] => {
@@ -205,28 +276,73 @@ export default function PatientList() {
         }
       });
 
-      const mapped: Patient[] = rows.map((item: any) => {
-        const responsableId =
-          item.id_responsable ?? item.id_responsables ?? item.responsable_id;
-        const responsableById =
-          responsableId !== undefined && responsableId !== null
-            ? responsablesById.get(String(responsableId))
-            : undefined;
+      const mapped: Patient[] = await Promise.all(
+        rows.map(async (item: any) => {
+          const responsableId =
+            item.id_responsable ?? item.id_responsables ?? item.responsable_id;
+          const responsableById =
+            responsableId !== undefined && responsableId !== null
+              ? responsablesById.get(String(responsableId))
+              : undefined;
 
-        const responsibleName =
-          (responsableById
-            ? `${responsableById.nombre} ${responsableById.apellido}`.trim()
-            : "") ||
-          item.responsable ||
-          `${item.nombre_responsable ?? item.nombreResponsable ?? ""} ${item.apellido_responsable ?? item.apellidoResponsable ?? item.apellido ?? ""}`.trim();
+          const patientId = String(
+            item.id_pacientes ?? item.id_paciente ?? item.id ?? "-",
+          );
+          const isActive = mapIsActive(item.estado ?? item.activo);
 
-        return {
-          id: String(item.id_pacientes ?? item.id_paciente ?? item.id ?? "-"),
-          nombre: item.nombre ?? item.nombre_paciente ?? "-",
-          especie: item.especie ?? "-",
-          responsable: responsibleName || "-",
-          estado: mapStateLabel(item.estado ?? item.activo),
-        };
+          const responsibleName =
+            (responsableById
+              ? `${responsableById.nombre} ${responsableById.apellido}`.trim()
+              : "") ||
+            item.responsable ||
+            `${item.nombre_responsable ?? item.nombreResponsable ?? ""} ${item.apellido_responsable ?? item.apellidoResponsable ?? item.apellido ?? ""}`.trim();
+
+          const inferredClinicalRecord = extractClinicalRecordFlag(
+            item as Record<string, unknown>,
+          );
+          let hasClinicalRecord =
+            patientClinicalRecordMap[patientId] ??
+            (inferredClinicalRecord !== null
+              ? inferredClinicalRecord
+              : undefined);
+
+          if (typeof hasClinicalRecord !== "boolean" && patientId !== "-") {
+            try {
+              const visitsResponse = await api.getVisitasByPatientId(
+                patientId,
+                1,
+              );
+              hasClinicalRecord =
+                (visitsResponse.total ?? 0) > 0 ||
+                (Array.isArray(visitsResponse.data) &&
+                  visitsResponse.data.length > 0);
+            } catch {
+              // If visits cannot be confirmed, keep toggle locked for safety.
+              hasClinicalRecord = false;
+            }
+          }
+
+          const hasClinicalRecordSafe = Boolean(hasClinicalRecord);
+          const effectiveActive = hasClinicalRecordSafe ? isActive : false;
+
+          return {
+            id: patientId,
+            nombre: item.nombre ?? item.nombre_paciente ?? "-",
+            especie: item.especie ?? "-",
+            responsable: responsibleName || "-",
+            activo: effectiveActive,
+            estado: mapStateLabel(effectiveActive),
+            hasClinicalRecord: hasClinicalRecordSafe,
+          };
+        }),
+      );
+
+      setPatientClinicalRecordMap((prev) => {
+        const next = { ...prev };
+        mapped.forEach((p) => {
+          next[p.id] = p.hasClinicalRecord;
+        });
+        return next;
       });
 
       setPatients(mapped);
@@ -261,6 +377,48 @@ export default function PatientList() {
       setPatientsError(err?.message || "No se pudo eliminar el paciente.");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleTogglePatientStatus = async (patient: Patient) => {
+    if (!patient.hasClinicalRecord || togglingPatientId === patient.id) return;
+
+    const nextActiveState = !patient.activo;
+    if (nextActiveState && !patient.hasClinicalRecord) return;
+    setTogglingPatientId(patient.id);
+
+    setPatients((prev) =>
+      prev.map((p) =>
+        p.id === patient.id
+          ? {
+              ...p,
+              activo: nextActiveState,
+              estado: mapStateLabel(nextActiveState),
+            }
+          : p,
+      ),
+    );
+
+    try {
+      await api.updatePatient(patient.id, { activo: nextActiveState });
+      setPatientsError(null);
+    } catch (err: any) {
+      setPatients((prev) =>
+        prev.map((p) =>
+          p.id === patient.id
+            ? {
+                ...p,
+                activo: patient.activo,
+                estado: mapStateLabel(patient.activo),
+              }
+            : p,
+        ),
+      );
+      setPatientsError(
+        err?.message || "No se pudo actualizar el estado del paciente.",
+      );
+    } finally {
+      setTogglingPatientId(null);
     }
   };
 
@@ -337,6 +495,7 @@ export default function PatientList() {
                 { width: "w-24", type: "badge" },
                 { width: "w-20", type: "action" },
                 { width: "w-24", type: "action" },
+                { width: "w-28", type: "action" },
               ]}
               showHeader
             />
@@ -389,6 +548,7 @@ export default function PatientList() {
                       <th className="px-6 py-3 font-semibold">Estado</th>
                       <th className="px-6 py-3 font-semibold">Editar</th>
                       <th className="px-6 py-3 font-semibold">Eliminar</th>
+                      <th className="px-6 py-3 font-semibold">Acciones</th>
                     </tr>
                   </thead>
                   {sortedPatients.length > 0 && (
@@ -397,7 +557,7 @@ export default function PatientList() {
                         <tr
                           key={patient.id}
                           className={`border-t border-border transition-colors ${
-                            patient.estado === "Activo"
+                            patient.activo
                               ? "text-black hover:bg-muted/60"
                               : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                           }`}
@@ -406,7 +566,7 @@ export default function PatientList() {
                             <button
                               onClick={() => handlePatientClick(patient.id)}
                               className={`font-semibold underline-offset-2 hover:underline ${
-                                patient.estado === "Activo"
+                                patient.activo
                                   ? "text-indigo-600"
                                   : "text-gray-400 hover:text-gray-600"
                               }`}
@@ -418,7 +578,7 @@ export default function PatientList() {
                             <button
                               onClick={() => handlePatientClick(patient.id)}
                               className={`font-semibold underline-offset-2 hover:underline ${
-                                patient.estado === "Activo"
+                                patient.activo
                                   ? "text-indigo-600"
                                   : "text-gray-400 hover:text-gray-600"
                               }`}
@@ -447,12 +607,10 @@ export default function PatientList() {
                             <button
                               onClick={() => handleOpenDeleteModal(patient.id)}
                               disabled={
-                                deletingId === patient.id ||
-                                patient.estado === "Activo"
+                                deletingId === patient.id || patient.activo
                               }
                               className={`transition-colors ${
-                                patient.estado === "Activo" ||
-                                deletingId === patient.id
+                                patient.activo || deletingId === patient.id
                                   ? "cursor-not-allowed text-red-300"
                                   : "text-red-500 hover:text-red-700"
                               }`}
@@ -469,6 +627,49 @@ export default function PatientList() {
                                 />
                               </svg>
                             </button>
+                          </td>
+                          <td className="px-6 py-3">
+                            {(() => {
+                              const isToggleOn =
+                                patient.hasClinicalRecord && patient.activo;
+                              return (
+                                <button
+                                  type="button"
+                                  role="switch"
+                                  aria-checked={isToggleOn}
+                                  aria-label={`Cambiar estado de ${patient.nombre}`}
+                                  title={
+                                    patient.hasClinicalRecord
+                                      ? isToggleOn
+                                        ? "Desactivar paciente"
+                                        : "Activar paciente"
+                                      : "Disponible cuando tenga un registro clínico"
+                                  }
+                                  onClick={() =>
+                                    handleTogglePatientStatus(patient)
+                                  }
+                                  disabled={
+                                    !patient.hasClinicalRecord ||
+                                    togglingPatientId === patient.id
+                                  }
+                                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                                    !patient.hasClinicalRecord
+                                      ? "cursor-not-allowed bg-gray-300"
+                                      : isToggleOn
+                                        ? "bg-emerald-500 hover:bg-emerald-600 focus-visible:ring-emerald-500"
+                                        : "bg-gray-400 hover:bg-gray-500 focus-visible:ring-gray-500"
+                                  }`}
+                                >
+                                  <span
+                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                                      isToggleOn
+                                        ? "translate-x-5"
+                                        : "translate-x-0.5"
+                                    }`}
+                                  />
+                                </button>
+                              );
+                            })()}
                           </td>
                         </tr>
                       ))}
