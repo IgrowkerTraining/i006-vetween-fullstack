@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/layout/Sidebar";
+import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
@@ -8,6 +8,7 @@ import { SuccessModal } from "../components/common/SuccessModal";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
 import { useToast } from "../context/ToastContext";
+import { ClinicProfileSkeleton } from "../components/common/Skeleton";
 
 export default function ClinicProfile() {
   const navigate = useNavigate();
@@ -23,8 +24,12 @@ export default function ClinicProfile() {
 
   // Estado del formulario y nombre de la clínica
   const [clinicName, setClinicName] = useState("Nombre de la clínica");
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const [provinceOpen, setProvinceOpen] = useState(false);
   const provinceRef = useRef<HTMLDivElement>(null);
+
+  // Loading state
+  const isLoadingPage = clinicName === "Nombre de la clínica" && isLoadingData;
 
   const PROVINCE_OPTIONS = [
     "CABA",
@@ -86,7 +91,10 @@ export default function ClinicProfile() {
           console.error("Error loading clinic data:", error);
         } finally {
           setIsLoading(false);
+          setIsLoadingData(false);
         }
+      } else {
+        setIsLoadingData(false);
       }
     };
 
@@ -203,22 +211,27 @@ export default function ClinicProfile() {
     }
   };
 
+  // Show skeleton while loading
+  if (isLoadingPage) {
+    return (
+      <MainLayout>
+        <ClinicProfileSkeleton />
+      </MainLayout>
+    );
+  }
+
   return (
-    <>
+    <MainLayout>
       <SuccessModal
         isOpen={showSuccessModal}
         message="Los datos de la clínica se guardaron correctamente"
         onAccept={() => setShowSuccessModal(false)}
       />
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-
-        <main className="flex flex-1 flex-col overflow-y-auto">
-          {/* Header */}
-          <header className="border-b border-border px-8 py-5">
-            <p className="text-sm text-muted-foreground">Hola</p>
-            <h1 className="text-2xl font-bold text-foreground">Mi Cuenta</h1>
-          </header>
+        {/* Header */}
+        <header className="border-b border-border px-8 py-5">
+          <p className="text-sm text-muted-foreground">Hola</p>
+          <h1 className="text-2xl font-bold text-foreground">Mi Cuenta</h1>
+        </header>
 
           {/* Breadcrumb */}
           <div className="border-b border-border px-8 py-3">
@@ -432,8 +445,6 @@ export default function ClinicProfile() {
               </section>
             </div>
           </div>
-        </main>
-      </div>
-    </>
+    </MainLayout>
   );
 }

@@ -450,4 +450,342 @@ export const ClinicalSummarySkeleton: React.FC = () => {
   );
 };
 
+// ===== COMPONENTS FOR MYACCOUNT =====
+
+// User Info Section Skeleton
+export const UserInfoSkeleton: React.FC = () => {
+  return (
+    <section className="border-b border-border px-8 py-6">
+      <div className="flex items-center gap-4">
+        {/* Avatar skeleton */}
+        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-gray-200 animate-pulse" />
+        
+        {/* User Details skeleton */}
+        <div>
+          <div className="mb-2 h-6 w-48 rounded-md bg-gray-200 animate-pulse" />
+          <div className="h-4 w-40 rounded-md bg-gray-200 animate-pulse" />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Menu Card Skeleton (single card)
+const MenuCardSkeleton: React.FC = () => {
+  return (
+    <div className="flex w-full items-center justify-between gap-4 rounded-lg border border-border p-4">
+      <div className="flex items-center gap-4">
+        {/* Icon skeleton */}
+        <div className="h-12 w-12 shrink-0 rounded-full bg-gray-200 animate-pulse" />
+        
+        {/* Text skeleton */}
+        <div className="flex flex-col gap-2">
+          <div className="h-4 w-36 rounded-md bg-gray-200 animate-pulse" />
+          <div className="h-3 w-52 rounded-md bg-gray-200 animate-pulse" />
+        </div>
+      </div>
+      
+      {/* Arrow skeleton */}
+      <div className="h-5 w-5 shrink-0 rounded bg-gray-200 animate-pulse" />
+    </div>
+  );
+};
+
+// Menu Cards Skeleton (3 cards)
+export const MenuCardsSkeleton: React.FC = () => {
+  return (
+    <section className="flex flex-col gap-4 px-8 py-6" aria-label="Account options">
+      <MenuCardSkeleton />
+      <MenuCardSkeleton />
+      <MenuCardSkeleton />
+    </section>
+  );
+};
+
+// MyAccount Skeleton - Main component
+export const MyAccountSkeleton: React.FC = () => {
+  return (
+    <div className="flex min-h-screen flex-col">
+      {/* PageHeader Skeleton */}
+      <header className="flex min-h-20 items-center justify-between border-b border-border bg-card px-8 py-5">
+        <div className="flex items-center gap-4">
+          <div>
+            <div className="mb-2 h-4 w-24 rounded-md bg-gray-200 animate-pulse" />
+            <div className="h-8 w-32 rounded-md bg-gray-200 animate-pulse" />
+          </div>
+        </div>
+      </header>
+      
+      {/* User Info Section Skeleton */}
+      <UserInfoSkeleton />
+      
+      {/* Menu Cards Skeleton */}
+      <MenuCardsSkeleton />
+    </div>
+  );
+};
+
+// ===== COMPONENTS FOR PROFESSIONALPROFILE =====
+
+// Breadcrumb Skeleton
+const BreadcrumbSkeleton: React.FC = () => {
+  return (
+    <div className="border-b border-border px-8 py-3">
+      <div className="flex items-center gap-2">
+        <div className="h-4 w-16 rounded-md bg-gray-200 animate-pulse" />
+        <div className="h-4 w-4 rounded-md bg-gray-200 animate-pulse" />
+        <div className="h-4 w-28 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+    </div>
+  );
+};
+
+// User Info Section Skeleton for ProfessionalProfile
+const ProfessionalUserInfoSkeleton: React.FC = () => {
+  return (
+    <section className="bg-gray-100 border border-border rounded-2xl p-6 mb-6">
+      <div className="flex items-center gap-4">
+        {/* Avatar skeleton */}
+        <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-gray-200 animate-pulse" />
+        
+        {/* User Details skeleton */}
+        <div>
+          <div className="mb-2 h-6 w-48 rounded-md bg-gray-200 animate-pulse" />
+          <div className="h-4 w-40 rounded-md bg-gray-200 animate-pulse" />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Form Field Skeleton
+const FormFieldSkeleton: React.FC<{ labelWidth?: string }> = ({ labelWidth = "w-24" }) => {
+  return (
+    <div>
+      <div className={`h-4 ${labelWidth} rounded-md bg-gray-200 animate-pulse mb-2`} />
+      <div className="h-10 w-full rounded-md bg-gray-200 animate-pulse" />
+    </div>
+  );
+};
+
+// Dropdown Skeleton
+const DropdownSkeleton: React.FC = () => {
+  return (
+    <div>
+      <div className="h-4 w-32 rounded-md bg-gray-200 animate-pulse mb-2" />
+      <div className="h-10 w-full rounded-md bg-gray-200 animate-pulse" />
+    </div>
+  );
+};
+
+// Form Section Skeleton for ProfessionalProfile
+const ProfessionalFormSkeleton: React.FC = () => {
+  return (
+    <section className="bg-gray-100 border border-border rounded-2xl p-6">
+      <div className="mb-6">
+        <div className="h-6 w-40 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4">
+        <FormFieldSkeleton />
+        <FormFieldSkeleton />
+        <FormFieldSkeleton />
+        <FormFieldSkeleton />
+        <DropdownSkeleton />
+        <DropdownSkeleton />
+      </div>
+      
+      <div className="flex gap-4 mt-8">
+        <div className="h-10 flex-1 rounded-md bg-gray-200 animate-pulse" />
+        <div className="h-10 flex-1 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+    </section>
+  );
+};
+
+// ProfessionalProfile Skeleton - Main component
+export const ProfessionalProfileSkeleton: React.FC = () => {
+  return (
+    <div className="flex min-h-screen flex-col">
+      {/* Header Skeleton */}
+      <header className="border-b border-border px-8 py-5">
+        <div className="flex items-center gap-4">
+          <div>
+            <div className="mb-2 h-4 w-24 rounded-md bg-gray-200 animate-pulse" />
+            <div className="h-8 w-32 rounded-md bg-gray-200 animate-pulse" />
+          </div>
+        </div>
+      </header>
+      
+      {/* Breadcrumb Skeleton */}
+      <BreadcrumbSkeleton />
+      
+      {/* Content */}
+      <div className="flex-1 flex items-start justify-center p-6 md:p-10 overflow-y-auto">
+        <div className="w-full max-w-md">
+          <ProfessionalUserInfoSkeleton />
+          <ProfessionalFormSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===== COMPONENTS FOR CLINICPROFILE =====
+
+// Clinic Info Section Skeleton for ClinicProfile
+const ClinicInfoSkeleton: React.FC = () => {
+  return (
+    <section className="bg-gray-100 border border-border rounded-2xl p-6 mb-6">
+      <div className="flex items-center gap-4">
+        {/* Icon skeleton */}
+        <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 animate-pulse flex items-center justify-center">
+          <div className="h-12 w-12 rounded-md bg-gray-300 animate-pulse" />
+        </div>
+        
+        {/* Details skeleton */}
+        <div>
+          <div className="mb-2 h-6 w-48 rounded-md bg-gray-200 animate-pulse" />
+          <div className="h-4 w-32 rounded-md bg-gray-200 animate-pulse" />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Clinic Form Skeleton
+const ClinicFormSkeleton: React.FC = () => {
+  return (
+    <section className="bg-gray-100 border border-border rounded-2xl p-6">
+      <div className="mb-6">
+        <div className="h-6 w-40 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4">
+        <FormFieldSkeleton />
+        <FormFieldSkeleton />
+        <FormFieldSkeleton labelWidth="w-20" />
+        <FormFieldSkeleton labelWidth="w-20" />
+        <DropdownSkeleton />
+        <FormFieldSkeleton labelWidth="w-32" />
+      </div>
+      
+      <div className="flex gap-4 mt-8">
+        <div className="h-10 flex-1 rounded-md bg-gray-200 animate-pulse" />
+        <div className="h-10 flex-1 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+    </section>
+  );
+};
+
+// ClinicProfile Skeleton - Main component
+export const ClinicProfileSkeleton: React.FC = () => {
+  return (
+    <div className="flex min-h-screen flex-col">
+      {/* Header Skeleton */}
+      <header className="border-b border-border px-8 py-5">
+        <div className="flex items-center gap-4">
+          <div>
+            <div className="mb-2 h-4 w-24 rounded-md bg-gray-200 animate-pulse" />
+            <div className="h-8 w-32 rounded-md bg-gray-200 animate-pulse" />
+          </div>
+        </div>
+      </header>
+      
+      {/* Breadcrumb Skeleton */}
+      <BreadcrumbSkeleton />
+      
+      {/* Content */}
+      <div className="flex-1 flex items-start justify-center p-6 md:p-10 overflow-y-auto">
+        <div className="w-full max-w-md">
+          <ClinicInfoSkeleton />
+          <ClinicFormSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ===== COMPONENTS FOR SECURITYPROFILE =====
+
+// Security Info Section Skeleton for SecurityProfile
+const SecurityInfoSkeleton: React.FC = () => {
+  return (
+    <section className="bg-gray-100 border border-border rounded-2xl p-6 mb-6">
+      <div className="flex items-center gap-4">
+        {/* Icon skeleton */}
+        <div className="h-24 w-24 shrink-0 rounded-full bg-gray-200 animate-pulse flex items-center justify-center">
+          <div className="h-12 w-12 rounded-md bg-gray-300 animate-pulse" />
+        </div>
+        
+        {/* Details skeleton */}
+        <div>
+          <div className="mb-2 h-6 w-32 rounded-md bg-gray-200 animate-pulse" />
+          <div className="h-4 w-40 rounded-md bg-gray-200 animate-pulse" />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// Password Field Skeleton
+const PasswordFieldSkeleton: React.FC = () => {
+  return (
+    <div>
+      <div className="h-4 w-36 rounded-md bg-gray-200 animate-pulse mb-2" />
+      <div className="h-10 w-full rounded-md bg-gray-200 animate-pulse" />
+    </div>
+  );
+};
+
+// Security Form Skeleton
+const SecurityFormSkeleton: React.FC = () => {
+  return (
+    <section className="bg-gray-100 border border-border rounded-2xl p-6">
+      <div className="mb-6">
+        <div className="h-6 w-44 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4">
+        <PasswordFieldSkeleton />
+        <PasswordFieldSkeleton />
+        <PasswordFieldSkeleton />
+      </div>
+      
+      <div className="flex gap-4 mt-8">
+        <div className="h-10 flex-1 rounded-md bg-gray-200 animate-pulse" />
+        <div className="h-10 flex-1 rounded-md bg-gray-200 animate-pulse" />
+      </div>
+    </section>
+  );
+};
+
+// SecurityProfile Skeleton - Main component
+export const SecurityProfileSkeleton: React.FC = () => {
+  return (
+    <div className="flex min-h-screen flex-col">
+      {/* Header Skeleton */}
+      <header className="border-b border-border px-8 py-5">
+        <div className="flex items-center gap-4">
+          <div>
+            <div className="mb-2 h-4 w-24 rounded-md bg-gray-200 animate-pulse" />
+            <div className="h-8 w-32 rounded-md bg-gray-200 animate-pulse" />
+          </div>
+        </div>
+      </header>
+      
+      {/* Breadcrumb Skeleton */}
+      <BreadcrumbSkeleton />
+      
+      {/* Content */}
+      <div className="flex-1 flex items-start justify-center p-6 md:p-10 overflow-y-auto">
+        <div className="w-full max-w-md">
+          <SecurityInfoSkeleton />
+          <SecurityFormSkeleton />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default Skeleton;

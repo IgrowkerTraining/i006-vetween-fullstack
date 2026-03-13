@@ -1,16 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/layout/Sidebar";
+import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
 import { SuccessModal } from "../components/common/SuccessModal";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
+import { SecurityProfileSkeleton } from "../components/common/Skeleton";
 
 export default function SecurityProfile() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Loading state - depends on user data availability
+  const isLoadingPage = !user;
 
   // Estado del formulario
   const [formData, setFormData] = useState({
@@ -118,22 +122,27 @@ export default function SecurityProfile() {
     }
   };
 
+  // Show skeleton while loading
+  if (isLoadingPage) {
+    return (
+      <MainLayout>
+        <SecurityProfileSkeleton />
+      </MainLayout>
+    );
+  }
+
   return (
-    <>
+    <MainLayout>
       <SuccessModal
         isOpen={showSuccessModal}
         message="La contraseña se actualizó correctamente"
         onAccept={() => setShowSuccessModal(false)}
       />
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-
-        <main className="flex flex-1 flex-col overflow-y-auto">
-          {/* Header */}
-          <header className="border-b border-border px-8 py-5">
-            <p className="text-sm text-muted-foreground">Hola, {userName}</p>
-            <h1 className="text-2xl font-bold text-foreground">Mi Cuenta</h1>
-          </header>
+        {/* Header */}
+        <header className="border-b border-border px-8 py-5">
+          <p className="text-sm text-muted-foreground">Hola, {userName}</p>
+          <h1 className="text-2xl font-bold text-foreground">Mi Cuenta</h1>
+        </header>
 
           {/* Breadcrumb */}
           <div className="border-b border-border px-8 py-3">
@@ -407,8 +416,6 @@ export default function SecurityProfile() {
               </section>
             </div>
           </div>
-        </main>
-      </div>
-    </>
+    </MainLayout>
   );
 }
