@@ -87,7 +87,7 @@ const generateSummary = async (id_paciente, id_clinica) => {
     // Busca el ultimo resumen generado para este paciente
     const { data: ultimoResumen, error: resumenError } = await supabase
         .from("resumen_ia")
-        .select("hash_datos")
+        .select("*")
         .eq("id_paciente", id_paciente)
         .order("fecha_generacion", { ascending: false })
         .limit(1)
@@ -97,7 +97,10 @@ const generateSummary = async (id_paciente, id_clinica) => {
 
     // Valida si los datos han cambiado
     if (ultimoResumen && ultimoResumen.hash_datos === hashActual) {
-        throw new Error("DATOS_SIN_CAMBIOS");
+        return {
+            isCached: true, 
+            data: ultimoResumen // Devuelve el resumen existente sin llamar a la IA
+        };
     }
 
 	try {
@@ -129,7 +132,10 @@ const generateSummary = async (id_paciente, id_clinica) => {
             throw new Error("Error al guardar en la base de datos: " + error.message);
         }
 
-        return data;
+        return {
+            isCached: false, // Indica que este resumen fue generado por la IA y no es un resultado cacheado
+            data: data
+        };
 
     } catch (error) {
         throw new Error(error.message);

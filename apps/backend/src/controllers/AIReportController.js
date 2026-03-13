@@ -6,9 +6,24 @@ const createSummary = async (req, res) => {
         const id_clinica = req.user.id_clinica;
         const { id_paciente } = req.body;
 
-        const data = await aiReportService.generateSummary(id_paciente, id_clinica);
+        const result = await aiReportService.generateSummary(id_paciente, id_clinica);
         
-        return ResponseHelper.created(res, data, "Resumen de IA generado y guardado correctamente");
+        // Evaluamos si el resultado vino de la caché (hashes iguales)
+        if (result.isCached) {
+            // Si ya existe un resumen con los mismos datos clínicos, devolvemos ese resumen sin llamar a la IA
+            return ResponseHelper.success(
+                res, 
+                result.data, 
+                "No hubo cambios en los datos clínicos. Se devuelve el último resumen generado."
+            );
+        }
+
+        // Si es nuevo
+        return ResponseHelper.created(
+            res, 
+            result.data, 
+            "Resumen de IA generado y guardado correctamente"
+        );
 
     } catch (error) {
 
@@ -20,13 +35,6 @@ const createSummary = async (req, res) => {
             return ResponseHelper.unprocessableEntity(
                 res,
                 "No se puede generar un resumen para un paciente inactivo."
-            );
-        }
-
-        if (error.message.includes("DATOS_SIN_CAMBIOS")) {
-            return ResponseHelper.conflict(
-                res,
-                "No se generó un nuevo resumen porque los datos clínicos, visitas y vacunas del paciente no han sufrido modificaciones desde la última generación."
             );
         }
 

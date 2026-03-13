@@ -12,6 +12,8 @@ La API permite gestionar clínicas, veterinarios, pacientes, responsables, visit
 - **Express.js**
 - **Supabase (PostgreSQL)**
 - **JWT** para autenticación
+- **Bcrypt** para hasheo de contraseñas
+- **Cripto** para encriptación de datos sensisables
 - **Axios** para comunicación con microservicio de IA
 - **Swagger** para documentación de la API
 
@@ -85,6 +87,7 @@ SUPABASE_URL=tu_url_supabase
 SUPABASE_SERVICE_ROLE_KEY=tu_supabase_service_role_key
 JWT_SECRET=tu_jwt_secret
 AI_URL=http://localhost:5001
+ENCRYPTION_KEY="tuclavede32caracteres1234567890a"
 ```
 
 Estas variables permiten conectar el backend con la base de datos y el microservicio de inteligencia artificial.
