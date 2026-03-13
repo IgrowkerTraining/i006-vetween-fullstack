@@ -40,15 +40,17 @@ const registerSchema = Joi.object({
         'string.pattern.base': 'El apellido solo puede contener letras y espacios'
     }),
     
-    email: Joi.string().trim().lowercase().email().required().messages({
+    email: Joi.string().trim().lowercase().email().max(100).required().messages({
         'string.email': 'Debes ingresar un formato de email válido',
-        'string.empty': 'El email es obligatorio'
+        'string.empty': 'El email es obligatorio',
+        'string.max': 'El email no puede tener mas de 100 caracteres'
     }),
     
     // Regex para password: Mínimo 8 chars, 1 mayúscula, 1 minúscula, 1 número
-    password: Joi.string().min(8).pattern(new RegExp(/^(?=.*[a-zñ])(?=.*[A-ZÑ])(?=.*\d)[A-Za-zñÑ\d]{8,}$/)).required().messages({
+    password: Joi.string().min(8).max(72).pattern(new RegExp(/^(?=.*[a-zñ])(?=.*[A-ZÑ])(?=.*\d)[A-Za-zñÑ\d]{8,}$/)).required().messages({
         'string.empty': 'La contraseña es obligatoria',
         'string.min': 'La contraseña debe tener al menos 8 caracteres',
+        'string.max': 'La contraseña debe tener un maximo de 72 caracteres',
         'string.pattern.base': 'La contraseña debe contener 1 letra mayúscula, 1 minúscula y minimo un número y no puede contener caracteres especiales'
     }),
     
@@ -133,9 +135,10 @@ const registerSchema = Joi.object({
 });
 
 const loginSchema = Joi.object({
-    email: Joi.string().trim().lowercase().email().required().messages({
+    email: Joi.string().trim().lowercase().email().max(100).required().messages({
         'string.email': 'Email inválido',
-        'string.empty': 'El email es requerido'
+        'string.empty': 'El email es requerido',
+        'string.max': 'El email no puede tener mas de 100 caracteres'
     }),
     password: Joi.string().required().messages({
         'string.empty': 'La contraseña es requerida'

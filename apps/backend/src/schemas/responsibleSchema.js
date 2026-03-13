@@ -29,9 +29,10 @@ const responsibleSchema = Joi.object({
         'string.pattern.base': 'El apellido solo puede contener letras y espacios'
     }),
     
-    email: Joi.string().trim().lowercase().email().required().messages({
+    email: Joi.string().trim().lowercase().email().max(100).required().messages({
         'string.email': 'Debes ingresar un formato de email válido',
-        'string.empty': 'El email es obligatorio'
+        'string.empty': 'El email es obligatorio',
+        'string.max': 'El email no puede tener mas de 100 caracteres'
     }),
 
     telefono: Joi.string().trim().min(8).max(20).pattern(/^[0-9\s]+$/).required().messages({
@@ -95,8 +96,9 @@ const updateResponsibleSchema = Joi.object({
         'string.pattern.base': 'El teléfono solo puede contener números y espacios'
     }),
 
-    email: Joi.string().trim().lowercase().email().messages({
-        'string.email': 'Debes ingresar un formato de email válido'
+    email: Joi.string().trim().lowercase().email().max(100).messages({
+        'string.email': 'Debes ingresar un formato de email válido',
+        'string.max': 'El email no puede tener mas de 100 caracteres'
     }),
 
     direccion_calle: Joi.string().trim().min(2).max(150).pattern(alMenosUnaLetra).messages({

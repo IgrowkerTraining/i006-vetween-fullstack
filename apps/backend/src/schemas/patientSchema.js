@@ -20,9 +20,10 @@ const patientSchema = Joi.object({
         'any.only': 'Especie no válida'
     }),
     
-    edad: Joi.number().integer().positive().required().messages({
+    edad: Joi.number().integer().positive().max(100).required().messages({
         'number.base': 'La edad debe ser un número',
-        'number.positive': 'La edad no puede ser negativa'
+        'number.positive': 'La edad no puede ser negativa',
+        'number.max': 'La edad maxima permitida es hasta 100 años'
     }),
     
     color: Joi.string().trim().min(2).max(30).pattern(soloLetras).required().messages({
@@ -96,9 +97,10 @@ const updatePatientSchema = Joi.object({
         'any.only': 'Especie no válida'
     }),
 
-    edad: Joi.number().integer().positive().messages({
+    edad: Joi.number().integer().positive().max(100).messages({
         'number.base': 'La edad debe ser un número',
-        'number.positive': 'La edad no puede ser negativa'
+        'number.positive': 'La edad no puede ser negativa',
+        'number.max': 'La edad maxima permitida es hasta 100 años'
     }),
 
     color: Joi.string().trim().min(2).max(30).pattern(soloLetras).messages({
