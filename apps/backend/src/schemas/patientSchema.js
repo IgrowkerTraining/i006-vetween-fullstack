@@ -35,7 +35,7 @@ const patientSchema = Joi.object({
 
     senia: Joi.string().trim().max(255).allow(null, '').pattern(alMenosUnaLetra).messages({
         'string.max': 'Las señas / caracteristicas no puede tener más de 255 caracteres',
-        'string.pattern.base': 'Las señas / caracteristicas solo pueden contener letras y espacios'
+        'string.pattern.base': 'Las señas / caracteristicas solo pueden contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     sexo: Joi.string().valid(...sexosValidos).required().messages({
@@ -112,7 +112,7 @@ const updatePatientSchema = Joi.object({
 
     senia: Joi.string().trim().max(255).allow(null, '').pattern(alMenosUnaLetra).messages({
         'string.max': 'Las señas/caracteristicas no puede tener más de 255 caracteres',
-        'string.pattern.base': 'Las señas/caracteristicas solo pueden contener letras y espacios'
+        'string.pattern.base': 'Las señas/caracteristicas solo pueden contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     sexo: Joi.string().valid(...sexosValidos).messages({

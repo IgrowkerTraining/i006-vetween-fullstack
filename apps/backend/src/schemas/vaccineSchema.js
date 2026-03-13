@@ -27,7 +27,7 @@ const vaccineSchema = Joi.object({
 
     observacion: Joi.string().trim().max(200).allow('', null).pattern(alMenosUnaLetra).optional().messages({
         'string.max': 'La observación no puede superar los 200 caracteres',
-        'string.pattern.base': 'La observación solo puede contener letras y espacios'
+        'string.pattern.base': 'La observación solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     estado: Joi.boolean().default(false).optional().messages({
