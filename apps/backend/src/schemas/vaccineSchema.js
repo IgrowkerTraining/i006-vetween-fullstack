@@ -15,7 +15,9 @@ const vaccineSchema = Joi.object({
         'any.required': 'La fecha de aplicación es obligatoria'
     }),
 
-    observacion: Joi.string().trim().max(200).allow('', null).optional(),
+    observacion: Joi.string().trim().max(200).pattern(/^[^0-9]*$/).allow('', null).optional().messages({
+        'string.pattern.base': 'Las observaciones no pueden contener números'
+    }),
 
     estado: Joi.boolean().default(false).optional(),
 

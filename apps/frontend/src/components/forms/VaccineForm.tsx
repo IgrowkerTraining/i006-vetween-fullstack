@@ -51,6 +51,9 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
     if (!formData.fecha) {
       newErrors.fecha = "La fecha es requerida";
     }
+    if (/\d/.test(formData.observaciones)) {
+      newErrors.observaciones = "Las observaciones no pueden contener números";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -124,12 +127,18 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
           name="observaciones"
           placeholder="Ingrese observaciones adicionales sobre la vacuna"
           value={formData.observaciones}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, observaciones: e.target.value }))
-          }
+          onChange={(e) => {
+            setFormData((prev) => ({ ...prev, observaciones: e.target.value }));
+            if (errors.observaciones) {
+              setErrors((prev) => ({ ...prev, observaciones: undefined }));
+            }
+          }}
           rows={3}
-          className="w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 text-indigo-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 resize-none"
+          className={`w-full bg-white border rounded-lg px-3 py-2.5 text-indigo-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200 resize-none ${errors.observaciones ? "border-red-500" : "border-slate-700"}`}
         />
+        {errors.observaciones && (
+          <p className="text-xs text-red-500 mt-0.5">{errors.observaciones}</p>
+        )}
       </div>
 
       {/* Botones de acción */}
