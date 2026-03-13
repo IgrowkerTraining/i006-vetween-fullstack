@@ -36,9 +36,30 @@ export type PatientErrors = Partial<Record<keyof PatientData, string>>;
 
 export const validatePatientData = (data: PatientData): PatientErrors => {
   const errors: PatientErrors = {};
-  if (!data.name.trim()) errors.name = "El nombre es requerido";
+
+  // nombre
+  if (!data.name.trim()) {
+    errors.name = "El nombre es requerido";
+  } else if (data.name.trim().length < 2) {
+    errors.name = "El nombre debe tener al menos 2 caracteres";
+  } else if (data.name.trim().length > 50) {
+    errors.name = "El nombre no puede superar los 50 caracteres";
+  } else if (/\d/.test(data.name)) {
+    errors.name = "El nombre no puede contener números";
+  }
+
   if (!data.species) errors.species = "La especie es requerida";
-  if (!data.breed.trim()) errors.breed = "La raza es requerida";
+
+  // raza
+  if (!data.breed.trim()) {
+    errors.breed = "La raza es requerida";
+  } else if (data.breed.trim().length > 150) {
+    errors.breed = "La raza no puede superar los 150 caracteres";
+  } else if (/\d/.test(data.breed)) {
+    errors.breed = "La raza no puede contener números";
+  }
+
+  // edad
   if (!data.age.trim()) {
     errors.age = "La edad es requerida";
   } else if (
@@ -47,7 +68,10 @@ export const validatePatientData = (data: PatientData): PatientErrors => {
   ) {
     errors.age = "La edad debe ser un número entero positivo";
   }
+
   if (!data.sex) errors.sex = "El sexo es requerido";
+
+  // peso
   const weightNormalized = data.weight.trim().replace(",", ".");
   if (!data.weight.trim()) {
     errors.weight = "El peso es requerido";
@@ -57,12 +81,37 @@ export const validatePatientData = (data: PatientData): PatientErrors => {
   ) {
     errors.weight = "El peso debe ser un número positivo";
   }
-  if (!data.color.trim()) errors.color = "El color es requerido";
+
+  // color
+  if (!data.color.trim()) {
+    errors.color = "El color es requerido";
+  } else if (data.color.trim().length < 2) {
+    errors.color = "El color debe tener al menos 2 caracteres";
+  } else if (data.color.trim().length > 30) {
+    errors.color = "El color no puede superar los 30 caracteres";
+  } else if (/\d/.test(data.color)) {
+    errors.color = "El color no puede contener números";
+  }
+
+  // seña (opcional)
+  if (data.characteristic.trim().length > 255) {
+    errors.characteristic = "La seña no puede superar los 255 caracteres";
+  }
+
   if (!data.sterilized) errors.sterilized = "Este campo es requerido";
   if (!data.microchip) errors.microchip = "Este campo es requerido";
-  if (data.microchip === "yes" && !data.microchipNumber.trim()) {
-    errors.microchipNumber = "El número de microchip es requerido";
+
+  // número de microchip
+  if (data.microchip === "yes") {
+    if (!data.microchipNumber.trim()) {
+      errors.microchipNumber = "El número de microchip es requerido";
+    } else if (!/^\d+$/.test(data.microchipNumber.trim())) {
+      errors.microchipNumber = "El número de microchip solo puede contener números";
+    } else if (data.microchipNumber.trim().length > 30) {
+      errors.microchipNumber = "El número de microchip no puede superar los 30 caracteres";
+    }
   }
+
   return errors;
 };
 

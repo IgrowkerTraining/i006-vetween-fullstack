@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api, ResponsableDetailResponse } from "../services/api";
 import { ResponsibleData } from "../components/forms/ResponsibleFormFields";
+import { PROVINCIAS } from "../constants/enums";
 
 export function mapToResponsibleData(
   data: ResponsableDetailResponse,
@@ -13,7 +14,13 @@ export function mapToResponsibleData(
     number: data.direccion_numero != null ? String(data.direccion_numero) : "",
     locality:
       data.direccion_localidad != null ? String(data.direccion_localidad) : "",
-    province: data.provincia != null ? String(data.provincia) : "",
+    province: (() => {
+      const raw = data.provincia != null ? String(data.provincia) : "";
+      const match = (PROVINCIAS as readonly { value: string; label: string }[]).find(
+        (p) => p.value === raw || p.label === raw,
+      );
+      return match ? match.value : raw;
+    })(),
     phone: data.telefono != null ? String(data.telefono) : "",
     relationship: data.relacion != null ? String(data.relacion) : "",
   };
@@ -57,7 +64,7 @@ export function useEditResponsible(onSuccess: () => Promise<void>) {
       await api.updateResponsable(editingResponsableId, {
         nombre: data.firstName,
         apellido: data.lastName,
-        email: data.email,
+        email: data.email.trim().toLowerCase(),
         telefono: data.phone,
         relacion: data.relationship,
         direccion_calle: data.street,

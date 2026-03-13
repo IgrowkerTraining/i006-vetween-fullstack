@@ -33,18 +33,84 @@ export const validateResponsibleData = (
   data: ResponsibleData,
 ): ResponsibleErrors => {
   const errors: ResponsibleErrors = {};
-  if (!data.firstName.trim()) errors.firstName = "El nombre es requerido";
-  if (!data.lastName.trim()) errors.lastName = "El apellido es requerido";
+
+  // nombre
+  if (!data.firstName.trim()) {
+    errors.firstName = "El nombre es requerido";
+  } else if (data.firstName.trim().length < 2) {
+    errors.firstName = "El nombre debe tener al menos 2 caracteres";
+  } else if (data.firstName.trim().length > 50) {
+    errors.firstName = "El nombre no puede superar los 50 caracteres";
+  } else if (/\d/.test(data.firstName)) {
+    errors.firstName = "El nombre no puede contener números";
+  }
+
+  // apellido
+  if (!data.lastName.trim()) {
+    errors.lastName = "El apellido es requerido";
+  } else if (data.lastName.trim().length < 2) {
+    errors.lastName = "El apellido debe tener al menos 2 caracteres";
+  } else if (data.lastName.trim().length > 100) {
+    errors.lastName = "El apellido no puede superar los 100 caracteres";
+  } else if (/\d/.test(data.lastName)) {
+    errors.lastName = "El apellido no puede contener números";
+  }
+
+  // email
   if (!data.email.trim()) {
     errors.email = "El email es requerido";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
     errors.email = "El formato de email no es válido";
   }
-  if (!data.street.trim()) errors.street = "La calle es requerida";
-  if (!data.number.trim()) errors.number = "El número es requerido";
-  if (!data.locality.trim()) errors.locality = "La localidad es requerida";
+
+  // calle
+  if (!data.street.trim()) {
+    errors.street = "La calle es requerida";
+  } else if (data.street.trim().length < 2) {
+    errors.street = "La calle debe tener al menos 2 caracteres";
+  } else if (data.street.trim().length > 150) {
+    errors.street = "La calle no puede superar los 150 caracteres";
+  } else if (/\d/.test(data.street)) {
+    errors.street = "La calle no puede contener números";
+  }
+
+  // número
+  if (!data.number.trim()) {
+    errors.number = "El número es requerido";
+  } else {
+    const n = parseInt(data.number, 10);
+    if (isNaN(n) || n <= 0) {
+      errors.number = "El número debe ser un valor positivo";
+    } else if (data.number.trim().length > 5) {
+      errors.number = "El número no puede superar los 5 caracteres";
+    }
+  }
+
+  // localidad
+  if (!data.locality.trim()) {
+    errors.locality = "La localidad es requerida";
+  } else if (data.locality.trim().length < 2) {
+    errors.locality = "La localidad debe tener al menos 2 caracteres";
+  } else if (data.locality.trim().length > 100) {
+    errors.locality = "La localidad no puede superar los 100 caracteres";
+  } else if (/\d/.test(data.locality)) {
+    errors.locality = "La localidad no puede contener números";
+  }
+
+  // provincia
   if (!data.province) errors.province = "La provincia es requerida";
-  if (!data.phone.trim()) errors.phone = "El teléfono es requerido";
+
+  // teléfono
+  if (!data.phone.trim()) {
+    errors.phone = "El teléfono es requerido";
+  } else if (!/^\d+$/.test(data.phone.trim())) {
+    errors.phone = "El teléfono solo puede contener números";
+  } else if (data.phone.trim().length < 8) {
+    errors.phone = "El teléfono debe tener al menos 8 dígitos";
+  } else if (data.phone.trim().length > 20) {
+    errors.phone = "El teléfono no puede superar los 20 dígitos";
+  }
+
   if (!data.relationship) errors.relationship = "La relación es requerida";
   return errors;
 };

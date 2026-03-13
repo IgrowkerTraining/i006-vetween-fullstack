@@ -768,7 +768,7 @@ export default function PatientList() {
       />
       <SuccessModal
         isOpen={showLimitModal}
-        message="Alcanzaste el límite de 50 pacientes registrados"
+        message="Alcanzaste el límite de 50 pacientes registrados. Actualiza tu plan a Premium."
         onAccept={() => setShowLimitModal(false)}
         icon={pawRedIcon}
       />

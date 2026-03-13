@@ -147,7 +147,7 @@ const ResponsibleAndPatientRegister: React.FC = () => {
       const result = (await api.createResponsable({
         nombre: responsible.firstName,
         apellido: responsible.lastName,
-        email: responsible.email,
+        email: responsible.email.trim().toLowerCase(),
         telefono: responsible.phone,
         relacion: responsible.relationship,
         direccion_calle: responsible.street,
