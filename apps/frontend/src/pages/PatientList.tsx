@@ -15,7 +15,12 @@ import { sortArray } from "../utils/sort";
 import { useAuth } from "../hooks/useAuth";
 import { useEditPatient } from "../hooks/useEditPatient";
 import { ROUTES } from "../constants/routes";
-import { TableSkeleton, PageHeaderSkeleton, SearchBarSkeleton } from "../components/common/Skeleton";
+import {
+  TableSkeleton,
+  PageHeaderSkeleton,
+  SearchBarSkeleton,
+} from "../components/common/Skeleton";
+import ErrorStateCard from "../components/common/ErrorStateCard";
 
 export interface Patient {
   id: string;
@@ -271,6 +276,12 @@ export default function PatientList() {
   const sortedPatients = sortConfig
     ? sortArray(filteredPatients, sortConfig.key, sortConfig.direction)
     : filteredPatients;
+  const hasSearchQuery = searchQuery.trim().length > 0;
+  const showNoSearchResults =
+    !isLoading &&
+    !patientsError &&
+    filteredPatients.length === 0 &&
+    hasSearchQuery;
 
   const handleSort = (key: keyof Patient) => {
     let direction: "asc" | "desc" = "asc";
@@ -291,13 +302,10 @@ export default function PatientList() {
         )}
 
         <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
-          {patientsError && !isLoading && (
-            <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {patientsError}
-            </div>
-          )}
           <div className="mb-4">
-            {isLoading ? <SearchBarSkeleton /> : (
+            {isLoading ? (
+              <SearchBarSkeleton />
+            ) : (
               <SearchBar
                 onSearch={setSearchQuery}
                 placeholder="Buscar paciente"
@@ -305,19 +313,32 @@ export default function PatientList() {
             )}
           </div>
 
-          {isLoading ? (
-            <TableSkeleton 
-              rows={5} 
+          {patientsError && !isLoading ? (
+            <ErrorStateCard
+              title="No pudimos cargar la lista de pacientes"
+              description="Hubo un error al cargar la información. Intenta nuevamente más tarde."
+              actionLabel="Reintentar"
+              onAction={() => loadPatients(currentPage)}
+            />
+          ) : showNoSearchResults ? (
+            <ErrorStateCard
+              title="No encontramos pacientes con ese nombre"
+              actionLabel="Volver"
+              onAction={() => setSearchQuery("")}
+            />
+          ) : isLoading ? (
+            <TableSkeleton
+              rows={5}
               columns={[
-                { width: 'w-16', type: 'text' },
-                { width: 'w-32', type: 'text' },
-                { width: 'w-24', type: 'text' },
-                { width: 'flex-1', type: 'text' },
-                { width: 'w-24', type: 'badge' },
-                { width: 'w-20', type: 'action' },
-                { width: 'w-24', type: 'action' },
-              ]} 
-              showHeader 
+                { width: "w-16", type: "text" },
+                { width: "w-32", type: "text" },
+                { width: "w-24", type: "text" },
+                { width: "flex-1", type: "text" },
+                { width: "w-24", type: "badge" },
+                { width: "w-20", type: "action" },
+                { width: "w-24", type: "action" },
+              ]}
+              showHeader
             />
           ) : (
             <>

@@ -29,6 +29,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useEditPatient } from "../hooks/useEditPatient";
 import { useToast } from "../context/ToastContext";
 import { PatientDetailSkeleton } from "../components/common/Skeleton";
+import ErrorStateCard from "../components/common/ErrorStateCard";
 
 const PatientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,90 +87,93 @@ const PatientDetail: React.FC = () => {
   const [showDeactivateVisitSuccessModal, setShowDeactivateVisitSuccessModal] =
     useState(false);
 
-  useEffect(() => {
+  const loadPatientData = async () => {
     if (!id) return;
-    const fetchPatient = async () => {
-      try {
-        setIsLoading(true);
-        const [data, visitasResult, vacunasResult] = await Promise.all([
-          api.getPatientById(id),
-          api.getVisitasByPatientId(id, 1),
-          api.getVacunasByPatientId(id, 1),
-        ]);
-        setPatientData(data);
-        setVisitasPagina(1);
-        setVisitasUltimaPagina(visitasResult.ultimaPagina);
-        const visitasData = visitasResult.data;
-        const responsableId =
-          data.id_responsable ?? data.responsables?.id_responsable;
-        if (responsableId) {
-          try {
-            const respData = await api.getResponsableById(responsableId);
-            setResponsableData(respData);
-          } catch {
-            // Si falla, continúa sin datos del responsable
-          }
-        }
-        const pickText = (...values: unknown[]): string => {
-          const found = values.find(
-            (value) => typeof value === "string" && value.trim().length > 0,
-          ) as string | undefined;
-          return found ?? "-";
-        };
 
-        const mappedVisitas: VisitaClinica[] = visitasData.map((v, index) => {
-          const visit = v as Record<string, unknown>;
-          return {
-            id: String(visit.id_visitas ?? visit.id_visita ?? visit.id ?? "-"),
-            fechaVisita: pickText(visit.fecha, visit.fecha_visita),
-            historialPrevio: Boolean(visit.historial_previo),
-            motivoConsulta: pickText(
-              visit.motivo_consulta,
-              visit.motivoConsulta,
-              visit.motivo,
-            ),
-            diagnostico: pickText(
-              visit.diagnostico,
-              visit.diagnosis,
-              visit.diagnostico_visita,
-            ),
-            tratamiento: pickText(
-              visit.tratamiento,
-              visit.treatments,
-              visit.tratamiento_indicado,
-            ),
-            observaciones: pickText(
-              visit.observaciones,
-              visit.observacion,
-              visit.observaciones_generales,
-            ),
-            estado: visit.estado ? "Corregido" : "Original",
-            inactiva: Boolean(visit.estado),
-            expandido: index === 0,
-          };
-        });
-        mappedVisitas.sort(
-          (a, b) => Number(b.historialPrevio) - Number(a.historialPrevio),
-        );
-        setVisitas(mappedVisitas);
-        const mappedVacunas: Vacuna[] = vacunasResult.data.map((v, index) => ({
-          id: String(v.id_vacunas),
-          fechaAplicacion: v.fecha_aplicacion,
-          nombreCientifico: v.nombre_cientifico,
-          tipoVacuna: v.tipo,
-          observacion: v.observacion,
-          expandido: index === 0,
-        }));
-        setVacunasPagina(1);
-        setVacunasUltimaPagina(vacunasResult.ultimaPagina);
-        setVacunas(mappedVacunas);
-      } catch (err: any) {
-        setFetchError(err?.message || "No se pudo cargar el paciente.");
-      } finally {
-        setIsLoading(false);
+    try {
+      setIsLoading(true);
+      setFetchError(null);
+      const [data, visitasResult, vacunasResult] = await Promise.all([
+        api.getPatientById(id),
+        api.getVisitasByPatientId(id, 1),
+        api.getVacunasByPatientId(id, 1),
+      ]);
+      setPatientData(data);
+      setVisitasPagina(1);
+      setVisitasUltimaPagina(visitasResult.ultimaPagina);
+      const visitasData = visitasResult.data;
+      const responsableId =
+        data.id_responsable ?? data.responsables?.id_responsable;
+      if (responsableId) {
+        try {
+          const respData = await api.getResponsableById(responsableId);
+          setResponsableData(respData);
+        } catch {
+          // Si falla, continúa sin datos del responsable
+        }
       }
-    };
-    fetchPatient();
+      const pickText = (...values: unknown[]): string => {
+        const found = values.find(
+          (value) => typeof value === "string" && value.trim().length > 0,
+        ) as string | undefined;
+        return found ?? "-";
+      };
+
+      const mappedVisitas: VisitaClinica[] = visitasData.map((v, index) => {
+        const visit = v as Record<string, unknown>;
+        return {
+          id: String(visit.id_visitas ?? visit.id_visita ?? visit.id ?? "-"),
+          fechaVisita: pickText(visit.fecha, visit.fecha_visita),
+          historialPrevio: Boolean(visit.historial_previo),
+          motivoConsulta: pickText(
+            visit.motivo_consulta,
+            visit.motivoConsulta,
+            visit.motivo,
+          ),
+          diagnostico: pickText(
+            visit.diagnostico,
+            visit.diagnosis,
+            visit.diagnostico_visita,
+          ),
+          tratamiento: pickText(
+            visit.tratamiento,
+            visit.treatments,
+            visit.tratamiento_indicado,
+          ),
+          observaciones: pickText(
+            visit.observaciones,
+            visit.observacion,
+            visit.observaciones_generales,
+          ),
+          estado: visit.estado ? "Corregido" : "Original",
+          inactiva: Boolean(visit.estado),
+          expandido: index === 0,
+        };
+      });
+      mappedVisitas.sort(
+        (a, b) => Number(b.historialPrevio) - Number(a.historialPrevio),
+      );
+      setVisitas(mappedVisitas);
+      const mappedVacunas: Vacuna[] = vacunasResult.data.map((v, index) => ({
+        id: String(v.id_vacunas),
+        fechaAplicacion: v.fecha_aplicacion,
+        nombreCientifico: v.nombre_cientifico,
+        tipoVacuna: v.tipo,
+        observacion: v.observacion,
+        expandido: index === 0,
+      }));
+      setVacunasPagina(1);
+      setVacunasUltimaPagina(vacunasResult.ultimaPagina);
+      setVacunas(mappedVacunas);
+    } catch (err: any) {
+      setFetchError(err?.message || "No se pudo cargar el paciente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPatientData();
   }, [id]);
 
   // Helpers para mapear los datos de la API al formato esperado por los componentes
@@ -535,10 +539,12 @@ const PatientDetail: React.FC = () => {
   if (fetchError || !paciente || !responsable) {
     return (
       <MainLayout>
-        <div className="flex flex-1 items-center justify-center py-24">
-          <p className="text-sm text-red-600">
-            {fetchError ?? "No se encontró el paciente."}
-          </p>
+        <div className="px-8 py-8">
+          <ErrorStateCard
+            title="Hubo un error al cargar los datos generales"
+            actionLabel="Reintentar"
+            onAction={loadPatientData}
+          />
         </div>
       </MainLayout>
     );

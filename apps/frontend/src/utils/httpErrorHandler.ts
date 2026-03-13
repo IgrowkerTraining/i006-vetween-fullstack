@@ -18,7 +18,7 @@ let _interceptorInstalled = false;
 
 export const setHttpErrorHandlers = (
   showToastFn: ShowToastFn,
-  on401Fn: On401Fn
+  on401Fn: On401Fn,
 ): void => {
   _showToast = showToastFn;
   _on401 = on401Fn;
@@ -28,10 +28,13 @@ const STATUS_MESSAGES: Partial<Record<number, string>> = {
   401: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
   403: "No tienes permisos para realizar esta acción.",
   404: "El recurso solicitado no fue encontrado.",
+  408: "La solicitud tardó demasiado. Intenta nuevamente.",
   500: "Error interno del servidor. Intenta nuevamente más tarde.",
   502: "Servicio no disponible. Intenta nuevamente más tarde.",
   503: "Servicio temporalmente no disponible.",
 };
+
+const FETCH_TIMEOUT_MS = 10000;
 
 const AUTH_ENDPOINTS = ["/auth/login", "/auth/register"];
 
@@ -46,15 +49,40 @@ export const installFetchInterceptor = (): void => {
 
   window.fetch = async (
     input: RequestInfo | URL,
-    init?: RequestInit
+    init?: RequestInit,
   ): Promise<Response> => {
-    const response = await originalFetch(input, init);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => {
+      controller.abort();
+    }, FETCH_TIMEOUT_MS);
+
     const url =
       typeof input === "string"
         ? input
         : input instanceof URL
-        ? input.href
-        : (input as Request).url;
+          ? input.href
+          : (input as Request).url;
+
+    let response: Response;
+    try {
+      response = await originalFetch(input, {
+        ...init,
+        signal: init?.signal ?? controller.signal,
+      });
+    } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        const message = STATUS_MESSAGES[408]!;
+        _showToast?.(message, "error");
+        throw new HttpError(408, message);
+      }
+
+      const message =
+        "No se pudo conectar con el servidor. Verifica tu conexión.";
+      _showToast?.(message, "error");
+      throw new HttpError(503, message);
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const isAuth = isAuthEndpoint(url);

@@ -16,7 +16,12 @@ import { useAuth } from "../hooks/useAuth";
 import { useEditResponsible } from "../hooks/useEditResponsible";
 import { ROUTES } from "../constants/routes";
 import { StatusPill } from "../components/common/StatusPill";
-import { TableSkeleton, PageHeaderSkeleton, SearchBarSkeleton } from "../components/common/Skeleton";
+import {
+  TableSkeleton,
+  PageHeaderSkeleton,
+  SearchBarSkeleton,
+} from "../components/common/Skeleton";
+import ErrorStateCard from "../components/common/ErrorStateCard";
 
 interface MascotaRef {
   id: string;
@@ -234,6 +239,12 @@ export default function ResponsibleList() {
   const sortedResponsables = sortConfig
     ? sortArray(filteredResponsables, sortConfig.key, sortConfig.direction)
     : filteredResponsables;
+  const hasSearchQuery = searchQuery.trim().length > 0;
+  const showNoSearchResults =
+    !isLoading &&
+    !loadError &&
+    filteredResponsables.length === 0 &&
+    hasSearchQuery;
 
   const handleSort = (key: keyof ResponsableRow) => {
     let direction: "asc" | "desc" = "asc";
@@ -304,14 +315,10 @@ export default function ResponsibleList() {
           className="flex-1 px-8 py-6"
           aria-label="Lista de responsables"
         >
-          {loadError && !isLoading && (
-            <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {loadError}
-            </div>
-          )}
-
           <div className="mb-4">
-            {isLoading ? <SearchBarSkeleton /> : (
+            {isLoading ? (
+              <SearchBarSkeleton />
+            ) : (
               <SearchBar
                 onSearch={setSearchQuery}
                 placeholder="Buscar por nombre"
@@ -319,21 +326,34 @@ export default function ResponsibleList() {
             )}
           </div>
 
-          {isLoading ? (
-            <TableSkeleton 
-              rows={5} 
+          {loadError && !isLoading ? (
+            <ErrorStateCard
+              title="No pudimos cargar la lista de responsables"
+              description="Hubo un error al cargar la información. Intenta nuevamente más tarde."
+              actionLabel="Reintentar"
+              onAction={() => loadData(currentPage)}
+            />
+          ) : showNoSearchResults ? (
+            <ErrorStateCard
+              title="No encontramos responsables con ese nombre"
+              actionLabel="Volver"
+              onAction={() => setSearchQuery("")}
+            />
+          ) : isLoading ? (
+            <TableSkeleton
+              rows={5}
               columns={[
-                { width: 'w-16', type: 'text' },
-                { width: 'w-32', type: 'text' },
-                { width: 'w-32', type: 'text' },
-                { width: 'flex-1', type: 'multi' },
-                { width: 'w-56', type: 'text' },
-                { width: 'w-32', type: 'text' },
-                { width: 'w-24', type: 'badge' },
-                { width: 'w-20', type: 'action' },
-                { width: 'w-24', type: 'action' },
-              ]} 
-              showHeader 
+                { width: "w-16", type: "text" },
+                { width: "w-32", type: "text" },
+                { width: "w-32", type: "text" },
+                { width: "flex-1", type: "multi" },
+                { width: "w-56", type: "text" },
+                { width: "w-32", type: "text" },
+                { width: "w-24", type: "badge" },
+                { width: "w-20", type: "action" },
+                { width: "w-24", type: "action" },
+              ]}
+              showHeader
             />
           ) : (
             <>
@@ -477,7 +497,8 @@ export default function ResponsibleList() {
                       No hay responsables registrados aún
                     </h3>
                     <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                      Los responsables asociados a tus pacientes aparecerán aquí.
+                      Los responsables asociados a tus pacientes aparecerán
+                      aquí.
                     </p>
                   </div>
                 )}
