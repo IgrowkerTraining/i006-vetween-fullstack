@@ -8,7 +8,12 @@ import { SearchBar } from "../components/common/SearchBar";
 import { api, ResponsibleListItem } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 import { ROUTES } from "../constants/routes";
-import { TableSkeleton, PageHeaderSkeleton, SearchBarSkeleton } from "../components/common/Skeleton";
+import {
+  TableSkeleton,
+  PageHeaderSkeleton,
+  SearchBarSkeleton,
+} from "../components/common/Skeleton";
+import ErrorStateCard from "../components/common/ErrorStateCard";
 
 interface PatientSummaryRow {
   id: string;
@@ -46,8 +51,10 @@ const extractResponsablesArray = (payload: unknown): ResponsibleListItem[] => {
       const inner = asRecord.data as Record<string, unknown>;
       if (Array.isArray(inner.data)) return inner.data as ResponsibleListItem[];
     }
-    if (Array.isArray(asRecord.data)) return asRecord.data as ResponsibleListItem[];
-    if (Array.isArray(asRecord.responsables)) return asRecord.responsables as ResponsibleListItem[];
+    if (Array.isArray(asRecord.data))
+      return asRecord.data as ResponsibleListItem[];
+    if (Array.isArray(asRecord.responsables))
+      return asRecord.responsables as ResponsibleListItem[];
   }
   return [];
 };
@@ -56,7 +63,9 @@ const extractTotalPages = (payload: unknown): number => {
   if (payload && typeof payload === "object") {
     const asRecord = payload as Record<string, unknown>;
     const inner =
-      asRecord.data && typeof asRecord.data === "object" && !Array.isArray(asRecord.data)
+      asRecord.data &&
+      typeof asRecord.data === "object" &&
+      !Array.isArray(asRecord.data)
         ? (asRecord.data as Record<string, unknown>)
         : asRecord;
     if (typeof inner.ultimaPagina === "number") return inner.ultimaPagina;
@@ -96,13 +105,19 @@ export default function ClinicalSummaryList() {
       setTotalPages(extractTotalPages(patientsResponse));
 
       // Fetch all responsable pages to build complete name map
-      const totalResponsablePages = extractTotalPages(firstResponsablesResponse);
+      const totalResponsablePages = extractTotalPages(
+        firstResponsablesResponse,
+      );
       const extraResponsablesResponses = await Promise.all(
-        Array.from({ length: totalResponsablePages - 1 }, (_, i) => api.getResponsables(i + 2)),
+        Array.from({ length: totalResponsablePages - 1 }, (_, i) =>
+          api.getResponsables(i + 2),
+        ),
       );
       const allResponsables: ResponsibleListItem[] = [
         ...extractResponsablesArray(firstResponsablesResponse),
-        ...extraResponsablesResponses.flatMap((r) => extractResponsablesArray(r)),
+        ...extraResponsablesResponses.flatMap((r) =>
+          extractResponsablesArray(r),
+        ),
       ];
 
       const responsablesById = new Map<string, ResponsibleListItem>();
@@ -195,14 +210,10 @@ export default function ClinicalSummaryList() {
         )}
 
         <section className="flex-1 px-8 py-6" aria-label="Resúmenes clínicos">
-          {loadError && !isLoading && (
-            <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {loadError}
-            </div>
-          )}
-
           <div className="mb-4">
-            {isLoading ? <SearchBarSkeleton /> : (
+            {isLoading ? (
+              <SearchBarSkeleton />
+            ) : (
               <SearchBar
                 onSearch={setSearchQuery}
                 placeholder="Buscar resumen clínico"
@@ -210,131 +221,140 @@ export default function ClinicalSummaryList() {
             )}
           </div>
 
-          {isLoading ? (
-            <TableSkeleton 
-              rows={5} 
+          {loadError && !isLoading ? (
+            <ErrorStateCard
+              title="No pudimos cargar la lista de resumenes clínicos"
+              description="Hubo un error al cargar la información. Intenta nuevamente más tarde."
+              actionLabel="Reintentar"
+              onAction={() => loadData(currentPage)}
+            />
+          ) : isLoading ? (
+            <TableSkeleton
+              rows={5}
               columns={[
-                { width: 'w-16', type: 'text' },
-                { width: 'w-32', type: 'text' },
-                { width: 'flex-1', type: 'text' },
-                { width: 'w-32', type: 'action' },
-              ]} 
-              showHeader 
+                { width: "w-16", type: "text" },
+                { width: "w-32", type: "text" },
+                { width: "flex-1", type: "text" },
+                { width: "w-32", type: "action" },
+              ]}
+              showHeader
             />
           ) : (
             <>
-            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="bg-[#7ACBD9] text-black font-semibold">
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("id")}
-                  >
-                    ID
-                    {sortConfig?.key === "id" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+              <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="bg-[#7ACBD9] text-black font-semibold">
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("id")}
                       >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("nombre")}
-                  >
-                    Nombre
-                    {sortConfig?.key === "nombre" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                        ID
+                        {sortConfig?.key === "id" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("nombre")}
                       >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th
-                    className="px-6 py-3 font-semibold cursor-pointer"
-                    onClick={() => handleSort("responsable")}
-                  >
-                    Responsable
-                    {sortConfig?.key === "responsable" && (
-                      <span
-                        className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                        Nombre
+                        {sortConfig?.key === "nombre" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th
+                        className="px-6 py-3 font-semibold cursor-pointer"
+                        onClick={() => handleSort("responsable")}
                       >
-                        {sortConfig.direction === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </th>
-                  <th className="px-6 py-3 font-semibold">Ver resumen</th>
-                </tr>
-              </thead>
-              {sortedPatients.length > 0 && (
-                <tbody>
-                  {sortedPatients.map((patient) => (
-                    <tr
-                      key={patient.id}
-                      className="border-t border-border text-black transition-colors hover:bg-muted/60"
-                    >
-                      <td className="px-6 py-3 font-medium">{patient.id}</td>
-                      <td className="px-6 py-3 font-medium">
-                        <button
-                          onClick={() => handlePatientClick(patient.id)}
-                          className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
-                        >
-                          {patient.nombre}
-                        </button>
-                      </td>
-                      <td className="px-6 py-3">{patient.responsable}</td>
-                      <td className="px-6 py-3">
-                        <button
-                          onClick={() => handleViewSummary(patient.id)}
-                          className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
-                        >
-                          Ver resumen
-                        </button>
-                      </td>
+                        Responsable
+                        {sortConfig?.key === "responsable" && (
+                          <span
+                            className={`ml-1 ${sortConfig.direction === "asc" ? "text-blue-400" : "text-gray-400"}`}
+                          >
+                            {sortConfig.direction === "asc" ? "↑" : "↓"}
+                          </span>
+                        )}
+                      </th>
+                      <th className="px-6 py-3 font-semibold">Ver resumen</th>
                     </tr>
-                  ))}
-                </tbody>
-              )}
-            </table>
+                  </thead>
+                  {sortedPatients.length > 0 && (
+                    <tbody>
+                      {sortedPatients.map((patient) => (
+                        <tr
+                          key={patient.id}
+                          className="border-t border-border text-black transition-colors hover:bg-muted/60"
+                        >
+                          <td className="px-6 py-3 font-medium">
+                            {patient.id}
+                          </td>
+                          <td className="px-6 py-3 font-medium">
+                            <button
+                              onClick={() => handlePatientClick(patient.id)}
+                              className="font-semibold text-indigo-600 underline-offset-2 hover:underline"
+                            >
+                              {patient.nombre}
+                            </button>
+                          </td>
+                          <td className="px-6 py-3">{patient.responsable}</td>
+                          <td className="px-6 py-3">
+                            <button
+                              onClick={() => handleViewSummary(patient.id)}
+                              className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700"
+                            >
+                              Ver resumen
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  )}
+                </table>
 
-            {filteredPatients.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16">
-                <img src={pawIcon} alt="paw icon" />
-                <h3 className="mt-4 text-lg font-semibold text-foreground">
-                  No hay resúmenes clínicos generados aún
-                </h3>
-                <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                  En esta sección tendrás acceso a todos los resúmenes clínicos
-                  de tus pacientes.
-                </p>
+                {filteredPatients.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <img src={pawIcon} alt="paw icon" />
+                    <h3 className="mt-4 text-lg font-semibold text-foreground">
+                      No hay resúmenes clínicos generados aún
+                    </h3>
+                    <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
+                      En esta sección tendrás acceso a todos los resúmenes
+                      clínicos de tus pacientes.
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 py-4">
-              <button
-                onClick={() => loadData(currentPage - 1)}
-                disabled={currentPage <= 1}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                ← Anterior
-              </button>
-              <span className="text-sm text-muted-foreground">
-                Página {currentPage} de {totalPages}
-              </span>
-              <button
-                onClick={() => loadData(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Siguiente →
-              </button>
-            </div>
-          )}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 py-4">
+                  <button
+                    onClick={() => loadData(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    ← Anterior
+                  </button>
+                  <span className="text-sm text-muted-foreground">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => loadData(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
             </>
           )}
         </section>

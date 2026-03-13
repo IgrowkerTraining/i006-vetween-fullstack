@@ -14,6 +14,7 @@ import ClinicalSummaryList from "../pages/ClinicalSummaryList";
 import ClinicalSummaryDetail from "../pages/ClinicalSummaryDetail";
 import ResponsibleList from "../pages/ResponsibleList";
 import ResponsibleAndPatientRegister from "../pages/ResponsibleAndPatientRegister";
+import NotFound from "../pages/NotFound";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -115,6 +116,7 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
