@@ -512,7 +512,7 @@ export default function PatientList() {
           {patientsError && !isLoading ? (
             <ErrorStateCard
               title="No pudimos cargar la lista de pacientes"
-              description="Hubo un error al cargar la información. Intenta nuevamente más tarde."
+              description="Hubo un error al cargar la información. Intentá nuevamente más tarde."
               actionLabel="Reintentar"
               onAction={() => loadPatients(currentPage)}
             />
@@ -773,7 +773,7 @@ export default function PatientList() {
       />
       <SuccessModal
         isOpen={showAddPatientInfoModal}
-        message="Para añadir un paciente nuevo, tienes que registrar un responsable nuevo o seleccionar uno existente"
+        message="Para añadir un paciente nuevo, tenés que registrar un responsable nuevo o seleccionar uno existente"
         checkboxLabel="No volver a mostrar este mensaje"
         onCheckboxChange={(checked) => {
           if (checked) localStorage.setItem(HIDE_ADD_PATIENT_MODAL_KEY, "true");

@@ -288,7 +288,7 @@ export default function ResponsibleList() {
           {loadError && !isLoading ? (
             <ErrorStateCard
               title="No pudimos cargar la lista de responsables"
-              description="Hubo un error al cargar la información. Intenta nuevamente más tarde."
+              description="Hubo un error al cargar la información. Intentá nuevamente más tarde."
               actionLabel="Reintentar"
               onAction={() => loadData(currentPage)}
             />

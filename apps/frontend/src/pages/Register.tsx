@@ -203,9 +203,9 @@ const Register: React.FC = () => {
     )
       newErrors.registration = "La matrícula debe tener al menos 4 dígitos";
     if (!formData.specialties)
-      newErrors.specialties = "Debes seleccionar al menos una especialidad";
+      newErrors.specialties = "Debés seleccionar al menos una especialidad";
     if (formData.animalTypes.length === 0)
-      newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
+      newErrors.animalTypes = "Debés seleccionar al menos un tipo de animal";
     const cost = parseFloat(formData.consultationCost);
     if (!formData.consultationCost || isNaN(cost) || cost < 0)
       newErrors.consultationCost =
@@ -257,9 +257,9 @@ const Register: React.FC = () => {
     )
       newErrors.registration = "La matrícula debe tener al menos 4 dígitos";
     if (!formData.specialties)
-      newErrors.specialties = "Debes seleccionar al menos una especialidad";
+      newErrors.specialties = "Debés seleccionar al menos una especialidad";
     if (formData.animalTypes.length === 0)
-      newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
+      newErrors.animalTypes = "Debés seleccionar al menos un tipo de animal";
     const cost = parseFloat(formData.consultationCost);
     if (!formData.consultationCost || isNaN(cost) || cost < 0)
       newErrors.consultationCost =
@@ -299,7 +299,7 @@ const Register: React.FC = () => {
       newErrors.addressLocality =
         "La ciudad / localidad debe tener al menos 2 caracteres";
     if (!formData.province)
-      newErrors.province = "Debes seleccionar una provincia válida";
+      newErrors.province = "Debés seleccionar una provincia válida";
     if (!formData.phone.trim() || formData.phone.trim().length < 8)
       newErrors.phone = "El teléfono debe tener al menos 8 caracteres";
 
@@ -976,7 +976,7 @@ const Register: React.FC = () => {
 
               <div className="mt-8 pt-6 border-t border-slate-800 text-center">
                 <p className="text-slate-400 text-sm">
-                  ¿Ya tienes cuenta?{" "}
+                  ¿Ya tenés cuenta?{" "}
                   <Link
                     to="/login"
                     className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
