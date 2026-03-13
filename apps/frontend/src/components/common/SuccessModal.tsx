@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import checkCircle from "../../assets/check-circle.svg";
 
 interface SuccessModalProps {
@@ -6,6 +6,8 @@ interface SuccessModalProps {
   message: string;
   onAccept: () => void;
   icon?: string;
+  checkboxLabel?: string;
+  onCheckboxChange?: (checked: boolean) => void;
 }
 
 export const SuccessModal: React.FC<SuccessModalProps> = ({
@@ -13,7 +15,15 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   message,
   onAccept,
   icon = checkCircle,
+  checkboxLabel,
+  onCheckboxChange,
 }) => {
+  const [checked, setChecked] = useState(false);
+
+  const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setChecked(e.target.checked);
+    onCheckboxChange?.(e.target.checked);
+  };
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onAccept();
@@ -70,6 +80,17 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           <p className="text-center text-sm font-medium text-slate-700 leading-snug">
             {message}
           </p>
+          {checkboxLabel && (
+            <label className="flex items-center gap-2 text-sm text-slate-500 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={handleCheckbox}
+                className="w-4 h-4 accent-indigo-600 cursor-pointer"
+              />
+              {checkboxLabel}
+            </label>
+          )}
           <button
             onClick={onAccept}
             className="px-10 rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors"

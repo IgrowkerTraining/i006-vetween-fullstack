@@ -4,8 +4,8 @@ import { useAuth } from "../../hooks/useAuth";
 import onlylogo from "../../assets/onlylogo.svg";
 
 const navItems = [
-  { label: "Responsables", id: "historial", path: "/responsables" },
   { label: "Pacientes", id: "pacientes", path: "/lista-pacientes" },
+  { label: "Responsables", id: "historial", path: "/responsables" },
   { label: "Resumen clínico", id: "resumen", path: "/resumen-clinico" },
   { label: "Mi cuenta", id: "mi-cuenta", path: "/mi-cuenta" },
 ];

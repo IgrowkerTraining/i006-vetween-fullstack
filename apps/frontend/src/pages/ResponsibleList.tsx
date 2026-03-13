@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import addResponsibleIcon from "../assets/addResponsibleIcon.svg";
-import pawRedIcon from "../assets/huella-roja.svg";
 import editIcon from "../assets/edit.svg";
 import { sortArray } from "../utils/sort";
 import MainLayout from "../components/layout/MainLayout";
@@ -105,8 +103,6 @@ export default function ResponsibleList() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false);
-  const [activePatientCount, setActivePatientCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const {
@@ -150,18 +146,6 @@ export default function ResponsibleList() {
         ...extractPatientsArray(firstPatientsResponse),
         ...extraPatientResponses.flatMap((r) => extractPatientsArray(r)),
       ];
-
-      // Contar pacientes activos
-      const activePatientsCount = allPatients.filter(
-        (p: any) =>
-          p.estado === true ||
-          p.estado === "true" ||
-          p.estado === 1 ||
-          p.activo === true ||
-          p.activo === "true" ||
-          p.activo === 1,
-      ).length;
-      setActivePatientCount(activePatientsCount);
 
       // Build map: responsable id → [{ id, nombre, estado }]
       const mascotasByResponsable = new Map<string, MascotaRef[]>();
@@ -274,14 +258,6 @@ export default function ResponsibleList() {
     }
   };
 
-  const handleAddResponsible = () => {
-    if (activePatientCount >= 50) {
-      setShowLimitModal(true);
-      return;
-    }
-    navigate(ROUTES.REGISTER_PATIENT);
-  };
-
   return (
     <MainLayout>
       <section className="flex flex-1 flex-col overflow-y-auto">
@@ -291,23 +267,6 @@ export default function ResponsibleList() {
           <PageHeader
             subtitle={`Hola, ${userDisplayName}`}
             title="Responsables"
-            actions={
-              <button
-                onClick={handleAddResponsible}
-                className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
-                  activePatientCount >= 50
-                    ? "bg-[#5451FF]/40 text-white/60"
-                    : "bg-[#5451FF] text-white hover:bg-[#5451FF]/85"
-                }`}
-              >
-                <img
-                  src={addResponsibleIcon}
-                  alt="Paw Icon Add"
-                  className="size-7"
-                />
-                {"Añadir responsable"}
-              </button>
-            }
           />
         )}
 
@@ -535,12 +494,6 @@ export default function ResponsibleList() {
         isOpen={showSuccessModal}
         message="Los datos se actualizaron correctamente"
         onAccept={closeSuccessModal}
-      />
-      <SuccessModal
-        isOpen={showLimitModal}
-        message="Alcanzaste el límite de 50 pacientes registrados"
-        onAccept={() => setShowLimitModal(false)}
-        icon={pawRedIcon}
       />
       <SuccessModal
         isOpen={showDeleteSuccessModal}

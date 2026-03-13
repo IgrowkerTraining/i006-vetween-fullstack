@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import pawIcon from "../assets/pawIcon.svg";
 import editIcon from "../assets/edit.svg";
+import addResponsibleIcon from "../assets/addResponsibleIcon.svg";
+import pawRedIcon from "../assets/huella-roja.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { SearchBar } from "../components/common/SearchBar";
@@ -42,6 +44,10 @@ export default function PatientList() {
   const [showDeleteSuccessModal, setShowDeleteSuccessModal] = useState(false);
   const [patientsError, setPatientsError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalPatients, setTotalPatients] = useState(0);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showAddPatientInfoModal, setShowAddPatientInfoModal] = useState(false);
+  const HIDE_ADD_PATIENT_MODAL_KEY = "vetween_hideAddPatientInfoModal";
   const [togglingPatientId, setTogglingPatientId] = useState<string | null>(
     null,
   );
@@ -70,6 +76,18 @@ export default function PatientList() {
 
   const handlePatientClick = (patientId: string) => {
     navigate(`${ROUTES.PATIENT}/${patientId}`);
+  };
+
+  const handleAddPatient = () => {
+    if (totalPatients >= 50) {
+      setShowLimitModal(true);
+      return;
+    }
+    if (localStorage.getItem(HIDE_ADD_PATIENT_MODAL_KEY) === "true") {
+      navigate(ROUTES.REGISTER_PATIENT);
+      return;
+    }
+    setShowAddPatientInfoModal(true);
   };
 
   const rawName =
@@ -247,6 +265,7 @@ export default function PatientList() {
       if (meta) {
         setCurrentPage(page);
         setTotalPages(meta.ultimaPagina);
+        setTotalPatients(meta.total);
       }
 
       // Fetch remaining responsable pages in parallel so the map is complete
@@ -456,7 +475,27 @@ export default function PatientList() {
         {isLoading ? (
           <PageHeaderSkeleton showSubtitle={false} showActions={false} />
         ) : (
-          <PageHeader subtitle={`Hola, ${userDisplayName}`} title="Pacientes" />
+          <PageHeader
+            subtitle={`Hola, ${userDisplayName}`}
+            title="Pacientes"
+            actions={
+              <button
+                onClick={handleAddPatient}
+                className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
+                  totalPatients >= 50
+                    ? "bg-[#5451FF]/40 text-white/60"
+                    : "bg-[#5451FF] text-white hover:bg-[#5451FF]/85"
+                }`}
+              >
+                <img
+                  src={addResponsibleIcon}
+                  alt="Paw Icon Add"
+                  className="size-7"
+                />
+                {"Añadir paciente"}
+              </button>
+            }
+          />
         )}
 
         <section className="flex-1 px-8 py-6" aria-label="Lista de pacientes">
@@ -726,6 +765,25 @@ export default function PatientList() {
         isOpen={showDeleteSuccessModal}
         message="El paciente se eliminó con éxito"
         onAccept={() => setShowDeleteSuccessModal(false)}
+      />
+      <SuccessModal
+        isOpen={showLimitModal}
+        message="Alcanzaste el límite de 50 pacientes registrados"
+        onAccept={() => setShowLimitModal(false)}
+        icon={pawRedIcon}
+      />
+      <SuccessModal
+        isOpen={showAddPatientInfoModal}
+        message="Para añadir un paciente nuevo, tienes que registrar un responsable nuevo o seleccionar uno existente"
+        checkboxLabel="No volver a mostrar este mensaje"
+        onCheckboxChange={(checked) => {
+          if (checked) localStorage.setItem(HIDE_ADD_PATIENT_MODAL_KEY, "true");
+          else localStorage.removeItem(HIDE_ADD_PATIENT_MODAL_KEY);
+        }}
+        onAccept={() => {
+          setShowAddPatientInfoModal(false);
+          navigate(ROUTES.REGISTER_PATIENT);
+        }}
       />
       <DangerConfirmModal
         isOpen={deleteTargetId !== null}
