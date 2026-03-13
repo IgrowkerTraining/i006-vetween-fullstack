@@ -450,8 +450,10 @@ export default function ResponsibleList() {
                           </td>
                           <td className="px-6 py-3">
                             <button
-                              onClick={() => openEdit(r.id)}
-                              className="transition-opacity hover:opacity-70"
+                              onClick={() => r.estado !== "Inactivo" && openEdit(r.id)}
+                              disabled={r.estado === "Inactivo"}
+                              title={r.estado === "Inactivo" ? "No se puede editar un responsable inactivo" : undefined}
+                              className={`transition-opacity ${r.estado === "Inactivo" ? "cursor-not-allowed opacity-30" : "hover:opacity-70"}`}
                             >
                               <img
                                 src={editIcon}

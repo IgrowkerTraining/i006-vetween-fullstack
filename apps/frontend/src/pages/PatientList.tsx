@@ -593,10 +593,10 @@ export default function PatientList() {
                           </td>
                           <td className="px-6 py-3">
                             <button
-                              onClick={() => patient.activo && openEdit(patient.id)}
-                              disabled={!patient.activo}
-                              title={!patient.activo ? "No se puede editar un paciente inactivo" : "Editar"}
-                              className={`transition-opacity ${patient.activo ? "hover:opacity-70" : "cursor-not-allowed opacity-30"}`}
+                              onClick={() => patient.activo === true && openEdit(patient.id)}
+                              disabled={patient.activo !== true}
+                              title={patient.activo !== true ? "No se puede editar un paciente inactivo" : "Editar"}
+                              className={`transition-opacity ${patient.activo === true ? "hover:opacity-70" : "cursor-not-allowed opacity-30"}`}
                             >
                               <img
                                 src={editIcon}
