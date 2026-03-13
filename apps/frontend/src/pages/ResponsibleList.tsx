@@ -16,7 +16,11 @@ import { useAuth } from "../hooks/useAuth";
 import { useEditResponsible } from "../hooks/useEditResponsible";
 import { ROUTES } from "../constants/routes";
 import { StatusPill } from "../components/common/StatusPill";
-import { TableSkeleton, PageHeaderSkeleton, SearchBarSkeleton } from "../components/common/Skeleton";
+import {
+  TableSkeleton,
+  PageHeaderSkeleton,
+  SearchBarSkeleton,
+} from "../components/common/Skeleton";
 
 interface MascotaRef {
   id: string;
@@ -311,7 +315,9 @@ export default function ResponsibleList() {
           )}
 
           <div className="mb-4">
-            {isLoading ? <SearchBarSkeleton /> : (
+            {isLoading ? (
+              <SearchBarSkeleton />
+            ) : (
               <SearchBar
                 onSearch={setSearchQuery}
                 placeholder="Buscar por nombre"
@@ -320,20 +326,20 @@ export default function ResponsibleList() {
           </div>
 
           {isLoading ? (
-            <TableSkeleton 
-              rows={5} 
+            <TableSkeleton
+              rows={5}
               columns={[
-                { width: 'w-16', type: 'text' },
-                { width: 'w-32', type: 'text' },
-                { width: 'w-32', type: 'text' },
-                { width: 'flex-1', type: 'multi' },
-                { width: 'w-56', type: 'text' },
-                { width: 'w-32', type: 'text' },
-                { width: 'w-24', type: 'badge' },
-                { width: 'w-20', type: 'action' },
-                { width: 'w-24', type: 'action' },
-              ]} 
-              showHeader 
+                { width: "w-16", type: "text" },
+                { width: "w-32", type: "text" },
+                { width: "w-32", type: "text" },
+                { width: "flex-1", type: "multi" },
+                { width: "w-56", type: "text" },
+                { width: "w-32", type: "text" },
+                { width: "w-24", type: "badge" },
+                { width: "w-20", type: "action" },
+                { width: "w-24", type: "action" },
+              ]}
+              showHeader
             />
           ) : (
             <>
@@ -477,7 +483,8 @@ export default function ResponsibleList() {
                       No hay responsables registrados aún
                     </h3>
                     <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                      Los responsables asociados a tus pacientes aparecerán aquí.
+                      Los responsables asociados a tus pacientes aparecerán
+                      aquí.
                     </p>
                   </div>
                 )}
