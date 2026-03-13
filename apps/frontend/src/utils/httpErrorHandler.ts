@@ -15,6 +15,20 @@ export class HttpError extends Error {
 let _showToast: ShowToastFn | null = null;
 let _on401: On401Fn | null = null;
 let _interceptorInstalled = false;
+let _suppressToastCount = 0;
+
+export const runWithoutToast = async <T>(fn: () => Promise<T>): Promise<T> => {
+  _suppressToastCount++;
+  try {
+    return await fn();
+  } finally {
+    _suppressToastCount--;
+  }
+};
+
+const fireToast = (message: string, type?: ToastType): void => {
+  if (_suppressToastCount === 0) _showToast?.(message, type);
+};
 
 export const setHttpErrorHandlers = (
   showToastFn: ShowToastFn,
@@ -72,13 +86,13 @@ export const installFetchInterceptor = (): void => {
     } catch (error: unknown) {
       if (error instanceof DOMException && error.name === "AbortError") {
         const message = STATUS_MESSAGES[408]!;
-        _showToast?.(message, "error");
+        fireToast(message, "error");
         throw new HttpError(408, message);
       }
 
       const message =
         "No se pudo conectar con el servidor. Verifica tu conexión.";
-      _showToast?.(message, "error");
+      fireToast(message, "error");
       throw new HttpError(503, message);
     } finally {
       window.clearTimeout(timeoutId);
@@ -90,7 +104,7 @@ export const installFetchInterceptor = (): void => {
       // 401 on authenticated endpoints = expired session
       if (!isAuth && response.status === 401) {
         const message = STATUS_MESSAGES[401]!;
-        _showToast?.(message, "warning");
+        fireToast(message, "warning");
         _on401?.();
         throw new HttpError(401, message);
       }
@@ -100,7 +114,7 @@ export const installFetchInterceptor = (): void => {
         const message =
           STATUS_MESSAGES[response.status] ??
           "Error del servidor. Intenta nuevamente más tarde.";
-        _showToast?.(message, "error");
+        fireToast(message, "error");
         throw new HttpError(response.status, message);
       }
     }

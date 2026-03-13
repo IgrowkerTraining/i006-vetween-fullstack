@@ -29,6 +29,8 @@ import { useAuth } from "../hooks/useAuth";
 import { useEditPatient } from "../hooks/useEditPatient";
 import { useToast } from "../context/ToastContext";
 import { PatientDetailSkeleton } from "../components/common/Skeleton";
+import { runWithoutToast } from "../utils/httpErrorHandler";
+import huellaRoja from "../assets/huella-roja.svg";
 import ErrorStateCard from "../components/common/ErrorStateCard";
 
 const PatientDetail: React.FC = () => {
@@ -75,7 +77,8 @@ const PatientDetail: React.FC = () => {
   });
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
-  const [summarySuccess, setSummarySuccess] = useState(false);
+  const [showSummarySuccessModal, setShowSummarySuccessModal] = useState(false);
+  const [showSummaryErrorModal, setShowSummaryErrorModal] = useState(false);
   const [showVisitSuccessModal, setShowVisitSuccessModal] = useState(false);
   const [showVaccineSuccessModal, setShowVaccineSuccessModal] = useState(false);
   const [showDeactivateVisitModal, setShowDeactivateVisitModal] =
@@ -439,46 +442,45 @@ const PatientDetail: React.FC = () => {
     setIsGeneratingSummary(true);
     setSummaryError(null);
     try {
-      await api.generateClinicalSummary({
-        id_paciente: patientId,
-        datos_clinicos: {
-          paciente: {
-            nombre: paciente.nombre,
-            especie: paciente.especie,
-            edad: patientData.edad,
-            sexo: paciente.sexo,
-            raza: paciente.raza,
-            color: paciente.color,
-            senia: paciente.senia,
-            peso: patientData.peso,
-            esterilizado: paciente.esterilizado,
-            tiene_microchip: paciente.tieneMicrochip,
-            num_microchip: paciente.microchip || undefined,
+      await runWithoutToast(() =>
+        api.generateClinicalSummary({
+          id_paciente: patientId,
+          datos_clinicos: {
+            paciente: {
+              nombre: paciente.nombre,
+              especie: paciente.especie,
+              edad: patientData.edad,
+              sexo: paciente.sexo,
+              raza: paciente.raza,
+              color: paciente.color,
+              senia: paciente.senia,
+              peso: patientData.peso,
+              esterilizado: paciente.esterilizado,
+              tiene_microchip: paciente.tieneMicrochip,
+              num_microchip: paciente.microchip || undefined,
+            },
+            visitas: visitas.map((v) => ({
+              fecha: v.fechaVisita,
+              motivo_consulta: v.motivoConsulta,
+              diagnostico: v.diagnostico,
+              tratamiento: v.tratamiento,
+              observaciones: v.observaciones,
+              historial_previo: false,
+            })),
+            vacunas: vacunas.map((v) => ({
+              tipo: v.tipoVacuna,
+              nombre_cientifico: v.nombreCientifico,
+              fecha_aplicacion: v.fechaAplicacion,
+              observacion: v.observacion,
+            })),
           },
-          visitas: visitas.map((v) => ({
-            fecha: v.fechaVisita,
-            motivo_consulta: v.motivoConsulta,
-            diagnostico: v.diagnostico,
-            tratamiento: v.tratamiento,
-            observaciones: v.observaciones,
-            historial_previo: false,
-          })),
-          vacunas: vacunas.map((v) => ({
-            tipo: v.tipoVacuna,
-            nombre_cientifico: v.nombreCientifico,
-            fecha_aplicacion: v.fechaAplicacion,
-            observacion: v.observacion,
-          })),
-        },
-      });
-      setSummarySuccess(true);
-      setSummaryError(null);
-      setTimeout(() => {
-        navigate(`${ROUTES.CLINICAL_SUMMARY_DETAIL}/${patientId}`);
-      }, 1500);
+        }),
+      );
+      setShowSummarySuccessModal(true);
     } catch (err: any) {
       console.error("Error al generar resumen clínico:", err.message);
       setSummaryError(err?.message || "No se pudo generar el resumen clínico.");
+      setShowSummaryErrorModal(true);
     } finally {
       setIsGeneratingSummary(false);
     }
@@ -696,6 +698,14 @@ const PatientDetail: React.FC = () => {
     },
   ];
 
+  if (isGeneratingSummary) {
+    return (
+      <MainLayout>
+        <PatientDetailSkeleton />
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <Modal
@@ -729,6 +739,28 @@ const PatientDetail: React.FC = () => {
         isOpen={showDeactivateVisitSuccessModal}
         message="El registro de visita se canceló con éxito"
         onAccept={() => setShowDeactivateVisitSuccessModal(false)}
+      />
+      <SuccessModal
+        isOpen={showSummarySuccessModal}
+        message="Generación de resumen clínico exitoso."
+        onAccept={() => {
+          setShowSummarySuccessModal(false);
+          const pid =
+            patientData?.id_pacientes ??
+            patientData?.id_paciente ??
+            patientData?.id ??
+            id;
+          navigate(`${ROUTES.CLINICAL_SUMMARY_DETAIL}/${pid}`);
+        }}
+      />
+      <SuccessModal
+        isOpen={showSummaryErrorModal}
+        message={summaryError ?? "No se pudo generar el resumen clínico."}
+        icon={huellaRoja}
+        onAccept={() => {
+          setShowSummaryErrorModal(false);
+          setSummaryError(null);
+        }}
       />
       <DangerConfirmModal
         isOpen={showDeactivateVisitModal}
@@ -795,7 +827,7 @@ const PatientDetail: React.FC = () => {
       />
 
       {/* Content */}
-      <section className="flex-1 px-8 py-6">
+      <section className="relative flex-1 px-8 py-6">
         {/* Patient Card + Action Buttons */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <PatientCard
@@ -830,22 +862,12 @@ const PatientDetail: React.FC = () => {
 
         {/* Generate Clinical Summary Button */}
         <div className="mt-6 flex flex-col items-end gap-2">
-          {summarySuccess && (
-            <p className="text-xs font-medium text-emerald-600">
-              Generación de resumen clínico exitoso. Redirigiendo...
-            </p>
-          )}
-          {summaryError && (
-            <p className="text-xs text-red-600">{summaryError}</p>
-          )}
           <button
             onClick={handleGenerateSummary}
             disabled={isGeneratingSummary}
-            className="rounded-lg bg-[#5451FF] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
+            className="rounded-lg bg-[#5451FF] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isGeneratingSummary
-              ? "Generando resumen..."
-              : "Generar resumen clínico"}
+            Generar resumen clínico
           </button>
         </div>
       </section>
