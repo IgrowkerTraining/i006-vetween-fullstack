@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { sortArray } from "../utils/sort";
-import pawIcon from "../assets/pawIcon.svg";
+import iconResumenClinico from "../assets/iconResumenClinico.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { SearchBar } from "../components/common/SearchBar";
@@ -322,7 +322,7 @@ export default function ClinicalSummaryList() {
 
                 {filteredPatients.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-16">
-                    <img src={pawIcon} alt="paw icon" />
+                    <img src={iconResumenClinico} alt="paw icon" />
                     <h3 className="mt-4 text-lg font-semibold text-foreground">
                       No hay resúmenes clínicos generados aún
                     </h3>
@@ -335,23 +335,41 @@ export default function ClinicalSummaryList() {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-4 py-4">
+                <div className="flex items-center justify-center gap-2 py-4">
                   <button
                     onClick={() => loadData(currentPage - 1)}
                     disabled={currentPage <= 1}
-                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                    className="px-2 text-lg font-semibold text-gray-700 hover:text-black disabled:text-gray-300 disabled:cursor-not-allowed"
                   >
-                    ← Anterior
+                    {"<"}
                   </button>
-                  <span className="text-sm text-muted-foreground">
-                    Página {currentPage} de {totalPages}
-                  </span>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => {
+                    const page = i + 1;
+                    const isActive = page === currentPage;
+
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => loadData(page)}
+                        className={`
+                          flex items-center justify-center
+                          w-12 h-12 rounded-full
+                          font-semibold
+                          ${isActive ? "bg-[#7ACBD9] text-white" : "bg-[rgba(122,203,217,0.3)] text-foreground"}
+                        `}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
                   <button
                     onClick={() => loadData(currentPage + 1)}
                     disabled={currentPage >= totalPages}
-                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                    className="px-2 text-lg font-semibold text-gray-700 hover:text-black disabled:text-gray-300 disabled:cursor-not-allowed"
                   >
-                    Siguiente →
+                    {">"}
                   </button>
                 </div>
               )}

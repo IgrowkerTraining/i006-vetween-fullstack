@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Input } from "./Input";
-import { Button } from "./Button";
+import LupaBusqueda from "../../assets/lupaBusqueda.svg";
 
 interface SearchBarProps {
   onSearch: (searchTerm: string) => void;
@@ -28,16 +28,22 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="relative">
       <Input
         type="text"
         placeholder={placeholder}
         value={searchTerm}
         onChange={handleInputChange}
         onKeyPress={handleKeyPress}
-        className="flex-grow"
+        className="w-full pr-10"
       />
-      <Button onClick={handleSearchClick}>Buscar</Button>
+      <button
+        type="button"
+        onClick={handleSearchClick}
+        className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+      >
+        <img src={LupaBusqueda} alt="Buscar" />
+      </button>
     </div>
   );
 };
