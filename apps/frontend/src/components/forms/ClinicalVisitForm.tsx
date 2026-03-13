@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Input } from "../common/Input";
 import { Button } from "../common/Button";
 
@@ -72,13 +72,29 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
       setFieldErrors((prev) => ({ ...prev, reason: err }));
     }
 
-    if (["diagnosis", "treatments", "observaciones"].includes(name)) {
+    if (name === "diagnosis" || name === "observaciones") {
       setFieldErrors((prev) => ({
         ...prev,
         [name]:
-          value && !LETTERS_SPACES_RE.test(value)
+          value.trim() && !/^[A-Za-z\u00C0-\u00FF\s\d]*$/.test(value)
+            ? "Solo puede contener letras, n\u00fameros y espacios"
+            : value.trim() && !/[A-Za-z\u00C0-\u00FF]/.test(value)
+              ? "Debe contener al menos una letra"
+              : value.length > 2000
+                ? "No puede superar los 2000 caracteres"
+                : undefined,
+      }));
+    }
+
+    if (name === "treatments") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        treatments:
+          value.trim() && !/^[A-Za-z\u00C0-\u00FF\s]*$/.test(value)
             ? "Solo puede contener letras y espacios"
-            : undefined,
+            : value.length > 2000
+              ? "No puede superar los 2000 caracteres"
+              : undefined,
       }));
     }
   };
@@ -105,6 +121,29 @@ export const ClinicalVisitForm: React.FC<ClinicalVisitFormProps> = ({
     if (fieldErrors.diagnosis) errors.diagnosis = fieldErrors.diagnosis;
     if (fieldErrors.treatments) errors.treatments = fieldErrors.treatments;
     if (fieldErrors.observaciones) errors.observaciones = fieldErrors.observaciones;
+    // Re-validate optional fields in case they were not touched
+    if (!errors.diagnosis && formData.diagnosis.trim()) {
+      if (!/^[A-Za-z\u00C0-\u00FF\s\d]*$/.test(formData.diagnosis))
+        errors.diagnosis = "Solo puede contener letras, n\u00fameros y espacios";
+      else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.diagnosis))
+        errors.diagnosis = "Debe contener al menos una letra";
+      else if (formData.diagnosis.length > 2000)
+        errors.diagnosis = "No puede superar los 2000 caracteres";
+    }
+    if (!errors.treatments && formData.treatments.trim()) {
+      if (!/^[A-Za-z\u00C0-\u00FF\s]*$/.test(formData.treatments))
+        errors.treatments = "Solo puede contener letras y espacios";
+      else if (formData.treatments.length > 2000)
+        errors.treatments = "No puede superar los 2000 caracteres";
+    }
+    if (!errors.observaciones && formData.observaciones.trim()) {
+      if (!/^[A-Za-z\u00C0-\u00FF\s\d]*$/.test(formData.observaciones))
+        errors.observaciones = "Solo puede contener letras, n\u00fameros y espacios";
+      else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.observaciones))
+        errors.observaciones = "Debe contener al menos una letra";
+      else if (formData.observaciones.length > 2000)
+        errors.observaciones = "No puede superar los 2000 caracteres";
+    }
     if (Object.values(errors).some(Boolean)) {
       setFieldErrors(errors);
       return;

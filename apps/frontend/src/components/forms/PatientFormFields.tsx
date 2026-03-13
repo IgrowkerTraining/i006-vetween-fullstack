@@ -53,8 +53,8 @@ export const validatePatientData = (data: PatientData): PatientErrors => {
   // raza
   if (!data.breed.trim()) {
     errors.breed = "La raza es requerida";
-  } else if (data.breed.trim().length > 150) {
-    errors.breed = "La raza no puede superar los 150 caracteres";
+  } else if (data.breed.trim().length > 50) {
+    errors.breed = "La raza no puede superar los 50 caracteres";
   } else if (/\d/.test(data.breed)) {
     errors.breed = "La raza no puede contener números";
   }

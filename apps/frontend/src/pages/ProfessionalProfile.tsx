@@ -140,23 +140,46 @@ export default function ProfessionalProfile() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    if (name === "nombre" || name === "apellido") {
+    if (name === "nombre") {
+      const max = 50;
       setFieldErrors((prev) => ({
         ...prev,
-        [name]:
+        nombre:
           value && !/^[A-Za-z\u00C0-\u00FF\s]*$/.test(value)
-            ? `El ${name} solo puede contener letras y espacios`
-            : undefined,
+            ? "El nombre solo puede contener letras y espacios"
+            : value && value.length < 2
+              ? "El nombre debe tener al menos 2 caracteres"
+              : value && value.length > max
+                ? `El nombre no puede superar los ${max} caracteres`
+                : undefined,
+      }));
+    }
+
+    if (name === "apellido") {
+      const max = 100;
+      setFieldErrors((prev) => ({
+        ...prev,
+        apellido:
+          value && !/^[A-Za-z\u00C0-\u00FF\s]*$/.test(value)
+            ? "El apellido solo puede contener letras y espacios"
+            : value && value.length < 2
+              ? "El apellido debe tener al menos 2 caracteres"
+              : value && value.length > max
+                ? `El apellido no puede superar los ${max} caracteres`
+                : undefined,
       }));
     }
 
     if (name === "costo_consulta") {
+      const digits = value.replace(/\D/g, "");
       setFieldErrors((prev) => ({
         ...prev,
         costo_consulta:
           value !== "" && parseFloat(value) < 0
             ? "El costo de consulta debe ser mayor o igual a 0"
-            : undefined,
+            : digits.length > 6
+              ? "El costo de consulta no puede tener más de 6 dígitos"
+              : undefined,
       }));
     }
   };
@@ -322,11 +345,11 @@ export default function ProfessionalProfile() {
                   </div>
 
                   {/* User Details */}
-                  <div>
-                    <h2 className="text-xl font-semibold text-foreground">
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-semibold text-foreground truncate">
                       Dr(a). {fullName}
                     </h2>
-                    <p className="text-muted-foreground">{clinicName}</p>
+                    <p className="text-muted-foreground truncate">{clinicName}</p>
                   </div>
                 </div>
               </section>

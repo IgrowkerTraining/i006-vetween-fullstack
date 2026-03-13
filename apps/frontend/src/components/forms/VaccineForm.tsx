@@ -44,15 +44,39 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
 
     if (!formData.nombre.trim()) {
       newErrors.nombre = "El nombre es requerido";
+    } else if (/\s/.test(formData.nombre)) {
+      newErrors.nombre = "El nombre no puede contener espacios";
+    } else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.nombre)) {
+      newErrors.nombre = "El nombre debe contener al menos una letra";
+    } else if (formData.nombre.length < 2) {
+      newErrors.nombre = "El nombre debe tener al menos 2 caracteres";
+    } else if (formData.nombre.length > 150) {
+      newErrors.nombre = "El nombre no puede superar los 150 caracteres";
     }
     if (!formData.tipoVacuna.trim()) {
       newErrors.tipoVacuna = "El tipo de vacuna es requerido";
+    } else if (/\s/.test(formData.tipoVacuna)) {
+      newErrors.tipoVacuna = "El tipo no puede contener espacios";
+    } else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.tipoVacuna)) {
+      newErrors.tipoVacuna = "El tipo debe contener al menos una letra";
+    } else if (formData.tipoVacuna.length < 2) {
+      newErrors.tipoVacuna = "El tipo debe tener al menos 2 caracteres";
+    } else if (formData.tipoVacuna.length > 100) {
+      newErrors.tipoVacuna = "El tipo no puede superar los 100 caracteres";
     }
     if (!formData.fecha) {
       newErrors.fecha = "La fecha es requerida";
+    } else if (formData.fecha > new Date().toISOString().slice(0, 10)) {
+      newErrors.fecha = "La fecha de aplicación no puede ser futura";
     }
-    if (/\d/.test(formData.observaciones)) {
-      newErrors.observaciones = "Las observaciones no pueden contener números";
+    if (formData.observaciones.trim()) {
+      if (!/^[A-Za-z\u00C0-\u00FF\s\d]*$/.test(formData.observaciones)) {
+        newErrors.observaciones = "Las observaciones solo pueden contener letras, números y espacios";
+      } else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.observaciones)) {
+        newErrors.observaciones = "Las observaciones deben contener al menos una letra";
+      } else if (formData.observaciones.trim().length > 100) {
+        newErrors.observaciones = "Las observaciones no pueden superar los 100 caracteres";
+      }
     }
 
     setErrors(newErrors);

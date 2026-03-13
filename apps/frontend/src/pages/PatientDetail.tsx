@@ -80,8 +80,11 @@ const PatientDetail: React.FC = () => {
   const [showSummarySuccessModal, setShowSummarySuccessModal] = useState(false);
   const [showSummaryErrorModal, setShowSummaryErrorModal] = useState(false);
   const [showVisitLimitModal, setShowVisitLimitModal] = useState(false);
+  const [visitErrorMessage, setVisitErrorMessage] = useState<string | null>(null);
   const [showVisitSuccessModal, setShowVisitSuccessModal] = useState(false);
   const [showVaccineSuccessModal, setShowVaccineSuccessModal] = useState(false);
+  const [showVaccineErrorModal, setShowVaccineErrorModal] = useState(false);
+  const [vaccineErrorMessage, setVaccineErrorMessage] = useState<string | null>(null);
   const [showDeactivateVisitModal, setShowDeactivateVisitModal] =
     useState(false);
   const [visitToDeactivateId, setVisitToDeactivateId] = useState<string | null>(
@@ -430,6 +433,7 @@ const PatientDetail: React.FC = () => {
     } catch (err: any) {
       console.error("Error al registrar visita:", err.message);
       setIsVisitModalOpen(false);
+      setVisitErrorMessage(err?.message || "No se pudo registrar la visita.");
       setShowVisitLimitModal(true);
     } finally {
       setIsVisitFormLoading(false);
@@ -532,6 +536,8 @@ const PatientDetail: React.FC = () => {
       setShowVaccineSuccessModal(true);
     } catch (err: any) {
       console.error("Error al registrar vacuna:", err.message);
+      setVaccineErrorMessage(err?.message || "No se pudo registrar la vacuna.");
+      setShowVaccineErrorModal(true);
     }
   };
 
@@ -741,15 +747,27 @@ const PatientDetail: React.FC = () => {
         onAccept={() => setShowVaccineSuccessModal(false)}
       />
       <SuccessModal
+        isOpen={showVaccineErrorModal}
+        message={vaccineErrorMessage || "No se pudo registrar la vacuna."}
+        icon={huellaRoja}
+        onAccept={() => {
+          setShowVaccineErrorModal(false);
+          setVaccineErrorMessage(null);
+        }}
+      />
+      <SuccessModal
         isOpen={showDeactivateVisitSuccessModal}
         message="El registro de visita se canceló con éxito"
         onAccept={() => setShowDeactivateVisitSuccessModal(false)}
       />
       <SuccessModal
         isOpen={showVisitLimitModal}
-        message="Límite máximo de pacientes alcanzado. Solo se puede tener 50 pacientes activos. Mejore su plan a Premium."
+        message={visitErrorMessage || "No se pudo registrar la visita."}
         icon={huellaRoja}
-        onAccept={() => setShowVisitLimitModal(false)}
+        onAccept={() => {
+          setShowVisitLimitModal(false);
+          setVisitErrorMessage(null);
+        }}
       />
       <SuccessModal
         isOpen={showSummarySuccessModal}
