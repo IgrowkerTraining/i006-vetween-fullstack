@@ -593,8 +593,10 @@ export default function PatientList() {
                           </td>
                           <td className="px-6 py-3">
                             <button
-                              onClick={() => openEdit(patient.id)}
-                              className="transition-opacity hover:opacity-70"
+                              onClick={() => patient.activo && openEdit(patient.id)}
+                              disabled={!patient.activo}
+                              title={!patient.activo ? "No se puede editar un paciente inactivo" : "Editar"}
+                              className={`transition-opacity ${patient.activo ? "hover:opacity-70" : "cursor-not-allowed opacity-30"}`}
                             >
                               <img
                                 src={editIcon}
@@ -727,11 +729,21 @@ export default function PatientList() {
       />
       <DangerConfirmModal
         isOpen={deleteTargetId !== null}
-        question="¿Estás seguro de que querés eliminar este paciente?"
-        message="Este paciente está inactivo. Podrás eliminarlo definitivamente."
+        question={
+          patients.find((p) => p.id === deleteTargetId)?.hasClinicalRecord
+            ? "No se puede eliminar un paciente con visitas registradas"
+            : "¿Estás seguro de que querés eliminar este paciente?"
+        }
+        message={
+          patients.find((p) => p.id === deleteTargetId)?.hasClinicalRecord
+            ? "Actualiza tu plan a Premium"
+            : "Este paciente está inactivo. Podrás eliminarlo definitivamente."
+        }
+        singleAcceptButton={!!patients.find((p) => p.id === deleteTargetId)?.hasClinicalRecord}
         onCancel={() => setDeleteTargetId(null)}
         onConfirm={handleDeletePatient}
         isConfirmLoading={deletingId !== null}
+        isConfirmDisabled={!!patients.find((p) => p.id === deleteTargetId)?.hasClinicalRecord}
       />
       <Modal
         isOpen={isEditModalOpen}

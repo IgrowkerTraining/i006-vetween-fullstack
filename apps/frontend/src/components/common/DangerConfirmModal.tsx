@@ -10,6 +10,9 @@ interface DangerConfirmModalProps {
   cancelText?: string;
   confirmText?: string;
   isConfirmLoading?: boolean;
+  isConfirmDisabled?: boolean;
+  singleAcceptButton?: boolean;
+  acceptText?: string;
   icon?: string;
 }
 
@@ -22,6 +25,9 @@ export const DangerConfirmModal: React.FC<DangerConfirmModalProps> = ({
   cancelText = "Cancelar",
   confirmText = "Confirmar",
   isConfirmLoading = false,
+  isConfirmDisabled = false,
+  singleAcceptButton = false,
+  acceptText = "Aceptar",
   icon = redPawIcon,
 }) => {
   const handleEscape = useCallback(
@@ -89,22 +95,33 @@ export const DangerConfirmModal: React.FC<DangerConfirmModalProps> = ({
             </p>
           )}
 
-          <div className="mt-2 grid w-full grid-cols-2 gap-4">
-            <button
-              onClick={onCancel}
-              className="rounded-xl bg-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-400"
-              disabled={isConfirmLoading}
-            >
-              {cancelText}
-            </button>
-            <button
-              onClick={onConfirm}
-              className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-red-300"
-              disabled={isConfirmLoading}
-            >
-              {isConfirmLoading ? "Procesando..." : confirmText}
-            </button>
-          </div>
+          {singleAcceptButton ? (
+            <div className="mt-2 w-full">
+              <button
+                onClick={onCancel}
+                className="w-full rounded-xl bg-[#5451FF] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#5451FF]/85"
+              >
+                {acceptText}
+              </button>
+            </div>
+          ) : (
+            <div className="mt-2 grid w-full grid-cols-2 gap-4">
+              <button
+                onClick={onCancel}
+                className="rounded-xl bg-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:bg-slate-400"
+                disabled={isConfirmLoading}
+              >
+                {cancelText}
+              </button>
+              <button
+                onClick={onConfirm}
+                className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-red-300"
+                disabled={isConfirmLoading || isConfirmDisabled}
+              >
+                {isConfirmLoading ? "Procesando..." : confirmText}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
