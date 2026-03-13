@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/layout/Sidebar";
+import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/common/Input";
 import { Button } from "../components/common/Button";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
+import { ProfessionalProfileSkeleton } from "../components/common/Skeleton";
 
 const ANIMAL_TYPES_OPTIONS = ["Caninos", "Felinos", "Peces", "Otro"];
 
@@ -28,11 +29,15 @@ export default function ProfessionalProfile() {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ nombre?: string; apellido?: string; costo_consulta?: string; tipos_animales?: string }>({});
   const [clinicName, setClinicName] = useState("Nombre de la clínica");
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Datos del usuario provenientes del auth (del login)
   const userName = user?.nombre || "Usuario";
   const firstName = userName.split(" ")[0];
   const fullName = user?.apellido ? `${userName} ${user.apellido}` : userName;
+
+  // Loading state based on user and clinic data
+  const isLoadingPage = !user || clinicName === "Nombre de la clínica";
 
   // Buscar nombre de la clínica desde la API
   useEffect(() => {
@@ -44,7 +49,11 @@ export default function ProfessionalProfile() {
           setClinicName(clinicData.nombre || "Nombre de la clínica");
         } catch (error) {
           console.error("Error loading clinic name:", error);
+        } finally {
+          setIsLoadingData(false);
         }
+      } else {
+        setIsLoadingData(false);
       }
     };
     loadClinicName();
@@ -202,11 +211,17 @@ export default function ProfessionalProfile() {
     }
   };
 
-  return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
+  // Show skeleton while loading
+  if (isLoadingPage) {
+    return (
+      <MainLayout>
+        <ProfessionalProfileSkeleton />
+      </MainLayout>
+    );
+  }
 
-      <main className="flex flex-1 flex-col overflow-y-auto">
+  return (
+    <MainLayout>
         {/* Header */}
         <header className="border-b border-border px-8 py-5">
           <p className="text-sm text-muted-foreground">Hola, {firstName}</p>
@@ -509,7 +524,6 @@ export default function ProfessionalProfile() {
             </section>
           </div>
         </div>
-      </main>
-    </div>
+    </MainLayout>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/layout/Sidebar";
+import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
@@ -8,6 +8,7 @@ import stethoscopeIcon from "../assets/stethoscope.svg";
 import keyIcon from "../assets/key.svg";
 import lockIcon from "../assets/lock.svg";
 import PageHeader from "../components/common/PageHeader";
+import { MyAccountSkeleton } from "../components/common/Skeleton";
 
 interface MenuCardProps {
   icon: string;
@@ -53,9 +54,13 @@ export default function MyAccount() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [clinicName, setClinicName] = useState("Nombre de la clínica");
+  const [isLoading, setIsLoading] = useState(true);
 
   const userName = user?.nombre || "Usuario";
   const firstName = userName.split(" ")[0];
+
+  // Loading state based on user and clinic data
+  const isLoadingData = !user || clinicName === "Nombre de la clínica";
 
   // Buscar nombre de la clínica desde la API
   useEffect(() => {
@@ -67,11 +72,24 @@ export default function MyAccount() {
           setClinicName(clinicData.nombre || "Nombre de la clínica");
         } catch (error) {
           console.error("Error loading clinic name:", error);
+        } finally {
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
     loadClinicName();
   }, [user]);
+
+  // Show skeleton while loading
+  if (isLoadingData) {
+    return (
+      <MainLayout>
+        <MyAccountSkeleton />
+      </MainLayout>
+    );
+  }
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -89,74 +107,70 @@ export default function MyAccount() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
+    <MainLayout>
+      <PageHeader subtitle={`Hola, ${firstName}`} title="Mi cuenta" />
 
-      <main className="flex flex-1 flex-col overflow-y-auto">
-        <PageHeader subtitle={`Hola, ${firstName}`} title="Mi cuenta" />
-
-        {/* User Info Section */}
-        <section className="border-b border-border px-8 py-6">
-          <div className="flex items-center gap-4">
-            {/* Avatar with upload */}
-            <div className="relative">
-              <div
-                onClick={handleAvatarClick}
-                className="h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-vetween-teal ring-2 ring-border hover:ring-vetween-teal/70"
-              >
-                {avatarPreview ? (
-                  <img
-                    src={avatarPreview}
-                    alt="Avatar"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-vetween-teal text-2xl font-bold text-white">
-                    {firstName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
+      {/* User Info Section */}
+      <section className="border-b border-border px-8 py-6">
+        <div className="flex items-center gap-4">
+          {/* Avatar with upload */}
+          <div className="relative">
+            <div
+              onClick={handleAvatarClick}
+              className="h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-vetween-teal ring-2 ring-border hover:ring-vetween-teal/70"
+            >
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-vetween-teal text-2xl font-bold text-white">
+                  {firstName.charAt(0).toUpperCase()}
+                </div>
+              )}
             </div>
-
-            {/* User Details */}
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">
-                Dr(a). {userName}
-              </h2>
-              <p className="text-muted-foreground">{clinicName}</p>
-            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
           </div>
-        </section>
 
-        {/* Menu Cards */}
-        <section className="flex flex-col gap-4 px-8 py-6" aria-label="Opciones de cuenta">
-          <MenuCard
-            icon={stethoscopeIcon}
-            title="Perfil Professional"
-            description="Gestioná tu información personal y matrícula"
-            onClick={() => navigate("/mi-cuenta/perfil-profesional")}
-          />
-          <MenuCard
-            icon={keyIcon}
-            title="Clínica"
-            description="Datos del lugar donde atendés"
-            onClick={() => navigate("/mi-cuenta/clinica")}
-          />
-          <MenuCard
-            icon={lockIcon}
-            title="Seguridad"
-            description="Cambiar contraseña"
-            onClick={() => navigate("/mi-cuenta/seguridad")}
-          />
-        </section>
-      </main>
-    </div>
+          {/* User Details */}
+          <div>
+            <h2 className="text-xl font-semibold text-foreground">
+              Dr(a). {userName}
+            </h2>
+            <p className="text-muted-foreground">{clinicName}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Menu Cards */}
+      <section className="flex flex-col gap-4 px-8 py-6" aria-label="Opciones de cuenta">
+        <MenuCard
+          icon={stethoscopeIcon}
+          title="Perfil Professional"
+          description="Gestioná tu información personal y matrícula"
+          onClick={() => navigate("/mi-cuenta/perfil-profesional")}
+        />
+        <MenuCard
+          icon={keyIcon}
+          title="Clínica"
+          description="Datos del lugar donde atendés"
+          onClick={() => navigate("/mi-cuenta/clinica")}
+        />
+        <MenuCard
+          icon={lockIcon}
+          title="Seguridad"
+          description="Cambiar contraseña"
+          onClick={() => navigate("/mi-cuenta/seguridad")}
+        />
+      </section>
+    </MainLayout>
   );
 }
