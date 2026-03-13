@@ -13,7 +13,7 @@ La API permite gestionar clínicas, veterinarios, pacientes, responsables, visit
 - **Supabase (PostgreSQL)**
 - **JWT** para autenticación
 - **Bcrypt** para hasheo de contraseñas
-- **Cripto** para encriptación de datos sensisables
+- **Cripto** para encriptación de datos sensibles
 - **Axios** para comunicación con microservicio de IA
 - **Swagger** para documentación de la API
 
@@ -125,21 +125,29 @@ Este modelo fue diseñado a partir de los requerimientos funcionales del sistema
 
 # Ejecutar el servidor
 
-Modo desarrollo
+Modo desarrollo local
+
+- Para ejecutar el backend en tu máquina local:
 
 ```bash
 npm run dev
 ```
 
-Modo producción
-
-```bash
-npm start
-```
+El servidor quedará disponible en:
 
 ```text
 http://localhost:3000
 ```
+
+Modo testing (Render)
+
+- El backend también se encuentra desplegado en un entorno de pruebas en Render:
+
+```text
+https://backend-vetween.onrender.com
+```
+
+Los cambios se actualizan automáticamente al hacer push a la rama correspondiente.
 
 ---
 
