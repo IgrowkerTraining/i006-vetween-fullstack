@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import pawIcon from "../assets/pawIcon.svg";
 import editIcon from "../assets/edit.svg";
 import addResponsibleIcon from "../assets/addResponsibleIcon.svg";
-import pawRedIcon from "../assets/huella-roja.svg";
 import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/common/PageHeader";
 import { SearchBar } from "../components/common/SearchBar";
@@ -23,6 +22,8 @@ import {
   SearchBarSkeleton,
 } from "../components/common/Skeleton";
 import ErrorStateCard from "../components/common/ErrorStateCard";
+import pawRedIcon from "../assets/huella-roja.svg";
+import { runWithoutToast } from "../utils/httpErrorHandler";
 
 export interface Patient {
   id: string;
@@ -45,8 +46,8 @@ export default function PatientList() {
   const [patientsError, setPatientsError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [totalPatients, setTotalPatients] = useState(0);
-  const [showLimitModal, setShowLimitModal] = useState(false);
   const [showAddPatientInfoModal, setShowAddPatientInfoModal] = useState(false);
+  const [showPatientLimitModal, setShowPatientLimitModal] = useState(false);
   const HIDE_ADD_PATIENT_MODAL_KEY = "vetween_hideAddPatientInfoModal";
   const [togglingPatientId, setTogglingPatientId] = useState<string | null>(
     null,
@@ -79,10 +80,6 @@ export default function PatientList() {
   };
 
   const handleAddPatient = () => {
-    if (totalPatients >= 50) {
-      setShowLimitModal(true);
-      return;
-    }
     if (localStorage.getItem(HIDE_ADD_PATIENT_MODAL_KEY) === "true") {
       navigate(ROUTES.REGISTER_PATIENT);
       return;
@@ -419,7 +416,9 @@ export default function PatientList() {
     );
 
     try {
-      await api.updatePatient(patient.id, { activo: nextActiveState });
+      await runWithoutToast(() =>
+        api.updatePatient(patient.id, { activo: nextActiveState }),
+      );
       setPatientsError(null);
     } catch (err: any) {
       setPatients((prev) =>
@@ -433,9 +432,13 @@ export default function PatientList() {
             : p,
         ),
       );
-      setPatientsError(
-        err?.message || "No se pudo actualizar el estado del paciente.",
-      );
+      if (nextActiveState) {
+        setShowPatientLimitModal(true);
+      } else {
+        setPatientsError(
+          err?.message || "No se pudo actualizar el estado del paciente.",
+        );
+      }
     } finally {
       setTogglingPatientId(null);
     }
@@ -481,11 +484,7 @@ export default function PatientList() {
             actions={
               <button
                 onClick={handleAddPatient}
-                className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer ${
-                  totalPatients >= 50
-                    ? "bg-[#5451FF]/40 text-white/60"
-                    : "bg-[#5451FF] text-white hover:bg-[#5451FF]/85"
-                }`}
+                className="flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors cursor-pointer bg-[#5451FF] text-white hover:bg-[#5451FF]/85"
               >
                 <img
                   src={addResponsibleIcon}
@@ -767,10 +766,10 @@ export default function PatientList() {
         onAccept={() => setShowDeleteSuccessModal(false)}
       />
       <SuccessModal
-        isOpen={showLimitModal}
-        message="Alcanzaste el límite de 50 pacientes registrados. Actualiza tu plan a Premium."
-        onAccept={() => setShowLimitModal(false)}
+        isOpen={showPatientLimitModal}
+        message="Límite máximo de pacientes alcanzado. Solo se puede tener 50 pacientes activos. Mejore su plan a Premium."
         icon={pawRedIcon}
+        onAccept={() => setShowPatientLimitModal(false)}
       />
       <SuccessModal
         isOpen={showAddPatientInfoModal}

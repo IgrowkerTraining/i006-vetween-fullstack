@@ -79,6 +79,7 @@ const PatientDetail: React.FC = () => {
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [showSummarySuccessModal, setShowSummarySuccessModal] = useState(false);
   const [showSummaryErrorModal, setShowSummaryErrorModal] = useState(false);
+  const [showVisitLimitModal, setShowVisitLimitModal] = useState(false);
   const [showVisitSuccessModal, setShowVisitSuccessModal] = useState(false);
   const [showVaccineSuccessModal, setShowVaccineSuccessModal] = useState(false);
   const [showDeactivateVisitModal, setShowDeactivateVisitModal] =
@@ -400,16 +401,18 @@ const PatientDetail: React.FC = () => {
 
     setIsVisitFormLoading(true);
     try {
-      await api.createVisit({
-        fecha: data.date,
-        motivo_consulta: data.reason,
-        diagnostico: data.diagnosis,
-        tratamiento: data.treatments,
-        observaciones: data.observaciones,
-        estado: false,
-        historial_previo: data.hasPreviousHistory,
-        id_paciente: patientId,
-      });
+      await runWithoutToast(() =>
+        api.createVisit({
+          fecha: data.date,
+          motivo_consulta: data.reason,
+          diagnostico: data.diagnosis,
+          tratamiento: data.treatments,
+          observaciones: data.observaciones,
+          estado: false,
+          historial_previo: data.hasPreviousHistory,
+          id_paciente: patientId,
+        }),
+      );
 
       const newVisita: VisitaClinica = {
         id: String(Date.now()),
@@ -426,6 +429,8 @@ const PatientDetail: React.FC = () => {
       setShowVisitSuccessModal(true);
     } catch (err: any) {
       console.error("Error al registrar visita:", err.message);
+      setIsVisitModalOpen(false);
+      setShowVisitLimitModal(true);
     } finally {
       setIsVisitFormLoading(false);
     }
@@ -739,6 +744,12 @@ const PatientDetail: React.FC = () => {
         isOpen={showDeactivateVisitSuccessModal}
         message="El registro de visita se canceló con éxito"
         onAccept={() => setShowDeactivateVisitSuccessModal(false)}
+      />
+      <SuccessModal
+        isOpen={showVisitLimitModal}
+        message="Límite máximo de pacientes alcanzado. Solo se puede tener 50 pacientes activos. Mejore su plan a Premium."
+        icon={huellaRoja}
+        onAccept={() => setShowVisitLimitModal(false)}
       />
       <SuccessModal
         isOpen={showSummarySuccessModal}
