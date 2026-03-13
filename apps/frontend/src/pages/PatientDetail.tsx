@@ -454,35 +454,6 @@ const PatientDetail: React.FC = () => {
       await runWithoutToast(() =>
         api.generateClinicalSummary({
           id_paciente: patientId,
-          datos_clinicos: {
-            paciente: {
-              nombre: paciente.nombre,
-              especie: paciente.especie,
-              edad: patientData.edad,
-              sexo: paciente.sexo,
-              raza: paciente.raza,
-              color: paciente.color,
-              senia: paciente.senia,
-              peso: patientData.peso,
-              esterilizado: paciente.esterilizado,
-              tiene_microchip: paciente.tieneMicrochip,
-              num_microchip: paciente.microchip || undefined,
-            },
-            visitas: visitas.map((v) => ({
-              fecha: v.fechaVisita,
-              motivo_consulta: v.motivoConsulta,
-              diagnostico: v.diagnostico,
-              tratamiento: v.tratamiento,
-              observaciones: v.observaciones,
-              historial_previo: false,
-            })),
-            vacunas: vacunas.map((v) => ({
-              tipo: v.tipoVacuna,
-              nombre_cientifico: v.nombreCientifico,
-              fecha_aplicacion: v.fechaAplicacion,
-              observacion: v.observacion,
-            })),
-          },
         }),
       );
       setShowSummarySuccessModal(true);

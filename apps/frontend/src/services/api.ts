@@ -188,12 +188,16 @@ export interface ResponsibleListItem {
   nombre_mascota?: string;
 }
 
+
 export const api = {
+
+ apiUrl: import.meta.env.VITE_API_PRUEBA_URL,
+ 
   async register(
     data: RegisterRequest,
   ): Promise<{ user: User; message: string; token?: string }> {
     const response = await fetch(
-      "https://backend-vetween.onrender.com/api/auth/register",
+      `${api.apiUrl}/auth/register`,
       {
         method: "POST",
         headers: getRequestHeaders(),
@@ -221,7 +225,7 @@ export const api = {
     console.log("[login] Request body:", JSON.stringify(data));
 
     const response = await fetch(
-      "https://backend-vetween.onrender.com/api/auth/login",
+      `${api.apiUrl}/auth/login`,
       {
         method: "POST",
         headers,
@@ -245,7 +249,7 @@ export const api = {
   },
 
   async getPatients(page = 1): Promise<unknown> {
-    const url = `https://backend-vetween.onrender.com/api/pacientes?page=${page}`;
+    const url = `${api.apiUrl}/pacientes?page=${page}`;
     console.log("[getPatients] fetching:", url);
     const response = await fetch(url, {
       method: "GET",
@@ -265,7 +269,7 @@ export const api = {
 
   async createPatient(data: CreatePatientRequest): Promise<unknown> {
     const response = await fetch(
-      "https://backend-vetween.onrender.com/api/pacientes",
+      `${api.apiUrl}/pacientes`,
       {
         method: "POST",
         headers: getRequestHeaders(true),
@@ -300,7 +304,7 @@ export const api = {
     data: UpdatePatientRequest,
   ): Promise<unknown> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/pacientes/${id}`,
+      `${api.apiUrl}/pacientes/${id}`,
       {
         method: "PATCH",
         headers: getRequestHeaders(true),
@@ -318,7 +322,7 @@ export const api = {
 
   async deletePatient(id: string | number): Promise<void> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/pacientes/${id}`,
+      `${api.apiUrl}/pacientes/${id}`,
       {
         method: "DELETE",
         headers: getRequestHeaders(true),
@@ -334,7 +338,7 @@ export const api = {
 
   async createResponsable(data: CreateResponsableRequest): Promise<unknown> {
     const response = await fetch(
-      "https://backend-vetween.onrender.com/api/responsables",
+      `${api.apiUrl}/responsables`,
       {
         method: "POST",
         headers: getRequestHeaders(true),
@@ -355,7 +359,7 @@ export const api = {
     data: UpdateResponsableRequest,
   ): Promise<unknown> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/responsables/${id}`,
+      `${api.apiUrl}/responsables/${id}`,
       {
         method: "PATCH",
         headers: getRequestHeaders(true),
@@ -375,7 +379,7 @@ export const api = {
 
   async deleteResponsable(id: string | number): Promise<void> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/responsables/${id}`,
+      `${api.apiUrl}/responsables/${id}`,
       {
         method: "DELETE",
         headers: getRequestHeaders(true),
@@ -391,7 +395,7 @@ export const api = {
 
   async getResponsables(page = 1): Promise<unknown> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/responsables?page=${page}`,
+      `${api.apiUrl}/responsables?page=${page}`,
       {
         method: "GET",
         headers: getRequestHeaders(true),
@@ -410,7 +414,7 @@ export const api = {
 
   async getPatientById(id: string): Promise<PatientDetailResponse> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/pacientes/${id}`,
+      `${api.apiUrl}/pacientes/${id}`,
       {
         method: "GET",
         headers: getRequestHeaders(true),
@@ -445,7 +449,7 @@ export const api = {
     id: string | number,
   ): Promise<ResponsableDetailResponse> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/responsables/${id}`,
+      `${api.apiUrl}/responsables/${id}`,
       {
         method: "GET",
         headers: getRequestHeaders(true),
@@ -482,7 +486,7 @@ export const api = {
     ultimaPagina: number;
   }> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/pacientes/${id}/visitas?page=${page}`,
+      `${api.apiUrl}/pacientes/${id}/visitas?page=${page}`,
       {
         method: "GET",
         headers: getRequestHeaders(true),
@@ -530,7 +534,7 @@ export const api = {
     ultimaPagina: number;
   }> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/pacientes/${id}/vacunas?page=${page}`,
+      `${api.apiUrl}/pacientes/${id}/vacunas?page=${page}`,
       {
         method: "GET",
         headers: getRequestHeaders(true),
@@ -569,7 +573,7 @@ export const api = {
     id_paciente: number | string;
   }): Promise<unknown> {
     const response = await fetch(
-      "https://backend-vetween.onrender.com/api/vacunas",
+      `${api.apiUrl}/vacunas`,
       {
         method: "POST",
         headers: getRequestHeaders(true),
@@ -596,7 +600,7 @@ export const api = {
     id_paciente: number | string;
   }): Promise<unknown> {
     const response = await fetch(
-      "https://backend-vetween.onrender.com/api/visitas",
+      `${api.apiUrl}/visitas`,
       {
         method: "POST",
         headers: getRequestHeaders(true),
@@ -620,7 +624,7 @@ export const api = {
 
   async inactivarVisita(idVisita: string | number): Promise<unknown> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/visitas/${idVisita}/inactivar`,
+      `${api.apiUrl}/visitas/${idVisita}/inactivar`,
       {
         method: "PATCH",
         headers: getRequestHeaders(true),
@@ -648,7 +652,7 @@ export const api = {
 
   async getVeterinarian(id: number, token: string): Promise<Veterinarian> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/veterinario`,
+      `${api.apiUrl}/veterinario`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -665,7 +669,7 @@ export const api = {
 
   async getClinic(token: string): Promise<Clinic> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/clinica`,
+      `${api.apiUrl}/clinica`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -714,7 +718,7 @@ export const api = {
     token: string,
   ): Promise<Veterinarian> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/veterinario`,
+      `${api.apiUrl}/veterinario`,
       {
         method: "PATCH",
         headers: {
@@ -745,7 +749,7 @@ export const api = {
     token: string,
   ): Promise<Clinic> {
     const response = await fetch(
-      `https://backend-vetween.onrender.com/api/clinica`,
+      `${api.apiUrl}/clinica`,
       {
         method: "PATCH",
         headers: {
@@ -766,14 +770,9 @@ export const api = {
 
   async generateClinicalSummary(payload: {
     id_paciente: number | string;
-    datos_clinicos: {
-      paciente: Record<string, unknown>;
-      visitas: Record<string, unknown>[];
-      vacunas: Record<string, unknown>[];
-    };
   }): Promise<{ resumen?: string; summary?: string; data?: unknown }> {
     const response = await fetch(
-      "https://ivetween-ai.onrender.com/api/v1/informes/resumenia",
+      `${api.apiUrl}/ia/generar-resumen`,
       {
         method: "POST",
         headers: getRequestHeaders(true),
@@ -791,7 +790,7 @@ export const api = {
 
   async getClinicalSummaryByPatientId(id: string | number): Promise<any[]> {
     const response = await fetch(
-      `https://ivetween-ai.onrender.com/api/v1/informes/resumenia/${id}`,
+      `${api.apiUrl}/ia/pacientes/${id}/ia`,
       {
         method: "GET",
         headers: getRequestHeaders(true),
