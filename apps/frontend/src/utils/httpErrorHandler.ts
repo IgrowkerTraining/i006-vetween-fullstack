@@ -48,7 +48,7 @@ const STATUS_MESSAGES: Partial<Record<number, string>> = {
   503: "Servicio temporalmente no disponible.",
 };
 
-const FETCH_TIMEOUT_MS = 10000;
+const FETCH_TIMEOUT_MS = 120000;
 
 const AUTH_ENDPOINTS = ["/auth/login", "/auth/register"];
 
