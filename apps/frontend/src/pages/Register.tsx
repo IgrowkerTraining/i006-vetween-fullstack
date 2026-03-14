@@ -48,7 +48,7 @@ const Register: React.FC = () => {
   const [provinceOpen, setProvinceOpen] = useState(false);
   const provinceRef = useRef<HTMLDivElement>(null);
 
-  const ANIMAL_TYPES_OPTIONS = ["Caninos", "Felinos", "Peces", "Otro"];
+  const ANIMAL_TYPES_OPTIONS = ["Caninos", "Felinos", "Aves", "Peces", "Roedores", "Otro"];
 
   const PROVINCE_OPTIONS = [
     "CABA",
