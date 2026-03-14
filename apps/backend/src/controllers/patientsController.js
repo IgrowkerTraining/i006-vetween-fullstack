@@ -5,7 +5,9 @@ const ResponseHelper = require("../utils/responseHelper");
 const getAll = async (req, res) => {
     try {
         const id_clinica = req.user.id_clinica;
-        const patients = await patientsService.getAllPatients(id_clinica);
+        const { page, limit } = req.query;
+
+        const patients = await patientsService.getAllPatients(id_clinica, parseInt(page) || 1, parseInt(limit) || 10);
 
         return ResponseHelper.success(res, patients, "Pacientes obtenidos correctamente");
     } catch (error) {
@@ -41,9 +43,14 @@ const create = async (req, res) => {
         if (error.message.includes("PACIENTE_DUPLICADO")) {
             return ResponseHelper.badRequest(res, "El responsable ya tiene un paciente registrado con las mismas características (nombre, especie, edad).");
         }
-        if (error.message.includes("ID_RESPONSABLE_NO_EXISTE") || error.message.includes("ID_CLINICA_NO_EXISTE")) {
-            return ResponseHelper.notFound(res, "El responsable o la clínica indicada no existen");
+        if (error.message.includes("ID_RESPONSABLE_NO_EXISTE")) {
+            return ResponseHelper.notFound(res, "El responsable indicado no existe");
         }
+
+        if (error.message.includes("ID_CLINICA_NO_EXISTE")) {
+            return ResponseHelper.notFound(res, "La clínica indicada no existe");
+        }
+
         if (error.message.includes("MICROCHIP_DUPLICADO")) {
             return ResponseHelper.badRequest(res, "El número de microchip ingresado ya se encuentra registrado en otro paciente.");
         }

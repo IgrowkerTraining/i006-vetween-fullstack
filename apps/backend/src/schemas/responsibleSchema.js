@@ -10,44 +10,57 @@ const provinciasValidas = [
 
 const relacionValida = ['Dueño/a', 'Tutor/a', 'Cuidador/a'];
 
+// Pattern
+const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+const alMenosUnaLetra = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/;
+
 const responsibleSchema = Joi.object({
-    nombre: Joi.string().trim().min(2).max(50).required().messages({
+    nombre: Joi.string().trim().min(2).max(50).pattern(soloLetras).required().messages({
         'string.empty': 'El nombre es obligatorio',
         'string.min': 'El nombre debe tener al menos 2 caracteres',
-        'string.max': 'El nombre no puede tener más de 50 caracteres'
-    }),
+        'string.max': 'El nombre no puede tener más de 50 caracteres',
+        'string.pattern.base': 'El nombre solo puede contener letras y espacios'
+    }), 
     
-    apellido: Joi.string().trim().min(2).max(100).required().messages({
+    apellido: Joi.string().trim().min(2).max(100).pattern(soloLetras).required().messages({
         'string.empty': 'El apellido es obligatorio',
         'string.min': 'El apellido debe tener al menos 2 caracteres',
-        'string.max': 'El apellido no puede tener más de 100 caracteres'
+        'string.max': 'El apellido no puede tener más de 100 caracteres',
+        'string.pattern.base': 'El apellido solo puede contener letras y espacios'
     }),
     
-    email: Joi.string().trim().lowercase().email().required().messages({
+    email: Joi.string().trim().lowercase().email().max(100).required().messages({
         'string.email': 'Debes ingresar un formato de email válido',
-        'string.empty': 'El email es obligatorio'
+        'string.empty': 'El email es obligatorio',
+        'string.max': 'El email no puede tener mas de 100 caracteres'
     }),
 
-    telefono: Joi.string().trim().max(20).required().messages({
+    telefono: Joi.string().trim().min(8).max(20).pattern(/^[0-9\s]+$/).required().messages({
         'string.empty': 'El teléfono no puede estar vacío',
-        'string.max': 'El teléfono no puede tener más de 20 caracteres'
+        'string.min': 'El teléfono debe tener al menos 8 caracteres',
+        'string.max': 'El teléfono no puede tener más de 20 caracteres',
+        'string.pattern.base': 'El teléfono solo puede contener números y espacios'
     }),
 
-    direccion_calle: Joi.string().trim().min(2).max(150).required().messages({
+    direccion_calle: Joi.string().trim().min(2).max(150).pattern(alMenosUnaLetra).required().messages({
         'string.empty': 'La calle no puede estar vacía',
         'string.min': 'La calle debe tener al menos 2 caracteres',
-        'string.max': 'La calle no puede tener más de 150 caracteres'
+        'string.max': 'La calle no puede tener más de 150 caracteres',
+        'string.pattern.base': 'La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
-    direccion_numero: Joi.string().trim().max(10).required().messages({
-        'string.empty': 'El número de dirección no puede estar vacío',
-        'string.max': 'El número no puede tener más de 10 caracteres'
+    direccion_numero: Joi.number().integer().positive().max(99999).required().messages({
+        'number.base': 'El número de dirección debe ser numérico o no se ha ingresado uno',
+        'number.positive': 'El número de dirección no puede ser negativo',
+        'number.max': 'El número de dirección no puede tener más de 5 dígitos',
+        'any.required': 'El número de dirección es obligatorio'
     }),
 
-    direccion_localidad: Joi.string().trim().min(2).max(100).required().messages({
+    direccion_localidad: Joi.string().trim().min(2).max(100).pattern(alMenosUnaLetra).required().messages({
         'string.empty': 'La ciudad / localidad no puede estar vacía',
         'string.min': 'La ciudad / localidad debe tener al menos 2 caracteres',
-        'string.max': 'La ciudad no puede tener más de 100 caracteres'
+        'string.max': 'La ciudad no puede tener más de 100 caracteres',
+        'string.pattern.base': 'La ciudad / localidad solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     provincia: Joi.string().valid(...provinciasValidas).required().messages({
@@ -62,43 +75,50 @@ const responsibleSchema = Joi.object({
 });
 
 const updateResponsibleSchema = Joi.object({
-    nombre: Joi.string().trim().min(2).max(50).messages({
+    nombre: Joi.string().trim().min(2).max(50).pattern(soloLetras).messages({
         'string.empty': 'El nombre no puede estar vacío',
         'string.min': 'El nombre debe tener al menos 2 caracteres',
-        'string.max': 'El nombre no puede tener más de 50 caracteres'
+        'string.max': 'El nombre no puede tener más de 50 caracteres',
+        'string.pattern.base': 'El nombre solo puede contener letras y espacios'
     }),
     
-    apellido: Joi.string().trim().min(2).max(100).messages({
+    apellido: Joi.string().trim().min(2).max(100).pattern(soloLetras).messages({
         'string.empty': 'El apellido no puede estar vacío',
         'string.min': 'El apellido debe tener al menos 2 caracteres',
-        'string.max': 'El apellido no puede tener más de 100 caracteres'
+        'string.max': 'El apellido no puede tener más de 100 caracteres',
+        'string.pattern.base': 'El apellido solo puede contener letras y espacios'
     }),
 
-    telefono: Joi.string().trim().max(20).messages({
+    telefono: Joi.string().trim().min(8).max(20).pattern(/^[0-9\s]+$/).messages({
         'string.empty': 'El teléfono no puede estar vacío',
-        'string.max': 'El teléfono no puede tener más de 20 caracteres'
+        'string.min': 'El teléfono debe tener al menos 8 caracteres',
+        'string.max': 'El teléfono no puede tener más de 20 caracteres',
+        'string.pattern.base': 'El teléfono solo puede contener números y espacios'
     }),
 
-    email: Joi.string().trim().lowercase().email().required().messages({
+    email: Joi.string().trim().lowercase().email().max(100).messages({
         'string.email': 'Debes ingresar un formato de email válido',
-        'string.empty': 'El email es obligatorio'
+        'string.max': 'El email no puede tener mas de 100 caracteres'
     }),
 
-    direccion_calle: Joi.string().trim().min(2).max(150).messages({
+    direccion_calle: Joi.string().trim().min(2).max(150).pattern(alMenosUnaLetra).messages({
         'string.empty': 'La calle no puede estar vacía',
         'string.min': 'La calle debe tener al menos 2 caracteres',
-        'string.max': 'La calle no puede tener más de 150 caracteres'
+        'string.max': 'La calle no puede tener más de 150 caracteres',
+        'string.pattern.base': 'La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
-    direccion_numero: Joi.string().trim().max(10).messages({
-        'string.empty': 'El número de dirección no puede estar vacío',
-        'string.max': 'El número no puede tener más de 10 caracteres'
+    direccion_numero: Joi.number().integer().positive().max(99999).messages({
+        'number.base': 'El número de dirección debe ser numérico o no se ha ingresado uno',
+        'number.positive': 'El número de dirección debe ser mayor a cero',
+        'number.max': 'El número de dirección no puede tener más de 5 dígitos'
     }),
 
-    direccion_localidad: Joi.string().trim().min(2).max(100).messages({
+    direccion_localidad: Joi.string().trim().min(2).max(100).pattern(alMenosUnaLetra).messages({
         'string.empty': 'La ciudad / localidad no puede estar vacía',
         'string.min': 'La ciudad / localidad debe tener al menos 2 caracteres',
-        'string.max': 'La ciudad no puede tener más de 100 caracteres'
+        'string.max': 'La ciudad no puede tener más de 100 caracteres',
+        'string.pattern.base': 'La ciudad / localidad solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     provincia: Joi.string().valid(...provinciasValidas).messages({

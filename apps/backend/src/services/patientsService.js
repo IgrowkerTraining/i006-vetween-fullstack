@@ -1,16 +1,25 @@
 const supabase = require('../config/supabaseClient');
 
 // Obtener todos los pacientes de la clinica
-const getAllPatients = async (id_clinica) => {
-    const { data, error } = await supabase
+const getAllPatients = async (id_clinica, pagina = 1, limitePagina = 10) => {
+    const from = (pagina - 1) * limitePagina;
+    const to = from + limitePagina - 1;
+
+    const { data, error, count } = await supabase
     .from('pacientes')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('id_clinica', id_clinica)
-    .order("fecha", { ascending: false });
+    .order("fecha", { ascending: false })
+    .range(from, to);
 
     if(error) throw error;
 
-    return data;
+    return {
+        data,
+        total: count,
+        pagina: parseInt(pagina),
+        ultimaPagina: Math.ceil(count / limitePagina)
+    };
 };
 
 // Obtener paciente por ID
@@ -89,7 +98,7 @@ const createPatient = async (patientData, id_clinica) => {
 
         // El código 23503 en PostgreSQL es "foreign_key_violation"
         if (error.code === '23503') {
-            if (error.message.includes('id_responsable')) {
+            if (error.message.includes('fk_responsable')) {
                 throw new Error("ID_RESPONSABLE_NO_EXISTE");
             }
             if (error.message.includes('id_clinica')) {

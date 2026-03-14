@@ -4,39 +4,48 @@ const sexosValidos = ['Macho','Hembra'];
 
 const especiesValidas = ['Caninos', 'Felinos', 'Aves', 'Peces', 'Roedores', 'Otro'];
 
+// Pattern
+const alMenosUnaLetra = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/;
+const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+
 const patientSchema = Joi.object({
-    nombre: Joi.string().trim().min(2).max(50).required().messages({
+    nombre: Joi.string().trim().min(2).max(50).pattern(soloLetras).required().messages({
         'string.empty': 'El nombre es obligatorio',
         'string.min': 'El nombre debe tener al menos 2 caracteres',
-        'string.max': 'El nombre no puede tener más de 50 caracteres'
+        'string.max': 'El nombre no puede tener más de 50 caracteres',
+        'string.pattern.base': 'El nombre solo puede contener letras y espacios'
     }),
     
     especie: Joi.string().valid(...especiesValidas).required().messages({
         'any.only': 'Especie no válida'
     }),
     
-    edad: Joi.number().integer().positive().required().messages({
+    edad: Joi.number().integer().positive().max(100).required().messages({
         'number.base': 'La edad debe ser un número',
-        'number.positive': 'La edad no puede ser negativa'
+        'number.positive': 'La edad no puede ser negativa',
+        'number.max': 'La edad maxima permitida es hasta 100 años'
     }),
     
-    color: Joi.string().trim().min(2).max(30).required().messages({
+    color: Joi.string().trim().min(2).max(30).pattern(soloLetras).required().messages({
         'string.empty': 'El color es obligatorio',
         'string.min': 'El color debe tener al menos 2 caracteres',
-        'string.max': 'El color no puede tener más de 30 caracteres'
+        'string.max': 'El color no puede tener más de 30 caracteres',
+        'string.pattern.base': 'El color solo puede contener letras y espacios'
     }),
 
-    senia: Joi.string().trim().max(255).allow(null, '').messages({
-        'string.max': 'Las señas / caracteristicas no puede tener más de 255 caracteres'
+    senia: Joi.string().trim().max(255).allow(null, '').pattern(alMenosUnaLetra).messages({
+        'string.max': 'Las señas / caracteristicas no puede tener más de 255 caracteres',
+        'string.pattern.base': 'Las señas / caracteristicas solo pueden contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     sexo: Joi.string().valid(...sexosValidos).required().messages({
         'any.only': 'Selecciona un sexo válido'
     }),
     
-    raza: Joi.string().trim().max(150).required().messages({
+    raza: Joi.string().trim().max(150).pattern(soloLetras).required().messages({
         'string.empty': 'El nombre de la raza es obligatorio',
-        'string.max': 'El nombre de la raza no puede tener más de 150 caracteres'
+        'string.max': 'El nombre de la raza no puede tener más de 150 caracteres',
+        'string.pattern.base': 'El nombre de la raza solo puede contener letras y espacios'
     }),
 
     peso: Joi.number().positive().precision(2).required().messages({
@@ -57,9 +66,11 @@ const patientSchema = Joi.object({
 
     num_microchip: Joi.string().trim().when('tiene_microchip', {
         is: true,
-        then: Joi.string().max(30).required().messages({
+        then: Joi.string().max(30).pattern(/^[0-9]+$/).required().messages({
+            'string.base': 'El número de microchip debe enviarse entre comillas',
             'string.empty': 'El número de microchip es obligatorio cuando el paciente tiene microchip',
-            'string.max': 'El número de microchip no puede tener más de 30 caracteres'
+            'string.max': 'El número de microchip no puede tener más de 30 caracteres',
+            'string.pattern.base': 'El número de microchip solo puede contener números sin espacios'
         })
     }),
 
@@ -75,38 +86,43 @@ const patientSchema = Joi.object({
 });
 
 const updatePatientSchema = Joi.object({
-    nombre: Joi.string().trim().min(2).max(50).messages({
+    nombre: Joi.string().trim().min(2).max(50).pattern(soloLetras).messages({
         'string.empty': 'El nombre no puede estar vacío',
         'string.min': 'El nombre debe tener al menos 2 caracteres',
-        'string.max': 'El nombre no puede tener más de 50 caracteres'
+        'string.max': 'El nombre no puede tener más de 50 caracteres',
+        'string.pattern.base': 'El nombre solo puede contener letras y espacios'
     }),
 
     especie: Joi.string().valid(...especiesValidas).messages({
         'any.only': 'Especie no válida'
     }),
 
-    edad: Joi.number().integer().positive().messages({
+    edad: Joi.number().integer().positive().max(100).messages({
         'number.base': 'La edad debe ser un número',
-        'number.positive': 'La edad no puede ser negativa'
+        'number.positive': 'La edad no puede ser negativa',
+        'number.max': 'La edad maxima permitida es hasta 100 años'
     }),
 
-    color: Joi.string().trim().min(2).max(30).messages({
+    color: Joi.string().trim().min(2).max(30).pattern(soloLetras).messages({
         'string.empty': 'El color no puede estar vacío',
         'string.min': 'El color debe tener al menos 2 caracteres',
-        'string.max': 'El color no puede tener más de 30 caracteres'
+        'string.max': 'El color no puede tener más de 30 caracteres',
+        'string.pattern.base': 'El color solo puede contener letras y espacios'
     }),
 
-    senia: Joi.string().trim().max(255).allow(null, '').messages({
-        'string.max': 'Las señas/caracteristicas no puede tener más de 255 caracteres'
+    senia: Joi.string().trim().max(255).allow(null, '').pattern(alMenosUnaLetra).messages({
+        'string.max': 'Las señas/caracteristicas no puede tener más de 255 caracteres',
+        'string.pattern.base': 'Las señas/caracteristicas solo pueden contener letras, espacios y números (pero debe contener al menos una letra)'
     }),
 
     sexo: Joi.string().valid(...sexosValidos).messages({
         'any.only': 'Selecciona un sexo válido'
     }),
 
-    raza: Joi.string().trim().max(150).messages({
+    raza: Joi.string().trim().max(150).pattern(soloLetras).messages({
         'string.empty': 'El nombre de la raza no puede estar vacío',
-        'string.max': 'El nombre de la raza no puede tener más de 150 caracteres'
+        'string.max': 'El nombre de la raza no puede tener más de 150 caracteres',
+        'string.pattern.base': 'El nombre de la raza solo puede contener letras y espacios'
     }),
 
     peso: Joi.number().positive().precision(2).messages({
@@ -124,9 +140,11 @@ const updatePatientSchema = Joi.object({
 
     num_microchip: Joi.string().trim().when('tiene_microchip', {
         is: true,
-        then: Joi.string().max(30).required().messages({
+        then: Joi.string().max(30).pattern(/^[0-9]+$/).required().messages({
+            'string.base': 'El número de microchip debe enviarse entre comillas',
             'string.empty': 'El número de microchip es obligatorio si tiene microchip',
-            'string.max': 'El número de microchip no puede tener más de 30 caracteres'
+            'string.max': 'El número de microchip no puede tener más de 30 caracteres',
+            'string.pattern.base': 'El número de microchip solo puede contener números sin espacios'
         })
     }),
     

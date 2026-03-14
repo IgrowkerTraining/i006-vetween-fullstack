@@ -59,8 +59,9 @@ const getPatientVisits = async (req, res) => {
         // el parámetro "id" en la URL del swagger corresponde al paciente
         const idPaciente = req.params.id;
         const id_clinica = req.user.id_clinica;
+        const { page, limit } = req.query;
         
-        const visitas = await visitService.getVisitsByPatientId(idPaciente, id_clinica);
+        const visitas = await visitService.getVisitsByPatientId(idPaciente, id_clinica, parseInt(page) || 1, parseInt(limit) || 4);
         
         return ResponseHelper.success(res, visitas, 'Historial de visitas obtenido');
     } catch (error) {

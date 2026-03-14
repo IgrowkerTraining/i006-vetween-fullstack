@@ -98,19 +98,28 @@ const inactivateVisit = async (idVisita, id_clinica) => {
     return data;
 };
 
-const getVisitsByPatientId = async (idPaciente, id_clinica) => {
+const getVisitsByPatientId = async (idPaciente, id_clinica, pagina = 1, limitePagina = 4) => {
 
     await validarPacienteClinica(idPaciente, id_clinica);
 
-    const { data, error } = await supabase
+    const from = (pagina - 1) * limitePagina;
+    const to = from + limitePagina - 1;
+
+    const { data, error, count } = await supabase
         .from('visitas')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('id_paciente', idPaciente)
         .order('fecha', { ascending: false }) // Ordena de la mas reciente a la mas antigua
+        .range(from, to);
 
     if (error) throw new Error(`Error al obtener las visitas: ${error.message}`);
 
-    return data;
+    return {
+        data,
+        total: count,
+        pagina: parseInt(pagina),
+        ultimaPagina: Math.ceil(count / limitePagina)
+    };
 };
 
 module.exports = {
