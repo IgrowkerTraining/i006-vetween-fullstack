@@ -569,7 +569,6 @@ export const api = {
     nombre_cientifico: string;
     fecha_aplicacion: string;
     observacion: string;
-    estado: boolean;
     id_paciente: number | string;
   }): Promise<unknown> {
     const response = await fetch(

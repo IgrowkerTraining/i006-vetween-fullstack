@@ -171,7 +171,7 @@ const PatientDetail: React.FC = () => {
       }));
       setVacunasPagina(1);
       setVacunasUltimaPagina(vacunasResult.ultimaPagina);
-      setVacunas(mappedVacunas);
+      setVacunas(sortVacunasByFechaDesc(mappedVacunas));
     } catch (err: any) {
       setFetchError(err?.message || "No se pudo cargar el paciente.");
     } finally {
@@ -205,6 +205,30 @@ const PatientDetail: React.FC = () => {
     return isNaN(num)
       ? String(value)
       : `${num.toFixed(1).replace(".", ",")} kg`;
+  };
+
+  const getVaccineDateTimestamp = (dateValue: string): number => {
+    const parsed = Date.parse(dateValue);
+    if (!Number.isNaN(parsed)) return parsed;
+
+    const match = dateValue.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/);
+    if (match) {
+      const [, day, month, year] = match;
+      return new Date(Number(year), Number(month) - 1, Number(day)).getTime();
+    }
+
+    return 0;
+  };
+
+  const sortVacunasByFechaDesc = (items: Vacuna[]): Vacuna[] => {
+    return [...items].sort((a, b) => {
+      const dateDiff =
+        getVaccineDateTimestamp(b.fechaAplicacion) -
+        getVaccineDateTimestamp(a.fechaAplicacion);
+
+      if (dateDiff !== 0) return dateDiff;
+      return b.id.localeCompare(a.id);
+    });
   };
 
   const buildDireccion = (d: PatientDetailResponse): string => {
@@ -378,7 +402,7 @@ const PatientDetail: React.FC = () => {
         observacion: v.observacion,
         expandido: index === 0,
       }));
-      setVacunas(mapped);
+      setVacunas(sortVacunasByFechaDesc(mapped));
       setVacunasPagina(newPage);
       setVacunasUltimaPagina(result.ultimaPagina);
     } catch (err: any) {
@@ -467,13 +491,15 @@ const PatientDetail: React.FC = () => {
   };
 
   const handleVaccineSave = async (data: VaccineFormData) => {
-    const patientId =
+    const patientIdRaw =
       patientData?.id_pacientes ??
       patientData?.id_paciente ??
       patientData?.id ??
       id;
 
-    if (!patientId) {
+    const patientId = Number(patientIdRaw);
+
+    if (!patientId || Number.isNaN(patientId)) {
       console.error("No se encontró el ID del paciente");
       return;
     }
@@ -481,10 +507,9 @@ const PatientDetail: React.FC = () => {
     try {
       await api.createVaccine({
         tipo: data.tipoVacuna,
-        nombre_cientifico: data.nombre,
+        nombre_cientifico: data.nombre_cientifico,
         fecha_aplicacion: data.fecha,
         observacion: data.observaciones,
-        estado: false,
         id_paciente: patientId,
       });
 
@@ -500,7 +525,7 @@ const PatientDetail: React.FC = () => {
         observacion: v.observacion,
         expandido: index === 0,
       }));
-      setVacunas(freshMapped);
+      setVacunas(sortVacunasByFechaDesc(freshMapped));
       setVacunasPagina(1);
       setVacunasUltimaPagina(freshResult.ultimaPagina);
       setIsVaccineModalOpen(false);

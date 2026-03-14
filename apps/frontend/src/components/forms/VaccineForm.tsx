@@ -8,7 +8,7 @@ interface VaccineFormProps {
 }
 
 export interface VaccineFormData {
-  nombre: string;
+  nombre_cientifico: string;
   tipoVacuna: string;
   fecha: string;
   observaciones: string;
@@ -19,7 +19,7 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState<VaccineFormData>({
-    nombre: "",
+    nombre_cientifico: "",
     tipoVacuna: "",
     fecha: "",
     observaciones: "",
@@ -42,23 +42,25 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Partial<VaccineFormData> = {};
 
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre es requerido";
-    } else if (/\s/.test(formData.nombre)) {
-      newErrors.nombre = "El nombre no puede contener espacios";
-    } else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.nombre)) {
-      newErrors.nombre = "El nombre debe contener al menos una letra";
-    } else if (formData.nombre.length < 2) {
-      newErrors.nombre = "El nombre debe tener al menos 2 caracteres";
-    } else if (formData.nombre.length > 150) {
-      newErrors.nombre = "El nombre no puede superar los 150 caracteres";
+    if (!formData.nombre_cientifico.trim()) {
+      newErrors.nombre_cientifico = "El nombre científico es requerido";
+    } else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.nombre_cientifico)) {
+      newErrors.nombre_cientifico =
+        "El nombre científico debe contener al menos una letra";
+    } else if (formData.nombre_cientifico.length < 2) {
+      newErrors.nombre_cientifico =
+        "El nombre científico debe tener al menos 2 caracteres";
+    } else if (formData.nombre_cientifico.length > 150) {
+      newErrors.nombre_cientifico =
+        "El nombre científico no puede superar los 150 caracteres";
     }
     if (!formData.tipoVacuna.trim()) {
       newErrors.tipoVacuna = "El tipo de vacuna es requerido";
-    } else if (/\s/.test(formData.tipoVacuna)) {
-      newErrors.tipoVacuna = "El tipo no puede contener espacios";
+    } else if (!/^[A-Za-z\u00C0-\u00FF\d\s.,:]+$/.test(formData.tipoVacuna)) {
+      newErrors.tipoVacuna =
+        "El tipo de vacuna solo puede contener letras, números, espacios y los caracteres . , :";
     } else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.tipoVacuna)) {
-      newErrors.tipoVacuna = "El tipo debe contener al menos una letra";
+      newErrors.tipoVacuna = "El tipo de vacuna debe contener al menos una letra";
     } else if (formData.tipoVacuna.length < 2) {
       newErrors.tipoVacuna = "El tipo debe tener al menos 2 caracteres";
     } else if (formData.tipoVacuna.length > 100) {
@@ -70,12 +72,13 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
       newErrors.fecha = "La fecha de aplicación no puede ser futura";
     }
     if (formData.observaciones.trim()) {
-      if (!/^[A-Za-z\u00C0-\u00FF\s\d]*$/.test(formData.observaciones)) {
-        newErrors.observaciones = "Las observaciones solo pueden contener letras, números y espacios";
+      if (!/^[A-Za-z\u00C0-\u00FF\s\d.,:]*$/.test(formData.observaciones)) {
+        newErrors.observaciones =
+          "Las observaciones solo pueden contener letras, números, espacios y los caracteres . , :";
       } else if (!/[A-Za-z\u00C0-\u00FF]/.test(formData.observaciones)) {
         newErrors.observaciones = "Las observaciones deben contener al menos una letra";
-      } else if (formData.observaciones.trim().length > 100) {
-        newErrors.observaciones = "Las observaciones no pueden superar los 100 caracteres";
+      } else if (formData.observaciones.trim().length > 200) {
+        newErrors.observaciones = "Las observaciones no pueden superar los 200 caracteres";
       }
     }
 
@@ -92,7 +95,7 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
       }
 
       setFormData({
-        nombre: "",
+        nombre_cientifico: "",
         tipoVacuna: "",
         fecha: "",
         observaciones: "",
@@ -104,7 +107,7 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
 
   const handleCancel = () => {
     setFormData({
-      nombre: "",
+      nombre_cientifico: "",
       tipoVacuna: "",
       fecha: "",
       observaciones: "",
@@ -133,13 +136,13 @@ export const VaccineForm: React.FC<VaccineFormProps> = ({
         error={errors.tipoVacuna}
       />
 
-      {/* Campo Nombre de Vacuna */}
+      {/* Campo Nombre Cientifico */}
       <Input
-        label="Nombre"
-        placeholder="Ingrese el nombre de la vacuna"
-        value={formData.nombre}
-        onChange={handleChange("nombre")}
-        error={errors.nombre}
+        label="Nombre cientifico"
+        placeholder="Ingrese el nombre cientifico de la vacuna"
+        value={formData.nombre_cientifico}
+        onChange={handleChange("nombre_cientifico")}
+        error={errors.nombre_cientifico}
       />
 
       {/* Campo Observaciones */}
