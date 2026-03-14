@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../components/common/Input";
+import { Select } from "../components/common/Select";
+import { MultiSelect } from "../components/common/MultiSelect";
+import { Stepper } from "../components/common/Stepper";
 import { Button } from "../components/common/Button";
 import { SuccessModal } from "../components/common/SuccessModal";
 import { User } from "../types";
@@ -10,6 +13,9 @@ import { useAuth } from "../hooks/useAuth";
 import { storage } from "../utils/storage";
 import logo from "../assets/logo.svg";
 import onlylogo from "../assets/onlylogo.svg";
+import eyeOpen from "../assets/eyeOpen.svg";
+import eyeSlash from "../assets/eyeSlash.svg";
+import argentinaFlag from "../assets/argentinaFlag.svg";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -388,38 +394,13 @@ const Register: React.FC = () => {
                 </h1>
 
                 {/* Stepper */}
-                <div className="flex items-center justify-center w-full mb-2">
-                  {/* Step 1 */}
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${step === 1 ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}
-                    >
-                      1
-                    </div>
-                    <span
-                      className={`mt-2 text-sm transition-all duration-300 ${step === 1 ? "text-[#0b1001] font-semibold" : "text-slate-400"}`}
-                    >
-                      Profesional
-                    </span>
-                  </div>
-
-                  {/* Line */}
-                  <div className="flex-1 h-[2px] bg-slate-300 mx-4"></div>
-
-                  {/* Step 2 */}
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${step === 2 ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}
-                    >
-                      2
-                    </div>
-                    <span
-                      className={`mt-2 text-sm transition-all duration-300 ${step === 2 ? "text-[#0b1001] font-semibold" : "text-slate-400"}`}
-                    >
-                      Clínica
-                    </span>
-                  </div>
-                </div>
+                <Stepper
+                  steps={[
+                    { number: 1, label: "Profesional" },
+                    { number: 2, label: "Clínica" },
+                  ]}
+                  currentStep={step}
+                />
               </div>
 
               {serverError && (
@@ -503,40 +484,9 @@ const Register: React.FC = () => {
                         className="focus:outline-none pointer-events-auto"
                       >
                         {showPassword ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-5 h-5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-1.664 1.664a2.25 2.25 0 0 1-3.182 0l-1.664-1.664Z"
-                            />
-                          </svg>
+                          <img src={eyeSlash} alt="Ocultar" className="w-5 h-5" />
                         ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-5 h-5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                            />
-                          </svg>
+                          <img src={eyeOpen} alt="Mostrar" className="w-5 h-5" />
                         )}
                       </button>
                     }
@@ -560,40 +510,9 @@ const Register: React.FC = () => {
                         className="focus:outline-none pointer-events-auto"
                       >
                         {showConfirmPassword ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-5 h-5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-1.664 1.664a2.25 2.25 0 0 1-3.182 0l-1.664-1.664Z"
-                            />
-                          </svg>
+                          <img src={eyeSlash} alt="Ocultar" className="w-5 h-5" />
                         ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-5 h-5"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                            />
-                          </svg>
+                          <img src={eyeOpen} alt="Mostrar" className="w-5 h-5" />
                         )}
                       </button>
                     }
@@ -611,174 +530,42 @@ const Register: React.FC = () => {
                     />
                   </div>
 
-                  <div className="md:col-span-2 mt-4" ref={animalTypesRef}>
-                    <label className="block text-sm font-semibold text-[#0b1001] mb-1">
-                      Especies atendidas
-                    </label>
-                    {errors.animalTypes && (
-                      <p className="text-red-500 text-xs mt-1 mb-1">
-                        {errors.animalTypes}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-500 mb-2">
-                      Seleccioná todas las que correspondan
-                    </p>
-
-                    {/* Trigger input */}
-                    <button
-                      type="button"
-                      onClick={() => setAnimalTypesOpen((prev) => !prev)}
-                      className={`w-full bg-white rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 transition-all duration-200 flex items-center justify-between ${
-                        errors.animalTypes
-                          ? "border border-red-500 focus:ring-red-500/50 focus:border-red-500"
-                          : "border border-slate-700 focus:ring-indigo-500/50 focus:border-indigo-500"
-                      }`}
-                    >
-                      <span
-                        className={
-                          formData.animalTypes.length === 0
-                            ? "text-slate-300"
-                            : "text-indigo-800 truncate pr-2"
+                  <div className="md:col-span-2 mt-4">
+                    <MultiSelect
+                      label="Especies atendidas"
+                      value={formData.animalTypes}
+                      onChange={(value) => {
+                        setFormData((prev) => ({ ...prev, animalTypes: value }));
+                        if (value.length > 0) {
+                          setErrors((e) => {
+                            const n = { ...e };
+                            delete n.animalTypes;
+                            return n;
+                          });
                         }
-                      >
-                        {formData.animalTypes.length === 0
-                          ? "Seleccionar tipos de animales…"
-                          : formData.animalTypes.join(", ")}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${animalTypesOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19 9-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-
-                    {/* Dropdown list */}
-                    {animalTypesOpen && (
-                      <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden">
-                        <div className="max-h-52 overflow-y-auto p-2 grid grid-cols-1 gap-1">
-                          {ANIMAL_TYPES_OPTIONS.map((animal) => (
-                            <label
-                              key={animal}
-                              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
-                            >
-                              <input
-                                type="checkbox"
-                                value={animal}
-                                checked={formData.animalTypes.includes(animal)}
-                                onChange={() => handleAnimalTypeChange(animal)}
-                                className="w-4 h-4 accent-indigo-600 flex-shrink-0"
-                              />
-                              {animal}
-                            </label>
-                          ))}
-                        </div>
-                        {formData.animalTypes.length > 0 && (
-                          <div className="border-t border-slate-100 px-3 py-2 flex justify-between items-center">
-                            <span className="text-xs text-slate-500">
-                              {formData.animalTypes.length} seleccionado
-                              {formData.animalTypes.length !== 1 ? "s" : ""}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  animalTypes: [],
-                                }));
-                              }}
-                              className="text-xs text-red-400 hover:text-red-600 transition-colors"
-                            >
-                              Limpiar
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      }}
+                      placeholder="Seleccionar tipos de animales…"
+                      error={errors.animalTypes}
+                      options={ANIMAL_TYPES_OPTIONS.map((opt) => ({
+                        value: opt,
+                        label: opt,
+                      }))}
+                    />
                   </div>
 
-                  <div className="md:col-span-2 mt-4" ref={specialtiesRef}>
-                    <label className="block text-sm font-semibold text-[#0b1001] mb-1">
-                      Especialidad
-                    </label>
-                    {errors.specialties && (
-                      <p className="text-red-500 text-xs mt-1 mb-1">
-                        {errors.specialties}
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-500 mb-2">
-                      Seleccioná una opción
-                    </p>
-
-                    {/* Trigger input */}
-                    <button
-                      type="button"
-                      onClick={() => setSpecialtiesOpen((prev) => !prev)}
-                      className={`w-full bg-white rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 transition-all duration-200 flex items-center justify-between ${
-                        errors.specialties
-                          ? "border border-red-500 focus:ring-red-500/50 focus:border-red-500"
-                          : "border border-slate-700 focus:ring-indigo-500/50 focus:border-indigo-500"
-                      }`}
-                    >
-                      <span
-                        className={
-                          formData.specialties === ""
-                            ? "text-slate-300"
-                            : "text-indigo-800 truncate pr-2"
-                        }
-                      >
-                        {formData.specialties === ""
-                          ? "Seleccionar especialidad…"
-                          : formData.specialties}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${specialtiesOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19 9-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-
-                    {specialtiesOpen && (
-                      <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden">
-                        <div className="p-2 grid grid-cols-1 gap-1">
-                          {SPECIALTIES_OPTIONS.map((specialty) => (
-                            <label
-                              key={specialty}
-                              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
-                            >
-                              <input
-                                type="radio"
-                                name="specialty"
-                                value={specialty}
-                                checked={formData.specialties === specialty}
-                                onChange={() =>
-                                  handleSpecialtyChange(specialty)
-                                }
-                                className="w-4 h-4 accent-indigo-600 flex-shrink-0"
-                              />
-                              {specialty}
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div className="md:col-span-2 mt-4">
+                    <Select
+                      label="Especialidad"
+                      name="specialties"
+                      value={formData.specialties}
+                      onChange={(e) => handleSpecialtyChange(e.target.value)}
+                      placeholder="Seleccionar especialidad…"
+                      error={errors.specialties}
+                      options={SPECIALTIES_OPTIONS.map((opt) => ({
+                        value: opt,
+                        label: opt,
+                      }))}
+                    />
                   </div>
 
                   <div className="md:col-span-2 mt-4">
@@ -874,79 +661,27 @@ const Register: React.FC = () => {
                       onChange={handleChange}
                     />
                   </div>
-                  <div className="md:col-span-2" ref={provinceRef}>
-                    <label className="block text-sm font-semibold text-[#0b1001] mb-1">
-                      Provincia
-                    </label>
-                    {errors.province && (
-                      <p className="text-red-500 text-xs mt-1 mb-1">
-                        {errors.province}
-                      </p>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setProvinceOpen((prev) => !prev)}
-                      className={`w-full bg-white rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 transition-all duration-200 flex items-center justify-between ${
-                        errors.province
-                          ? "border border-red-500 focus:ring-red-500/50 focus:border-red-500"
-                          : "border border-slate-700 focus:ring-indigo-500/50 focus:border-indigo-500"
-                      }`}
-                    >
-                      <span
-                        className={
-                          formData.province === ""
-                            ? "text-slate-300"
-                            : "text-indigo-800 truncate pr-2"
-                        }
-                      >
-                        {formData.province === ""
-                          ? "Seleccionar provincia…"
-                          : formData.province}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-200 ${provinceOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19 9-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {provinceOpen && (
-                      <div className="mt-1 w-full bg-white border border-slate-300 rounded-lg shadow-lg z-10 overflow-hidden max-h-48 overflow-y-auto">
-                        <div className="p-2 grid grid-cols-1 gap-1">
-                          {PROVINCE_OPTIONS.map((prov) => (
-                            <label
-                              key={prov}
-                              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-indigo-50 cursor-pointer text-sm text-gray-700 select-none"
-                            >
-                              <input
-                                type="radio"
-                                name="province"
-                                value={prov}
-                                checked={formData.province === prov}
-                                onChange={() => handleProvinceChange(prov)}
-                                className="w-4 h-4 accent-indigo-600 flex-shrink-0"
-                              />
-                              {prov}
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div className="md:col-span-2">
+                    <Select
+                      label="Provincia"
+                      name="province"
+                      value={formData.province}
+                      onChange={(e) => handleProvinceChange(e.target.value)}
+                      placeholder="Seleccionar provincia…"
+                      error={errors.province}
+                      options={PROVINCE_OPTIONS.map((opt) => ({
+                        value: opt,
+                        label: opt,
+                      }))}
+                    />
                   </div>
                   <div className="md:col-span-2">
                     <Input
                       label="Número de teléfono"
                       name="phone"
                       type="tel"
-                      placeholder="(011)999-9999"
+                      placeholder="11 9 12341234"
+                      prefix={<img src={argentinaFlag} alt="Argentina" className="w-5 h-4" />}
                       required
                       disabled={isLoading}
                       error={errors.phone}

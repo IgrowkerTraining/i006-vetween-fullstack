@@ -33,14 +33,14 @@ export const Select: React.FC<SelectProps> = ({
           {label}
         </label>
       )}
-      <div className="relative">
+      <div className="relative flex items-center">
         <select
           name={name}
           value={value}
           onChange={onChange}
           disabled={disabled}
           className={`
-            w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5
+            w-full bg-white border border-slate-700 rounded-lg px-3 py-2.5 pr-12
             text-indigo-800 appearance-none cursor-pointer
             focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
             transition-all duration-200
@@ -58,9 +58,9 @@ export const Select: React.FC<SelectProps> = ({
             </option>
           ))}
         </select>
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+        <div className="absolute right-0 top-0 h-full flex items-center justify-center bg-[#5451FF] rounded-r-lg pointer-events-none" style={{ width: '40px' }}>
           <svg
-            className="w-4 h-4"
+            className="w-4 h-4 text-white"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
