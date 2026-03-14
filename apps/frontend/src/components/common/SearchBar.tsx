@@ -42,7 +42,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         onClick={handleSearchClick}
         className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
       >
-        <img src={LupaBusqueda} alt="Buscar" />
+        <img src={LupaBusqueda} alt="Buscar" className="w-[17px] h-[17px]" />
       </button>
     </div>
   );
