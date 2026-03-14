@@ -1092,7 +1092,7 @@ paths:
 # IA
 # =========================
 
-  /generar-resumen:
+  /ia/generar-resumen:
     post:
       tags:
         - IA
@@ -1193,7 +1193,7 @@ paths:
                 success: false
                 message: Paciente no encontrado
 
-  /pacientes/{id}/ia:
+  /ia/pacientes/{id}/ia:
     get:
       tags:
         - IA

@@ -88,6 +88,7 @@ SUPABASE_SERVICE_ROLE_KEY=tu_supabase_service_role_key
 JWT_SECRET=tu_jwt_secret
 AI_URL=http://localhost:5001
 ENCRYPTION_KEY="tuclavede32caracteres1234567890a"
+CORS_ORIGIN=https://localhost:8040
 ```
 
 Estas variables permiten conectar el backend con la base de datos y el microservicio de inteligencia artificial.
