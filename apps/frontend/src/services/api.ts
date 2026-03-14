@@ -191,7 +191,7 @@ export interface ResponsibleListItem {
 
 export const api = {
 
- apiUrl: import.meta.env.VITE_API_PRUEBA_URL,
+ apiUrl: import.meta.env.VITE_API_PROD_URL,
  
   async register(
     data: RegisterRequest,
