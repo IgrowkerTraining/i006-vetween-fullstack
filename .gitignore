@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#Ignorar variables de entorno
+.env
+/*.env
+/.environment
+**/.envrironment.prod
+*/environments/
