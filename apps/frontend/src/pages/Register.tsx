@@ -246,12 +246,12 @@ const Register: React.FC = () => {
 
     // Especialidad
     if (!formData.specialties) {
-      newErrors.specialties = "Debes seleccionar al menos una especialidad";
+      newErrors.specialties = "Tenés que seleccionar al menos una especialidad";
     }
 
     // Tipos de animales
     if (formData.animalTypes.length === 0) {
-      newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
+      newErrors.animalTypes = "Tenés que seleccionar al menos un tipo de animal";
     }
 
     // Costo de consulta
@@ -334,12 +334,12 @@ const Register: React.FC = () => {
 
     // Especialidad
     if (!formData.specialties) {
-      newErrors.specialties = "Debes seleccionar al menos una especialidad";
+      newErrors.specialties = "Tenés que seleccionar al menos una especialidad";
     }
 
     // Tipos de animales
     if (formData.animalTypes.length === 0) {
-      newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
+      newErrors.animalTypes = "Tenés que seleccionar al menos un tipo de animal";
     }
 
     // Costo de consulta
@@ -412,7 +412,7 @@ const Register: React.FC = () => {
 
     // Provincia
     if (!formData.province) {
-      newErrors.province = "Debes seleccionar una provincia";
+      newErrors.province = "Tenés que seleccionar una provincia";
     }
 
     // Teléfono
@@ -830,7 +830,7 @@ const Register: React.FC = () => {
 
               <div className="mt-8 pt-6 border-t border-slate-800 text-center">
                 <p className="text-slate-400 text-sm">
-                  ¿Ya tienes cuenta?{" "}
+                  ¿Ya tenés cuenta?{" "}
                   <Link
                     to="/login"
                     className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"

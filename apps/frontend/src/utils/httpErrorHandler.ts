@@ -40,7 +40,7 @@ export const setHttpErrorHandlers = (
 
 const STATUS_MESSAGES: Partial<Record<number, string>> = {
   401: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
-  403: "No tienes permisos para realizar esta acción.",
+  403: "No tenés permisos para realizar esta acción.",
   404: "El recurso solicitado no fue encontrado.",
   408: "La solicitud tardó demasiado. Intenta nuevamente.",
   500: "Error interno del servidor. Intenta nuevamente más tarde.",
@@ -91,7 +91,7 @@ export const installFetchInterceptor = (): void => {
       }
 
       const message =
-        "No se pudo conectar con el servidor. Verifica tu conexión.";
+        "No se pudo conectar con el servidor. Verificá tu conexión.";
       fireToast(message, "error");
       throw new HttpError(503, message);
     } finally {

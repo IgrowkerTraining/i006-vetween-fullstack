@@ -178,7 +178,7 @@ export default function SecurityProfile() {
                       Seguridad
                     </h2>
                     <p className="text-muted-foreground">
-                      Cambia tu contraseña
+                      Cambiá tu contraseña
                     </p>
                   </div>
                 </div>

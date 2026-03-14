@@ -491,7 +491,7 @@ export default function PatientList() {
                   alt="Paw Icon Add"
                   className="size-7"
                 />
-                {"Añadir paciente"}
+                {"Agregar paciente"}
               </button>
             }
           />
@@ -724,7 +724,7 @@ export default function PatientList() {
                       No hay pacientes registrados aún
                     </h3>
                     <p className="mt-1 max-w-xs text-center text-sm text-muted-foreground">
-                      {"Agrega uno nuevo haciendo clic en el botón superior."}
+                      {"Agregá uno nuevo haciendo clic en el botón superior."}
                     </p>
                   </div>
                 )}
@@ -791,7 +791,7 @@ export default function PatientList() {
       />
       <SuccessModal
         isOpen={showAddPatientInfoModal}
-        message="Para añadir un paciente nuevo, tienes que registrar un responsable nuevo o seleccionar uno existente"
+        message="Para agregar un paciente nuevo, tenés que registrar un responsable nuevo o seleccionar uno existente"
         checkboxLabel="No volver a mostrar este mensaje"
         onCheckboxChange={(checked) => {
           if (checked) localStorage.setItem(HIDE_ADD_PATIENT_MODAL_KEY, "true");
@@ -811,7 +811,7 @@ export default function PatientList() {
         }
         message={
           patients.find((p) => p.id === deleteTargetId)?.hasClinicalRecord
-            ? "Actualiza tu plan a Premium"
+            ? "Actualizá tu plan a Premium"
             : "Este paciente está inactivo. Podrás eliminarlo definitivamente."
         }
         singleAcceptButton={!!patients.find((p) => p.id === deleteTargetId)?.hasClinicalRecord}

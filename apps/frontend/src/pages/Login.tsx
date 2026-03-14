@@ -190,7 +190,7 @@ const Login: React.FC = () => {
 
             <div className="mt-8 pt-6 border-t border-slate-800 text-center">
               <p className="text-slate-600 text-sm">
-                ¿No tienes cuenta?{" "}
+                ¿No tenés cuenta?{" "}
                 <Link
                   to="/register"
                   className="text-indigo-700 hover:text-indigo-400 font-semibold transition-colors"
