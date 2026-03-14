@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 // Pattern
-const alMenosUnaLetra = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/;
+const alMenosUnaLetra = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,:]+$/;
 
 const visitSchema = Joi.object({
     fecha: Joi.date().iso().max('now').required().messages({
@@ -20,17 +20,17 @@ const visitSchema = Joi.object({
 
     diagnostico: Joi.string().trim().max(2000).allow(null, '').pattern(alMenosUnaLetra).optional().messages({
         'string.max': 'El diagnóstico no puede tener más de 2000 caracteres',
-        'string.pattern.base': 'El diagnóstico solo puede contener letras, espacios y números (pero debe contener al menos una letra)'
+        'string.pattern.base': 'El diagnóstico solo puede contener letras, espacios, números y "." "," o ":" (pero debe contener al menos una letra)'
     }),
     
     tratamiento: Joi.string().trim().max(2000).allow(null, '').pattern(alMenosUnaLetra).optional().messages({
         'string.max': 'El tratamiento no puede tener más de 2000 caracteres',
-        'string.pattern.base': 'El tratamiento solo puede contener letras y espacios'
+        'string.pattern.base': 'El tratamiento solo puede contener letras, espacios, números y "." "," o ":" (pero debe contener al menos una letra)'
     }),
     
     observaciones: Joi.string().trim().max(2000).allow(null, '').pattern(alMenosUnaLetra).optional().messages({
         'string.max': 'Las observaciones no pueden tener más de 2000 caracteres',
-        'string.pattern.base': 'Las observaciones solo pueden contener letras, espacios y números (pero debe contener al menos una letra)'
+        'string.pattern.base': 'Las observaciones solo pueden contener letras, espacios, números y "." "," o ":" (pero debe contener al menos una letra)'
     }),
 
     estado: Joi.boolean().default(false).optional().messages({

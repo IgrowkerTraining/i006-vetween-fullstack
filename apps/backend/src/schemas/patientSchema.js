@@ -6,6 +6,7 @@ const especiesValidas = ['Caninos', 'Felinos', 'Aves', 'Peces', 'Roedores', 'Otr
 
 // Pattern
 const alMenosUnaLetra = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s]+$/;
+const seniaControl = /^(?=.*[a-zA-ZáéíóúÁÉÍÓÚñÑ])[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,:]+$/
 const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
 
 const patientSchema = Joi.object({
@@ -33,9 +34,9 @@ const patientSchema = Joi.object({
         'string.pattern.base': 'El color solo puede contener letras y espacios'
     }),
 
-    senia: Joi.string().trim().max(255).allow(null, '').pattern(alMenosUnaLetra).messages({
+    senia: Joi.string().trim().max(255).allow(null, '').pattern(seniaControl).messages({
         'string.max': 'Las señas / caracteristicas no puede tener más de 255 caracteres',
-        'string.pattern.base': 'Las señas / caracteristicas solo pueden contener letras, espacios y números (pero debe contener al menos una letra)'
+        'string.pattern.base': 'Las señas / caracteristicas solo pueden contener letras, espacios, números y "." "," o ":" (pero debe contener al menos una letra)'
     }),
 
     sexo: Joi.string().valid(...sexosValidos).required().messages({
@@ -110,9 +111,9 @@ const updatePatientSchema = Joi.object({
         'string.pattern.base': 'El color solo puede contener letras y espacios'
     }),
 
-    senia: Joi.string().trim().max(255).allow(null, '').pattern(alMenosUnaLetra).messages({
+    senia: Joi.string().trim().max(255).allow(null, '').pattern(seniaControl).messages({
         'string.max': 'Las señas/caracteristicas no puede tener más de 255 caracteres',
-        'string.pattern.base': 'Las señas/caracteristicas solo pueden contener letras, espacios y números (pero debe contener al menos una letra)'
+        'string.pattern.base': 'Las señas/caracteristicas solo pueden contener letras, espacios, números y "." "," o ":" (pero debe contener al menos una letra)'
     }),
 
     sexo: Joi.string().valid(...sexosValidos).messages({

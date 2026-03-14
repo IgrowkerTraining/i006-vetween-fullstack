@@ -145,10 +145,18 @@ Modo testing (Render)
 - El backend también se encuentra desplegado en un entorno de pruebas en Render:
 
 ```text
-https://backend-vetween-produccion.onrender.com/
+https://backend-vetween.onrender.com
 ```
 
 Los cambios se actualizan automáticamente al hacer push a la rama correspondiente.
+
+Producción (Render)
+
+- El backend se encuentra desplegado en el entorno de producción:
+
+```bash
+https://backend-vetween-produccion.onrender.com
+```
 
 ---
 
