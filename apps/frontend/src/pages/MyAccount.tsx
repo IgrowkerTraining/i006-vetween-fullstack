@@ -5,8 +5,9 @@ import { useAuth } from "../hooks/useAuth";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
 import stethoscopeIcon from "../assets/stethoscope.svg";
-import keyIcon from "../assets/key.svg";
-import lockIcon from "../assets/lock.svg";
+import iconProfessional from "../assets/iconProfessional.svg";
+import iconClinic from "../assets/iconClinic.svg";
+import iconSecurity from "../assets/iconSecurity.svg";
 import PageHeader from "../components/common/PageHeader";
 import { MyAccountSkeleton } from "../components/common/Skeleton";
 
@@ -113,31 +114,9 @@ export default function MyAccount() {
       {/* User Info Section */}
       <section className="border-b border-border px-8 py-6">
         <div className="flex items-center gap-4">
-          {/* Avatar with upload */}
-          <div className="relative">
-            <div
-              onClick={handleAvatarClick}
-              className="h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-vetween-teal ring-2 ring-border hover:ring-vetween-teal/70"
-            >
-              {avatarPreview ? (
-                <img
-                  src={avatarPreview}
-                  alt="Avatar"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-vetween-teal text-2xl font-bold text-white">
-                  {firstName.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+          {/* Professional Icon */}
+          <div className="h-24 w-24 flex items-center justify-center rounded-full bg-vetween-teal">
+            <img src={iconProfessional} alt="Profesional" className="h-16 w-16" />
           </div>
 
           {/* User Details */}
@@ -159,13 +138,13 @@ export default function MyAccount() {
           onClick={() => navigate("/mi-cuenta/perfil-profesional")}
         />
         <MenuCard
-          icon={keyIcon}
+          icon={iconClinic}
           title="Clínica"
           description="Datos del lugar donde atendés"
           onClick={() => navigate("/mi-cuenta/clinica")}
         />
         <MenuCard
-          icon={lockIcon}
+          icon={iconSecurity}
           title="Seguridad"
           description="Cambiar contraseña"
           onClick={() => navigate("/mi-cuenta/seguridad")}

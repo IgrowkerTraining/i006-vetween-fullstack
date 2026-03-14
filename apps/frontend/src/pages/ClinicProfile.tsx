@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/common/Input";
+import { Select } from "../components/common/Select";
 import { Button } from "../components/common/Button";
 import { SuccessModal } from "../components/common/SuccessModal";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
 import { useToast } from "../context/ToastContext";
 import { ClinicProfileSkeleton } from "../components/common/Skeleton";
+import iconClinic from "../assets/iconClinic.svg";
+import argentinaFlag from "../assets/argentinaFlag.svg";
 
 export default function ClinicProfile() {
   const navigate = useNavigate();
@@ -255,20 +258,7 @@ export default function ClinicProfile() {
                 <div className="flex items-center gap-4">
                   {/* Clinic Icon */}
                   <div className="h-24 w-24 flex items-center justify-center rounded-full bg-vetween-teal">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="h-12 w-12 text-white"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-                      />
-                    </svg>
+                    <img src={iconClinic} alt="Clínica" className="h-12 w-12" />
                   </div>
 
                   {/* Clinic Details */}
@@ -352,64 +342,17 @@ export default function ClinicProfile() {
                   </div>
 
                   {/* Provincia */}
-                  <div ref={provinceRef}>
-                    <label className="block text-sm font-medium text-foreground mb-1">
-                      Provincia
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setProvinceOpen((prev) => !prev)}
-                      className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-vetween-teal/50 focus:border-vetween-teal transition-all duration-200 flex items-center justify-between"
-                    >
-                      <span
-                        className={
-                          formData.provincia === ""
-                            ? "text-muted-foreground"
-                            : "text-foreground truncate pr-2"
-                        }
-                      >
-                        {formData.provincia === ""
-                          ? "Seleccionar provincia…"
-                          : formData.provincia}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${provinceOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19 9-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {provinceOpen && (
-                      <div className="mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-10 overflow-hidden max-h-48 overflow-y-auto">
-                        <div className="p-2 grid grid-cols-1 gap-1">
-                          {PROVINCE_OPTIONS.map((prov) => (
-                            <label
-                              key={prov}
-                              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-vetween-teal/10 cursor-pointer text-sm text-foreground select-none"
-                            >
-                              <input
-                                type="radio"
-                                name="provincia"
-                                value={prov}
-                                checked={formData.provincia === prov}
-                                onChange={() => handleProvinceChange(prov)}
-                                className="w-4 h-4 accent-vetween-teal flex-shrink-0"
-                              />
-                              {prov}
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <Select
+                    label="Provincia"
+                    name="provincia"
+                    value={formData.provincia}
+                    onChange={(e) => handleProvinceChange(e.target.value)}
+                    placeholder="Seleccionar provincia…"
+                    options={PROVINCE_OPTIONS.map((opt) => ({
+                      value: opt,
+                      label: opt,
+                    }))}
+                  />
 
                   {/* Número de Teléfono */}
                   <div>
@@ -417,7 +360,8 @@ export default function ClinicProfile() {
                       label="Número de teléfono"
                       name="telefono"
                       type="tel"
-                      placeholder="(011) 999-9999"
+                      placeholder="11 9 12341234"
+                      prefix={<img src={argentinaFlag} alt="Argentina" className="w-5 h-4" />}
                       value={formData.telefono}
                       onChange={handleChange}
                     />

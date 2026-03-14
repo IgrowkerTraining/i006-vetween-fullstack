@@ -26,10 +26,10 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
                   font-semibold text-lg transition-all duration-300
                   ${
                     isActive
-                      ? "bg-teal-400 text-white shadow-md"
+                      ? "bg-[#5451FF] text-white shadow-md"
                       : isCompleted
-                        ? "bg-teal-500 text-white"
-                        : "bg-slate-200 text-slate-500"
+                        ? "bg-[#5451FF] text-white"
+                        : "bg-[#5451FF]/30 text-[#5451FF]"
                   }
                 `}
               >
@@ -48,7 +48,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
                     />
                   </svg>
                 ) : (
-                  step.number
+                  <span className={isActive ? "" : "text-[#737373]"}>{step.number}</span>
                 )}
               </div>
               <span
@@ -65,7 +65,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep }) => {
               <div
                 className={`
                   w-16 h-0.5 -mt-5 transition-all duration-300
-                  ${isCompleted ? "bg-teal-500" : "bg-slate-300"}
+                  ${isCompleted ? "bg-[#5451FF]" : "bg-slate-300"}
                 `}
               />
             )}

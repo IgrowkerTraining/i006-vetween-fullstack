@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/common/Input";
+import { Select } from "../components/common/Select";
+import { MultiSelect } from "../components/common/MultiSelect";
 import { Button } from "../components/common/Button";
 import { SuccessModal } from "../components/common/SuccessModal";
 import { api } from "../services/api";
 import { storage } from "../utils/storage";
 import { ProfessionalProfileSkeleton } from "../components/common/Skeleton";
+import iconProfessional from "../assets/iconProfessional.svg";
 
 const ANIMAL_TYPES_OPTIONS = ["Caninos", "Felinos", "Peces", "Otro"];
 
@@ -294,31 +297,9 @@ export default function ProfessionalProfile() {
               {/* User Info Section */}
               <section className="bg-vetween-teal/5 border border-border rounded-2xl p-6 mb-6">
                 <div className="flex items-center gap-4">
-                  {/* Avatar with upload */}
-                  <div className="relative">
-                    <div
-                      onClick={handleAvatarClick}
-                      className="h-24 w-24 cursor-pointer overflow-hidden rounded-full bg-vetween-teal ring-2 ring-border hover:ring-vetween-teal/70"
-                    >
-                      {avatarPreview ? (
-                        <img
-                          src={avatarPreview}
-                          alt="Avatar"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-vetween-teal text-2xl font-bold text-white">
-                          {firstName.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
+                  {/* Professional Icon */}
+                  <div className="h-24 w-24 flex items-center justify-center rounded-full bg-vetween-teal">
+                    <img src={iconProfessional} alt="Profesional" className="h-16 w-16" />
                   </div>
 
                   {/* User Details */}
@@ -412,6 +393,7 @@ export default function ProfessionalProfile() {
                       name="costo_consulta"
                       type="number"
                       placeholder="5000"
+                      prefix="$"
                       value={formData.costo_consulta}
                       onChange={handleChange}
                       error={fieldErrors.costo_consulta}
@@ -419,170 +401,39 @@ export default function ProfessionalProfile() {
                   </div>
 
                   {/* Especies Atendidas */}
-                  <div ref={animalTypesRef}>
-                    <label className="block text-sm font-semibold text-foreground mb-1">
-                      Especies atendidas
-                    </label>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Seleccioná todas las que correspondan
-                    </p>
-
-                    {/* Trigger input */}
-                    <button
-                      type="button"
-                      onClick={() => setAnimalTypesOpen((prev) => !prev)}
-                      className={`w-full bg-white border rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none transition-all duration-200 flex items-center justify-between ${animalTypesOpen ? "border-indigo-500 ring-2 ring-indigo-500/50" : "border-slate-700 hover:border-indigo-500"}`}
-                    >
-                      <span
-                        className={
-                          formData.tipos_animales.length === 0
-                            ? "text-muted-foreground"
-                            : "text-foreground truncate pr-2"
-                        }
-                      >
-                        {formData.tipos_animales.length === 0
-                          ? "Seleccionar tipos de animales…"
-                          : formData.tipos_animales.join(", ")}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${animalTypesOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19 9-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-
-                    {/* Dropdown list */}
-                    {animalTypesOpen && (
-                      <div className="mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-10 overflow-hidden">
-                        <div className="max-h-52 overflow-y-auto p-2 grid grid-cols-1 gap-1">
-                          {ANIMAL_TYPES_OPTIONS.map((animal) => (
-                            <label
-                              key={animal}
-                              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-vetween-teal/10 cursor-pointer text-sm text-foreground select-none"
-                            >
-                              <input
-                                type="checkbox"
-                                value={animal}
-                                checked={formData.tipos_animales.includes(
-                                  animal,
-                                )}
-                                onChange={() => handleAnimalTypeChange(animal)}
-                                className="w-4 h-4 accent-vetween-teal flex-shrink-0"
-                              />
-                              {animal}
-                            </label>
-                          ))}
-                        </div>
-                        {formData.tipos_animales.length > 0 && (
-                          <div className="border-t border-border px-3 py-2 flex justify-between items-center">
-                            <span className="text-xs text-muted-foreground">
-                              {formData.tipos_animales.length} seleccionado
-                              {formData.tipos_animales.length !== 1 ? "s" : ""}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  tipos_animales: [],
-                                }));
-                                setFieldErrors((prev) => ({
-                                  ...prev,
-                                  tipos_animales:
-                                    "Seleccioná al menos un tipo de animal",
-                                }));
-                              }}
-                              className="text-xs text-red-500 hover:text-red-600 transition-colors"
-                            >
-                              Limpiar
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {fieldErrors.tipos_animales && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {fieldErrors.tipos_animales}
-                      </p>
-                    )}
-                  </div>
+                  <MultiSelect
+                    label="Especies atendidas"
+                    value={formData.tipos_animales}
+                    onChange={(value) => {
+                      setFormData((prev) => ({ ...prev, tipos_animales: value }));
+                      if (value.length > 0) {
+                        setFieldErrors((fe) => {
+                          const n = { ...fe };
+                          delete n.tipos_animales;
+                          return n;
+                        });
+                      }
+                    }}
+                    placeholder="Seleccionar tipos de animales…"
+                    error={fieldErrors.tipos_animales}
+                    options={ANIMAL_TYPES_OPTIONS.map((opt) => ({
+                      value: opt,
+                      label: opt,
+                    }))}
+                  />
 
                   {/* Especialidad */}
-                  <div ref={specialtiesRef}>
-                    <label className="block text-sm font-semibold text-foreground mb-1">
-                      Especialidad
-                    </label>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Seleccioná una opción
-                    </p>
-
-                    {/* Trigger input */}
-                    <button
-                      type="button"
-                      onClick={() => setSpecialtiesOpen((prev) => !prev)}
-                      className={`w-full bg-white border rounded-lg px-3 py-2.5 text-left text-sm focus:outline-none transition-all duration-200 flex items-center justify-between ${specialtiesOpen ? "border-indigo-500 ring-2 ring-indigo-500/50" : "border-slate-700 hover:border-indigo-500"}`}
-                    >
-                      <span
-                        className={
-                          formData.especialidad === ""
-                            ? "text-muted-foreground"
-                            : "text-foreground truncate pr-2"
-                        }
-                      >
-                        {formData.especialidad === ""
-                          ? "Seleccionar especialidad…"
-                          : formData.especialidad}
-                      </span>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={`w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${specialtiesOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m19 9-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-
-                    {specialtiesOpen && (
-                      <div className="mt-1 w-full bg-background border border-border rounded-lg shadow-lg z-10 overflow-hidden">
-                        <div className="p-2 grid grid-cols-1 gap-1">
-                          {SPECIALTIES_OPTIONS.map((specialty) => (
-                            <label
-                              key={specialty}
-                              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-vetween-teal/10 cursor-pointer text-sm text-foreground select-none"
-                            >
-                              <input
-                                type="radio"
-                                name="especialidad"
-                                value={specialty}
-                                checked={formData.especialidad === specialty}
-                                onChange={() =>
-                                  handleSpecialtyChange(specialty)
-                                }
-                                className="w-4 h-4 accent-vetween-teal flex-shrink-0"
-                              />
-                              {specialty}
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <Select
+                    label="Especialidad"
+                    name="especialidad"
+                    value={formData.especialidad}
+                    onChange={(e) => handleSpecialtyChange(e.target.value)}
+                    placeholder="Seleccionar especialidad…"
+                    options={SPECIALTIES_OPTIONS.map((opt) => ({
+                      value: opt,
+                      label: opt,
+                    }))}
+                  />
                 </div>
 
                 {/* Buttons */}
