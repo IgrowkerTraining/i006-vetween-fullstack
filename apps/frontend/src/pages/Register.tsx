@@ -167,7 +167,8 @@ const Register: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const processed = name === "email" ? value.toLowerCase() : value;
+    setFormData((prev) => ({ ...prev, [name]: processed }));
     setServerError(null);
     if (errors[name]) {
       setErrors((prev) => {
@@ -182,40 +183,87 @@ const Register: React.FC = () => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim() || formData.name.trim().length < 2)
+    // Nombre
+    const nameTrimmed = formData.name.trim();
+    if (!nameTrimmed) {
+      newErrors.name = "El nombre es requerido";
+    } else if (nameTrimmed.length < 2) {
       newErrors.name = "El nombre debe tener al menos 2 caracteres";
-    if (!formData.lastName.trim() || formData.lastName.trim().length < 2)
-      newErrors.lastName = "El apellido debe tener al menos 2 caracteres";
-
-    if (formData.password.length < 8) {
-      newErrors.password = "La contraseña debe tener al menos 8 caracteres";
-    } else if (/[^A-Za-z0-9]/.test(formData.password)) {
-      newErrors.password =
-        "La contraseña solo puede contener letras (A-Z) y números. No se permiten caracteres como ñ, tildes o símbolos.";
-    } else if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(formData.password)
-    ) {
-      newErrors.password =
-        "La contraseña debe contener al menos 1 mayúscula, 1 minúscula y 1 número.";
+    } else if (nameTrimmed.length > 50) {
+      newErrors.name = "El nombre no puede superar los 50 caracteres";
+    } else if (/\d/.test(nameTrimmed)) {
+      newErrors.name = "El nombre no puede contener números";
     }
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Las contraseñas no coinciden";
 
-    const registration = parseInt(formData.registration);
-    if (
-      !formData.registration ||
-      isNaN(registration) ||
-      String(registration).length < 4
-    )
+    // Apellido
+    const lastNameTrimmed = formData.lastName.trim();
+    if (!lastNameTrimmed) {
+      newErrors.lastName = "El apellido es requerido";
+    } else if (lastNameTrimmed.length < 2) {
+      newErrors.lastName = "El apellido debe tener al menos 2 caracteres";
+    } else if (lastNameTrimmed.length > 100) {
+      newErrors.lastName = "El apellido no puede superar los 100 caracteres";
+    } else if (/\d/.test(lastNameTrimmed)) {
+      newErrors.lastName = "El apellido no puede contener números";
+    }
+
+    // Email
+    const emailTrimmed = formData.email.trim();
+    if (!emailTrimmed) {
+      newErrors.email = "El email es requerido";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      newErrors.email = "El formato de email no es válido";
+    }
+
+    // Contraseña
+    if (!formData.password) {
+      newErrors.password = "La contraseña es requerida";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "La contraseña debe tener al menos 8 caracteres";
+    } else if (!/^(?=.*[a-zñ])(?=.*[A-ZÑ])(?=.*\d).{8,}$/.test(formData.password)) {
+      newErrors.password = "La contraseña debe contener al menos 1 mayúscula, 1 minúscula y 1 número";
+    }
+
+    // Confirmar contraseña
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Las contraseñas no coinciden";
+    }
+
+    // Matrícula
+    const registrationTrimmed = formData.registration.trim();
+    const matricula = parseInt(registrationTrimmed);
+    if (!registrationTrimmed) {
+      newErrors.registration = "La matrícula es requerida";
+    } else if (!/^\d+$/.test(registrationTrimmed)) {
+      newErrors.registration = "La matrícula solo puede contener números";
+    } else if (matricula <= 0) {
+      newErrors.registration = "La matrícula debe ser un número positivo";
+    } else if (registrationTrimmed.length < 4) {
       newErrors.registration = "La matrícula debe tener al menos 4 dígitos";
-    if (!formData.specialties)
+    } else if (registrationTrimmed.length > 15) {
+      newErrors.registration = "La matrícula no puede superar los 15 dígitos";
+    }
+
+    // Especialidad
+    if (!formData.specialties) {
       newErrors.specialties = "Debes seleccionar al menos una especialidad";
-    if (formData.animalTypes.length === 0)
+    }
+
+    // Tipos de animales
+    if (formData.animalTypes.length === 0) {
       newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
-    const cost = parseFloat(formData.consultationCost);
-    if (!formData.consultationCost || isNaN(cost) || cost < 0)
-      newErrors.consultationCost =
-        "El costo de consulta debe ser mayor o igual a 0";
+    }
+
+    // Costo de consulta
+    const costStr = formData.consultationCost.trim();
+    const cost = parseFloat(costStr);
+    if (!costStr) {
+      newErrors.consultationCost = "El costo de consulta es requerido";
+    } else if (isNaN(cost) || cost < 0) {
+      newErrors.consultationCost = "El costo de consulta debe ser mayor o igual a 0";
+    } else if (cost > 999999) {
+      newErrors.consultationCost = "El costo de consulta no puede superar los 6 dígitos";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -232,82 +280,152 @@ const Register: React.FC = () => {
 
     const newErrors: Record<string, string> = {};
 
-    // Datos personales
-    if (!formData.name.trim() || formData.name.trim().length < 2)
+    // Nombre
+    const nameTrimmed = formData.name.trim();
+    if (!nameTrimmed) {
+      newErrors.name = "El nombre es requerido";
+    } else if (nameTrimmed.length < 2) {
       newErrors.name = "El nombre debe tener al menos 2 caracteres";
-    if (!formData.lastName.trim() || formData.lastName.trim().length < 2)
+    } else if (nameTrimmed.length > 50) {
+      newErrors.name = "El nombre no puede superar los 50 caracteres";
+    } else if (/\d/.test(nameTrimmed)) {
+      newErrors.name = "El nombre no puede contener números";
+    }
+
+    // Apellido
+    const lastNameTrimmed = formData.lastName.trim();
+    if (!lastNameTrimmed) {
+      newErrors.lastName = "El apellido es requerido";
+    } else if (lastNameTrimmed.length < 2) {
       newErrors.lastName = "El apellido debe tener al menos 2 caracteres";
+    } else if (lastNameTrimmed.length > 100) {
+      newErrors.lastName = "El apellido no puede superar los 100 caracteres";
+    } else if (/\d/.test(lastNameTrimmed)) {
+      newErrors.lastName = "El apellido no puede contener números";
+    }
 
     // Contraseña
+    if (!formData.password) {
+      newErrors.password = "La contraseña es requerida";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "La contraseña debe tener al menos 8 caracteres";
+    } else if (!/^(?=.*[a-zñ])(?=.*[A-ZÑ])(?=.*\d).{8,}$/.test(formData.password)) {
+      newErrors.password = "La contraseña debe contener al menos 1 mayúscula, 1 minúscula y 1 número";
+    }
+
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Las contraseñas no coinciden";
     }
-    if (formData.password.length < 8) {
-      newErrors.password = "La contraseña debe tener al menos 8 caracteres";
-    } else if (/[^A-Za-z0-9]/.test(formData.password)) {
-      newErrors.password =
-        "La contraseña solo puede contener letras (A-Z) y números. No se permiten caracteres como ñ, tildes o símbolos.";
-    } else if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(formData.password)
-    ) {
-      newErrors.password =
-        "La contraseña debe contener al menos 1 mayúscula, 1 minúscula y 1 número.";
+
+    // Matrícula
+    const registrationTrimmed = formData.registration.trim();
+    const matricula = parseInt(registrationTrimmed);
+    if (!registrationTrimmed) {
+      newErrors.registration = "La matrícula es requerida";
+    } else if (!/^\d+$/.test(registrationTrimmed)) {
+      newErrors.registration = "La matrícula solo puede contener números";
+    } else if (matricula <= 0) {
+      newErrors.registration = "La matrícula debe ser un número positivo";
+    } else if (registrationTrimmed.length < 4) {
+      newErrors.registration = "La matrícula debe tener al menos 4 dígitos";
+    } else if (registrationTrimmed.length > 15) {
+      newErrors.registration = "La matrícula no puede superar los 15 dígitos";
     }
 
-    // Datos profesionales
-    const registration = parseInt(formData.registration);
-    if (
-      !formData.registration ||
-      isNaN(registration) ||
-      String(registration).length < 4
-    )
-      newErrors.registration = "La matrícula debe tener al menos 4 dígitos";
-    if (!formData.specialties)
+    // Especialidad
+    if (!formData.specialties) {
       newErrors.specialties = "Debes seleccionar al menos una especialidad";
-    if (formData.animalTypes.length === 0)
-      newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
-    const cost = parseFloat(formData.consultationCost);
-    if (!formData.consultationCost || isNaN(cost) || cost < 0)
-      newErrors.consultationCost =
-        "El costo de consulta debe ser mayor o igual a 0";
+    }
 
-    // Datos del consultorio
-    if (!formData.consultancy.trim() || formData.consultancy.trim().length < 2)
-      newErrors.consultancy =
-        "El nombre del consultorio debe tener al menos 2 caracteres";
-    if (
-      !formData.habilitation.trim() ||
-      formData.habilitation.trim().length < 5
-    )
-      newErrors.habilitation =
-        "El número de habilitación debe tener al menos 5 caracteres";
-    if (
-      formData.addressStreet.trim() &&
-      formData.addressStreet.trim().length < 2
-    )
+    // Tipos de animales
+    if (formData.animalTypes.length === 0) {
+      newErrors.animalTypes = "Debes seleccionar al menos un tipo de animal";
+    }
+
+    // Costo de consulta
+    const costStr = formData.consultationCost.trim();
+    const cost = parseFloat(costStr);
+    if (!costStr) {
+      newErrors.consultationCost = "El costo de consulta es requerido";
+    } else if (isNaN(cost) || cost < 0) {
+      newErrors.consultationCost = "El costo de consulta debe ser mayor o igual a 0";
+    } else if (cost > 999999) {
+      newErrors.consultationCost = "El costo de consulta no puede superar los 6 dígitos";
+    }
+
+    // Nombre del consultorio
+    const consultancyTrimmed = formData.consultancy.trim();
+    if (!consultancyTrimmed) {
+      newErrors.consultancy = "El nombre del consultorio es requerido";
+    } else if (consultancyTrimmed.length < 2) {
+      newErrors.consultancy = "El nombre del consultorio debe tener al menos 2 caracteres";
+    } else if (consultancyTrimmed.length > 150) {
+      newErrors.consultancy = "El nombre del consultorio no puede superar los 150 caracteres";
+    } else if (!/^[A-Za-z\u00C0-\u00FF\s]+$/.test(consultancyTrimmed)) {
+      newErrors.consultancy = "El nombre del consultorio solo puede contener letras y espacios";
+    }
+
+    // Número de habilitación
+    const habilitationTrimmed = formData.habilitation.trim();
+    if (!habilitationTrimmed) {
+      newErrors.habilitation = "El número de habilitación es requerido";
+    } else if (habilitationTrimmed.length < 5) {
+      newErrors.habilitation = "El número de habilitación debe tener al menos 5 caracteres";
+    } else if (habilitationTrimmed.length > 50) {
+      newErrors.habilitation = "El número de habilitación no puede superar los 50 caracteres";
+    }
+
+    // Calle
+    const streetTrimmed = formData.addressStreet.trim();
+    if (!streetTrimmed) {
+      newErrors.addressStreet = "La calle es requerida";
+    } else if (streetTrimmed.length < 2) {
       newErrors.addressStreet = "La calle debe tener al menos 2 caracteres";
-    if (
-      formData.addressStreet.trim() &&
-      !/^[A-Za-zÀ-ÖØ-öø-ÿ0-9\s]+$/.test(formData.addressStreet.trim())
-    )
-      newErrors.addressStreet =
-        "La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)";
-    if (
-      formData.addressStreet.trim() &&
-      /^[^A-Za-zÀ-ÖØ-öø-ÿ]+$/.test(formData.addressStreet.trim())
-    )
-      newErrors.addressStreet =
-        "La calle solo puede contener letras, espacios y números (pero debe contener al menos una letra)";
-    if (
-      formData.addressLocality.trim() &&
-      formData.addressLocality.trim().length < 2
-    )
-      newErrors.addressLocality =
-        "La ciudad / localidad debe tener al menos 2 caracteres";
-    if (!formData.province)
-      newErrors.province = "Debes seleccionar una provincia válida";
-    if (!formData.phone.trim() || formData.phone.trim().length < 8)
-      newErrors.phone = "El teléfono debe tener al menos 8 caracteres";
+    } else if (streetTrimmed.length > 150) {
+      newErrors.addressStreet = "La calle no puede superar los 150 caracteres";
+    } else if (/\d/.test(streetTrimmed)) {
+      newErrors.addressStreet = "La calle no puede contener números";
+    }
+
+    // Número de dirección (opcional)
+    const numberTrimmed = formData.addressNumber.trim();
+    if (numberTrimmed) {
+      const num = parseInt(numberTrimmed);
+      if (isNaN(num) || num <= 0) {
+        newErrors.addressNumber = "El número debe ser un valor positivo";
+      } else if (numberTrimmed.length > 5) {
+        newErrors.addressNumber = "El número no puede superar los 5 dígitos";
+      }
+    }
+
+    // Localidad
+    const localidadTrimmed = formData.addressLocality.trim();
+    if (!localidadTrimmed) {
+      newErrors.addressLocality = "La localidad es requerida";
+    } else if (localidadTrimmed.length < 2) {
+      newErrors.addressLocality = "La localidad debe tener al menos 2 caracteres";
+    } else if (localidadTrimmed.length > 100) {
+      newErrors.addressLocality = "La localidad no puede superar los 100 caracteres";
+    } else if (/\d/.test(localidadTrimmed)) {
+      newErrors.addressLocality = "La localidad no puede contener números";
+    }
+
+    // Provincia
+    if (!formData.province) {
+      newErrors.province = "Debes seleccionar una provincia";
+    }
+
+    // Teléfono
+    const phoneTrimmed = formData.phone.trim();
+    if (!phoneTrimmed) {
+      newErrors.phone = "El teléfono es requerido";
+    } else if (!/^\d+$/.test(phoneTrimmed)) {
+      newErrors.phone = "El teléfono solo puede contener números";
+    } else if (phoneTrimmed.length < 8) {
+      newErrors.phone = "El teléfono debe tener al menos 8 dígitos";
+    } else if (phoneTrimmed.length > 20) {
+      newErrors.phone = "El teléfono no puede superar los 20 dígitos";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -319,7 +437,7 @@ const Register: React.FC = () => {
       const response = await api.register({
         nombre: formData.name,
         apellido: formData.lastName,
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password,
         matricula: parseInt(formData.registration) || 0,
         especialidad: formData.specialties
@@ -345,7 +463,7 @@ const Register: React.FC = () => {
 
       if (!token) {
         const loginResponse = await api.login({
-          email: formData.email,
+          email: formData.email.trim(),
           password: formData.password,
         });
         user = loginResponse.user;
@@ -463,6 +581,7 @@ const Register: React.FC = () => {
                       placeholder="nombre@email.com"
                       required
                       disabled={isLoading}
+                      error={errors.email}
                       value={formData.email}
                       onChange={handleChange}
                     />
@@ -643,8 +762,8 @@ const Register: React.FC = () => {
                       label="Número"
                       name="addressNumber"
                       placeholder="1234"
-                      required
                       disabled={isLoading}
+                      error={errors.addressNumber}
                       value={formData.addressNumber}
                       onChange={handleChange}
                     />
