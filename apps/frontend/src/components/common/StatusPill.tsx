@@ -4,7 +4,7 @@ interface StatusPillProps {
 
 const colorMap: Record<string, string> = {
   Activo: "bg-emerald-100 text-emerald-700",
-  Inactivo: "bg-red-100 text-red-700",
+  Inactivo: "bg-gray-200 text-gray-500",
 };
 
 export function StatusPill({ status }: StatusPillProps) {

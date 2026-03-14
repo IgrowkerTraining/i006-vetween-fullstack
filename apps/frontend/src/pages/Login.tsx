@@ -41,7 +41,7 @@ const Login: React.FC = () => {
       storage.setToken(response.token);
       login(response.user);
       showToast("Sesión iniciada correctamente", "success");
-      navigate("/responsables");
+      navigate("/lista-pacientes");
     } catch (err: any) {
       // HttpErrors (401, 5xx) are already toasted by the fetch interceptor
       if (!(err instanceof HttpError)) {
